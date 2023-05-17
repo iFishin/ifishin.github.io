@@ -58,6 +58,6 @@ leancloud_visitors:
 # whether to enable the friend links, if not, set 'friends' to false and do not add any link
 # friends: false
 friends:
-  github: https://github.com/
+  github: https://github.com/ifishin
 # a brief introduction to yourself
-aboutme: I'm a developer.
+aboutme: Fishing is funny!
