@@ -3,913 +3,934 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>鱼跃龙门 · 数字画卷</title>
+    <title>墨池游鱼</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500&display=swap');
         
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         
         body {
             font-family: 'Noto Serif SC', serif;
-            background: #0f172a;
-            color: #fff;
-            overflow-x: hidden;
-        }
-        
-        #canvas-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            z-index: 1;
-        }
-        
-        .scroll-container {
-            position: relative;
-            z-index: 10;
-            height: 500vh; /* 增加高度给更多滚动空间 */
-        }
-        
-        .scroll-section {
-            height: 100vh;
+            background-color: #f0fdf4;
+            min-height: 100vh;
+            overflow: hidden;
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
         }
         
-        .title-layer {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 5;
-            pointer-events: none;
-            text-align: center;
-            mix-blend-mode: exclusion;
-        }
-        
-        .main-title {
-            font-size: clamp(3rem, 10vw, 8rem);
-            font-weight: 900;
-            letter-spacing: 0.5em;
-            color: #fff;
-            opacity: 0;
-            transform: translateY(50px);
-            text-shadow: 0 0 30px rgba(0,212,255,0.5);
-        }
-        
-        .sub-title {
-            font-size: clamp(1rem, 2vw, 1.5rem);
-            color: #00d4ff;
-            margin-top: 2rem;
-            letter-spacing: 0.3em;
-            opacity: 0;
-        }
-        
-        .gallery-section {
+        .paper-texture {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100vh;
-            z-index: 20;
-            opacity: 0;
+            height: 100%;
+            opacity: 0.04;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
             pointer-events: none;
-            background: #000;
+            z-index: 1;
         }
         
-        .gallery-track {
-            display: flex;
-            gap: 4rem;
-            padding: 0 10vw;
-            height: 100%;
-            align-items: center;
+        .ink-wash {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.08;
+            pointer-events: none;
+        }
+        
+        .glass-tank {
+            position: relative;
+            width: 50vw;
+            height: 60vh;
+            min-width: 600px;
+            min-height: 500px;
+            z-index: 10;
+        }
+        
+        .glass-base {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 
+                0 40px 80px -20px rgba(0, 0, 0, 0.15),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.8),
+                inset 0 0 120px rgba(255, 255, 255, 0.4);
+        }
+        
+        .glass-reflection {
+            position: absolute;
+            inset: 0;
+            border-radius: 40px;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        
+        .glass-reflection::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 40%,
+                rgba(255, 255, 255, 0.4) 45%,
+                rgba(255, 255, 255, 0.6) 50%,
+                rgba(255, 255, 255, 0.4) 55%,
+                transparent 60%
+            );
+            transform: translateX(-100%);
+            animation: glassShine 8s ease-in-out infinite;
+        }
+        
+        @keyframes glassShine {
+            0%, 100% { transform: translateX(-100%) translateY(-100%); }
+            50% { transform: translateX(100%) translateY(100%); }
+        }
+        
+        .glass-rim {
+            position: absolute;
+            inset: 0;
+            border-radius: 40px;
+            box-shadow: 
+                inset 0 2px 4px rgba(255, 255, 255, 0.9),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.05);
+            pointer-events: none;
+        }
+        
+        .water-body {
+            position: absolute;
+            inset: 20px;
+            background: linear-gradient(to bottom, 
+                rgba(147, 197, 253, 0.15) 0%, 
+                rgba(147, 197, 253, 0.05) 30%,
+                rgba(6, 182, 212, 0.08) 100%);
+            border-radius: 30px;
+            overflow: hidden;
+        }
+        
+        .water-ripple {
+            position: absolute;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: waterRippleExpand 2s ease-out forwards;
+        }
+        
+        @keyframes waterRippleExpand {
+            0% { 
+                width: 0; 
+                height: 0; 
+                opacity: 0.8;
+                border-width: 3px;
+            }
+            100% { 
+                width: 200px; 
+                height: 200px; 
+                opacity: 0;
+                border-width: 0;
+                margin-left: -100px;
+                margin-top: -100px;
+            }
+        }
+        
+        .cursor-glow {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 20;
+            mix-blend-mode: overlay;
+        }
+        
+        .glass-tank:hover .cursor-glow {
+            opacity: 1;
+        }
+        
+        .cursor-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particleFade 1s ease-out forwards;
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+        }
+        
+        @keyframes particleFade {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(0) translateY(-20px); opacity: 0; }
+        }
+        
+        .fish {
+            position: absolute;
+            pointer-events: none;
+            z-index: 15;
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.12));
             will-change: transform;
         }
         
-        .gallery-item {
-            flex-shrink: 0;
-            width: 60vw;
-            height: 70vh;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid #333;
-            background: #111;
+        .bubble {
+            position: absolute;
+            background: radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.3));
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            animation: bubbleRise linear infinite;
+            pointer-events: none;
         }
         
-        .gallery-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            filter: grayscale(100%) contrast(1.2);
-            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        @keyframes bubbleRise {
+            0% { 
+                transform: translateY(0) translateX(0); 
+                opacity: 0; 
+            }
+            10% { opacity: 0.8; }
+            50% { transform: translateY(-30vh) translateX(15px); }
+            100% { 
+                transform: translateY(-60vh) translateX(-5px); 
+                opacity: 0; 
+            }
         }
         
-        .gallery-item:hover img {
-            filter: grayscale(0%) contrast(1);
-            transform: scale(1.05);
+        .seaweed {
+            position: absolute;
+            bottom: 0;
+            transform-origin: bottom center;
+            animation: seaweedSway 6s ease-in-out infinite;
         }
         
-        .gallery-caption {
+        @keyframes seaweedSway {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+        
+        .sand {
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
-            padding: 2rem;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-            transform: translateY(100%);
-            transition: transform 0.4s ease;
-        }
-        
-        .gallery-item:hover .gallery-caption {
-            transform: translateY(0);
-        }
-        
-        .noise {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            height: 60px;
+            background: linear-gradient(to top, 
+                rgba(217, 119, 6, 0.15) 0%, 
+                rgba(217, 119, 6, 0.05) 60%,
+                transparent 100%);
+            border-radius: 0 0 30px 30px;
             pointer-events: none;
-            z-index: 100;
-            opacity: 0.03;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
         }
         
-        .dragon-gate {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 2px;
-            height: 0;
-            background: #ffd700;
-            box-shadow: 0 0 20px #ffd700, 0 0 40px #ffd700;
-            z-index: 15;
-            opacity: 0;
+        /* 食物样式 */
+        .food-pellet {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: radial-gradient(circle at 30% 30%, #fbbf24, #d97706);
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+            pointer-events: none;
+            z-index: 12;
         }
         
-        .scroll-indicator {
-            position: fixed;
-            bottom: 2rem;
+        .controls {
+            position: absolute;
+            bottom: -60px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 50;
-            animation: bounce 2s infinite;
-            pointer-events: none;
+            display: flex;
+            gap: 20px;
+            z-index: 30;
         }
         
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
-            40% { transform: translateX(-50%) translateY(-10px); }
-            60% { transform: translateX(-50%) translateY(-5px); }
+        .control-btn {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Noto Serif SC', serif;
+            color: #475569;
+            font-size: 14px;
+            letter-spacing: 0.1em;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+        
+        .title {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            font-size: 1.8rem;
+            color: rgba(30, 41, 59, 0.6);
+            letter-spacing: 0.5em;
+            font-weight: 300;
+            z-index: 5;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
-
-    <div class="noise"></div>
+    <div class="paper-texture"></div>
     
-    <div id="canvas-container"></div>
+    <div class="ink-wash w-[600px] h-[600px] bg-emerald-800 -top-32 -left-32"></div>
+    <div class="ink-wash w-[500px] h-[500px] bg-blue-900 -bottom-32 -right-32"></div>
     
-    <div class="title-layer">
-        <h1 class="main-title" id="mainTitle">鱼塘</h1>
-        <p class="sub-title" id="subTitle">SCROLL TO ASCEND</p>
-    </div>
+    <div class="title">观鱼</div>
     
-    <div class="dragon-gate" id="dragonGate"></div>
-    
-    <div class="scroll-indicator" id="scrollIndicator">
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 5v14M19 12l-7 7-7-7"/>
-        </svg>
-    </div>
-    
-    <div class="scroll-container">
-        <div class="scroll-section" data-phase="pond"></div>
-        <div class="scroll-section" data-phase="willow"></div>
-        <div class="scroll-section" data-phase="lotus"></div>
-        <div class="scroll-section" data-phase="jump"></div>
-        <div class="scroll-section" data-phase="gallery"></div>
-    </div>
-    
-    <div class="gallery-section" id="gallerySection">
-        <div class="gallery-track" id="galleryTrack">
-            <div class="gallery-item">
-                <img src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=1200&q=80" alt="Koi 1">
-                <div class="gallery-caption">
-                    <h3 class="text-2xl font-bold text-white mb-2">锦鲤</h3>
-                    <p class="text-gray-300">水中游动的幸运符</p>
-                </div>
-            </div>
-            <div class="gallery-item">
-                <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&q=80" alt="Koi 2">
-                <div class="gallery-caption">
-                    <h3 class="text-2xl font-bold text-white mb-2">龙门</h3>
-                    <p class="text-gray-300">跨越界限的瞬间</p>
-                </div>
-            </div>
-            <div class="gallery-item">
-                <img src="https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=1200&q=80" alt="Koi 3">
-                <div class="gallery-caption">
-                    <h3 class="text-2xl font-bold text-white mb-2">化龙</h3>
-                    <p class="text-gray-300">蜕变与重生</p>
-                </div>
-            </div>
-            <div class="gallery-item">
-                <img src="https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1200&q=80" alt="Koi 4">
-                <div class="gallery-caption">
-                    <h3 class="text-2xl font-bold text-white mb-2">深渊</h3>
-                    <p class="text-gray-300">深邃的未知领域</p>
-                </div>
-            </div>
-            <div class="gallery-item">
-                <img src="https://images.unsplash.com/photo-1571752726703-4e7092110d61?w=1200&q=80" alt="Koi 5">
-                <div class="gallery-caption">
-                    <h3 class="text-2xl font-bold text-white mb-2">流光</h3>
-                    <p class="text-gray-300">时间与水的交织</p>
-                </div>
-            </div>
+    <div class="glass-tank" id="tank">
+        <div class="glass-base"></div>
+        <div class="glass-reflection"></div>
+        <div class="glass-rim"></div>
+        
+        <div class="water-body">
+            <div class="cursor-glow" id="cursorGlow"></div>
+            
+            <svg class="seaweed left-[8%] w-28 h-52 text-emerald-800/30" viewBox="0 0 100 200" style="animation-delay: 0s;">
+                <path d="M50,200 Q15,140 50,90 T45,0" stroke="currentColor" stroke-width="4" fill="none" opacity="0.6"/>
+                <path d="M50,200 Q85,150 50,100 T55,20" stroke="currentColor" stroke-width="3" fill="none" opacity="0.4"/>
+            </svg>
+            
+            <svg class="seaweed left-[22%] w-20 h-40 text-teal-800/25" viewBox="0 0 100 200" style="animation-delay: -2s;">
+                <path d="M50,200 Q25,140 50,80 T55,10" stroke="currentColor" stroke-width="3" fill="none" opacity="0.5"/>
+            </svg>
+            
+            <svg class="seaweed right-[12%] w-32 h-60 text-emerald-900/35" viewBox="0 0 100 200" style="animation-delay: -4s;">
+                <path d="M50,200 Q10,160 50,110 T45,0" stroke="currentColor" stroke-width="5" fill="none" opacity="0.6"/>
+                <path d="M50,200 Q90,140 50,90 T55,30" stroke="currentColor" stroke-width="3" fill="none" opacity="0.4"/>
+                <path d="M50,200 Q30,130 60,80 T40,40" stroke="currentColor" stroke-width="2" fill="none" opacity="0.5"/>
+            </svg>
+            
+            <svg class="seaweed right-[30%] w-16 h-36 text-cyan-900/20" viewBox="0 0 100 200" style="animation-delay: -1s;">
+                <path d="M50,200 Q30,150 50,100 T50,20" stroke="currentColor" stroke-width="3" fill="none" opacity="0.4"/>
+            </svg>
+            
+            <div class="sand"></div>
+            
+            <div id="fishLayer"></div>
+            <div id="foodLayer"></div>
+            <div id="bubbleLayer"></div>
+        </div>
+        
+        <div class="controls">
+            <button class="control-btn" onclick="addFish()">添鱼</button>
+            <button class="control-btn" onclick="feedFish()">投喂</button>
+            <button class="control-btn" onclick="scatterFish()">惊扰</button>
         </div>
     </div>
 
     <script>
-        // 场景设置
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0f172a);
-        scene.fog = new THREE.Fog(0x0f172a, 15, 60);
+        const tank = document.getElementById('tank');
+        const waterBody = tank.querySelector('.water-body');
+        const fishLayer = document.getElementById('fishLayer');
+        const foodLayer = document.getElementById('foodLayer');
+        const bubbleLayer = document.getElementById('bubbleLayer');
+        const cursorGlow = document.getElementById('cursorGlow');
         
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 12, 25);
-        camera.lookAt(0, 0, 0);
+        let fishes = [];
+        let foods = [];
+        let mouseX = 0, mouseY = 0;
+        let isMouseInTank = false;
+        let lastMouseTime = 0;
         
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        document.getElementById('canvas-container').appendChild(renderer.domElement);
+        const fishColors = [
+            { body: '#3b82f6', tail: '#1e3a8a', name: '蓝' },
+            { body: '#10b981', tail: '#064e3b', name: '翠' },
+            { body: '#64748b', tail: '#0f172a', name: '墨' },
+            { body: '#06b6d4', tail: '#164e63', name: '青' },
+            { body: '#8b5cf6', tail: '#4c1d95', name: '紫' },
+            { body: '#f59e0b', tail: '#78350f', name: '金' }
+        ];
         
-        // 灯光
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-        scene.add(ambientLight);
-        
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-        dirLight.position.set(10, 20, 10);
-        scene.add(dirLight);
-        
-        const pointLight = new THREE.PointLight(0x00d4ff, 2, 100);
-        pointLight.position.set(0, 5, 0);
-        scene.add(pointLight);
-        
-        // 水面
-        const waterGeometry = new THREE.PlaneGeometry(100, 100, 64, 64);
-        const waterMaterial = new THREE.MeshBasicMaterial({
-            color: 0x0066cc,
-            transparent: true,
-            opacity: 0.6,
-            side: THREE.DoubleSide
-        });
-        const water = new THREE.Mesh(waterGeometry, waterMaterial);
-        water.rotation.x = -Math.PI / 2;
-        water.position.y = -0.5;
-        scene.add(water);
-        
-        // 水底
-        const floor = new THREE.Mesh(
-            new THREE.PlaneGeometry(100, 100),
-            new THREE.MeshBasicMaterial({ color: 0x001133 })
-        );
-        floor.rotation.x = -Math.PI / 2;
-        floor.position.y = -3;
-        scene.add(floor);
-        
-        // ===== 柳树系统 =====
-        const willows = [];
-        const willowColors = [0x2d5016, 0x3a6318, 0x1e3d0f];
-        
-        function createWillow(x, z, scale = 1) {
-            const group = new THREE.Group();
+        class Fish {
+            constructor(x, y) {
+                this.x = x || (15 + Math.random() * 70);
+                this.y = y || (20 + Math.random() * 60);
+                
+                // 初始角度限制在水平范围（避免竖直）
+                this.angle = (Math.random() - 0.5) * Math.PI * 0.6; // -54度到54度
+                if (Math.random() > 0.5) this.angle += Math.PI; // 一半向左
+                
+                this.speed = 0.8 + Math.random() * 0.6;
+                this.vx = Math.cos(this.angle) * this.speed;
+                this.vy = Math.sin(this.angle) * this.speed;
+                
+                this.targetSpeed = this.speed;
+                this.targetAngle = this.angle;
+                
+                this.maxSpeed = 2.5;
+                this.normalSpeed = 1.0;
+                this.minSpeed = 0.3;
+                this.acceleration = 0.05;
+                this.turnRate = 0.06;
+                this.friction = 0.98;
+                
+                this.size = 0.9 + Math.random() * 0.4;
+                this.color = fishColors[Math.floor(Math.random() * fishColors.length)];
+                this.state = 'cruise';
+                this.stateTimer = 0;
+                
+                // 饥饿系统
+                this.hunger = 0;
+                this.targetFood = null;
+                
+                this.tailPhase = Math.random() * Math.PI * 2;
+                this.bodyPhase = Math.random() * Math.PI * 2;
+                
+                this.element = this.createSVGElement();
+                this.updateTransform();
+            }
             
-            // 树干
-            const trunkGeo = new THREE.CylinderGeometry(0.2 * scale, 0.4 * scale, 8 * scale, 6);
-            const trunkMat = new THREE.MeshBasicMaterial({ color: 0x4a3728 });
-            const trunk = new THREE.Mesh(trunkGeo, trunkMat);
-            trunk.position.y = 4 * scale;
-            group.add(trunk);
+            createSVGElement() {
+                const div = document.createElement('div');
+                div.className = 'fish';
+                div.style.width = '100px';
+                div.style.height = '50px';
+                
+                const svgNS = "http://www.w3.org/2000/svg";
+                const svg = document.createElementNS(svgNS, 'svg');
+                svg.setAttribute('viewBox', '0 0 120 60');
+                svg.style.overflow = 'visible';
+                
+                const defs = document.createElementNS(svgNS, 'defs');
+                const gradId = `grad-${this.color.name}-${Math.floor(Math.random()*1000)}`;
+                defs.innerHTML = `
+                    <linearGradient id="${gradId}" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:${this.color.tail}" />
+                        <stop offset="50%" style="stop-color:${this.color.body}" />
+                        <stop offset="100%" style="stop-color:${this.color.body}" />
+                    </linearGradient>
+                `;
+                svg.appendChild(defs);
+                
+                const tail = document.createElementNS(svgNS, 'path');
+                tail.setAttribute('d', 'M 12,30 Q -8,12 3,30 Q -8,48 12,30');
+                tail.setAttribute('fill', this.color.tail);
+                tail.style.transformOrigin = '12px 30px';
+                this.tailElement = tail;
+                svg.appendChild(tail);
+                
+                const dorsal = document.createElementNS(svgNS, 'path');
+                dorsal.setAttribute('d', 'M 40,16 Q 60,2 80,16');
+                dorsal.setAttribute('fill', this.color.tail);
+                dorsal.setAttribute('opacity', '0.7');
+                svg.appendChild(dorsal);
+                
+                const body = document.createElementNS(svgNS, 'ellipse');
+                body.setAttribute('cx', '62');
+                body.setAttribute('cy', '30');
+                body.setAttribute('rx', '42');
+                body.setAttribute('ry', '24');
+                body.setAttribute('fill', `url(#${gradId})`);
+                this.bodyElement = body;
+                svg.appendChild(body);
+                
+                const scales = document.createElementNS(svgNS, 'g');
+                scales.setAttribute('opacity', '0.2');
+                for(let i=0; i<4; i++) {
+                    for(let j=0; j<2; j++) {
+                        const path = document.createElementNS(svgNS, 'path');
+                        path.setAttribute('d', `M ${40+i*10},${20+j*14} Q ${45+i*10},${27+j*14} ${40+i*10},${34+j*14}`);
+                        path.setAttribute('stroke', 'white');
+                        path.setAttribute('fill', 'none');
+                        scales.appendChild(path);
+                    }
+                }
+                svg.appendChild(scales);
+                
+                const eyeGroup = document.createElementNS(svgNS, 'g');
+                const eyeWhite = document.createElementNS(svgNS, 'circle');
+                eyeWhite.setAttribute('cx', '92');
+                eyeWhite.setAttribute('cy', '20');
+                eyeWhite.setAttribute('r', '6');
+                eyeWhite.setAttribute('fill', 'white');
+                
+                const eyeBlack = document.createElementNS(svgNS, 'circle');
+                eyeBlack.setAttribute('cx', '94');
+                eyeBlack.setAttribute('cy', '20');
+                eyeBlack.setAttribute('r', '3');
+                eyeBlack.setAttribute('fill', '#0f172a');
+                
+                const eyeShine = document.createElementNS(svgNS, 'circle');
+                eyeShine.setAttribute('cx', '95');
+                eyeShine.setAttribute('cy', '19');
+                eyeShine.setAttribute('r', '1.5');
+                eyeShine.setAttribute('fill', 'white');
+                
+                eyeGroup.appendChild(eyeWhite);
+                eyeGroup.appendChild(eyeBlack);
+                eyeGroup.appendChild(eyeShine);
+                svg.appendChild(eyeGroup);
+                
+                div.appendChild(svg);
+                fishLayer.appendChild(div);
+                return div;
+            }
             
-            // 树冠 - 多个枝条
-            const branches = [];
-            for (let i = 0; i < 12; i++) {
-                const branchGroup = new THREE.Group();
-                const angle = (i / 12) * Math.PI * 2;
-                const radius = 2 * scale;
+            update() {
+                // 饥饿增长
+                this.hunger += 0.0005;
                 
-                branchGroup.position.set(
-                    Math.cos(angle) * radius,
-                    7 * scale,
-                    Math.sin(angle) * radius
-                );
-                
-                // 创建下垂的柳条
-                const segments = 8;
-                const branchLinks = [];
-                let currentY = 0;
-                
-                for (let j = 0; j < segments; j++) {
-                    const leafGeo = new THREE.ConeGeometry(0.15 * scale * (1 - j/segments), 0.8 * scale, 4);
-                    leafGeo.rotateX(Math.PI);
-                    const leafMat = new THREE.MeshBasicMaterial({ 
-                        color: willowColors[Math.floor(Math.random() * willowColors.length)],
-                        transparent: true,
-                        opacity: 0.9
+                // 检测食物
+                if (foods.length > 0 && !this.targetFood) {
+                    let nearest = null;
+                    let minDist = Infinity;
+                    foods.forEach(food => {
+                        const dx = food.x - this.x;
+                        const dy = food.y - this.y;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        if (dist < minDist && dist < 35) {
+                            minDist = dist;
+                            nearest = food;
+                        }
                     });
-                    const leaf = new THREE.Mesh(leafGeo, leafMat);
-                    leaf.position.y = currentY;
-                    currentY -= 0.6 * scale;
+                    if (nearest) {
+                        this.targetFood = nearest;
+                        this.state = 'chase';
+                        this.stateTimer = 200;
+                    }
+                }
+                
+                // 状态机
+                this.stateTimer--;
+                if (this.stateTimer <= 0) {
+                    if (this.targetFood) {
+                        this.targetFood = null;
+                    }
+                    this.chooseNewBehavior();
+                }
+                
+                // 执行状态
+                switch(this.state) {
+                    case 'cruise':
+                        this.cruise();
+                        break;
+                    case 'turn':
+                        this.turn();
+                        break;
+                    case 'pause':
+                        this.pause();
+                        break;
+                    case 'dart':
+                        this.dart();
+                        break;
+                    case 'chase':
+                        this.chaseFood();
+                        break;
+                }
+                
+                // 物理更新
+                const currentSpeed = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
+                
+                // 平滑速度过渡
+                if (Math.abs(currentSpeed - this.targetSpeed) > 0.05) {
+                    const speedDiff = this.targetSpeed - currentSpeed;
+                    const adjustment = Math.sign(speedDiff) * Math.min(Math.abs(speedDiff), this.acceleration);
                     
-                    branchGroup.add(leaf);
-                    branchLinks.push({ mesh: leaf, baseRotX: 0, index: j });
+                    if (currentSpeed > 0.01) {
+                        this.vx = (this.vx / currentSpeed) * (currentSpeed + adjustment);
+                        this.vy = (this.vy / currentSpeed) * (currentSpeed + adjustment);
+                    } else {
+                        // 从静止启动
+                        this.vx = Math.cos(this.targetAngle) * (currentSpeed + adjustment);
+                        this.vy = Math.sin(this.targetAngle) * (currentSpeed + adjustment);
+                    }
                 }
                 
-                group.add(branchGroup);
-                branches.push({ group: branchGroup, links: branchLinks, angle: angle });
+                // 平滑转向 - 限制最大转向角度
+                const currentAngle = Math.atan2(this.vy, this.vx);
+                let angleDiff = this.targetAngle - currentAngle;
+                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                
+                // 限制每帧转向角度，避免瞬间掉头
+                const maxTurn = this.turnRate;
+                const turnAmount = Math.max(-maxTurn, Math.min(maxTurn, angleDiff));
+                const newAngle = currentAngle + turnAmount;
+                
+                if (currentSpeed > 0.1) {
+                    this.vx = Math.cos(newAngle) * currentSpeed;
+                    this.vy = Math.sin(newAngle) * currentSpeed;
+                }
+                
+                // 摩擦力
+                this.vx *= this.friction;
+                this.vy *= this.friction;
+                
+                // 边界处理 - 软边界
+                const margin = 8;
+                const softZone = 20;
+                
+                if (this.x < margin) {
+                    const force = Math.min(1, (margin - this.x) / softZone);
+                    this.vx += force * 0.2;
+                    // 限制角度避免竖直
+                    if (this.targetAngle > Math.PI/2 && this.targetAngle < Math.PI) {
+                        this.targetAngle = Math.PI * 0.75;
+                    } else if (this.targetAngle < -Math.PI/2 && this.targetAngle > -Math.PI) {
+                        this.targetAngle = -Math.PI * 0.75;
+                    }
+                } else if (this.x > 92) {
+                    const force = Math.min(1, (this.x - 92) / softZone);
+                    this.vx -= force * 0.2;
+                    if (this.targetAngle > 0 && this.targetAngle < Math.PI/2) {
+                        this.targetAngle = Math.PI * 0.25;
+                    } else if (this.targetAngle < 0 && this.targetAngle > -Math.PI/2) {
+                        this.targetAngle = -Math.PI * 0.25;
+                    }
+                }
+                
+                if (this.y < margin) {
+                    const force = Math.min(1, (margin - this.y) / softZone);
+                    this.vy += force * 0.2;
+                    // 向下转向
+                    if (Math.abs(this.targetAngle) < Math.PI/2) {
+                        this.targetAngle = this.targetAngle > 0 ? Math.PI * 0.25 : -Math.PI * 0.25;
+                    }
+                } else if (this.y > 88) {
+                    const force = Math.min(1, (this.y - 88) / softZone);
+                    this.vy -= force * 0.2;
+                    // 向上转向
+                    if (Math.abs(this.targetAngle) > Math.PI/2) {
+                        this.targetAngle = this.targetAngle > 0 ? Math.PI * 0.75 : -Math.PI * 0.75;
+                    }
+                }
+                
+                // 硬限制
+                this.x = Math.max(3, Math.min(97, this.x));
+                this.y = Math.max(5, Math.min(92, this.y));
+                
+                // 更新位置
+                this.x += this.vx * 0.15;
+                this.y += this.vy * 0.15;
+                
+                // 动画
+                this.animate(currentSpeed);
+                this.updateTransform();
             }
             
-            group.position.set(x, -0.5, z);
-            scene.add(group);
-            
-            return { group, branches, baseX: x, baseZ: z };
-        }
-        
-        // 在池塘边缘种植柳树
-        willows.push(createWillow(-15, -10, 1.2));
-        willows.push(createWillow(-12, -15, 1));
-        willows.push(createWillow(18, -8, 1.3));
-        willows.push(createWillow(15, -12, 0.9));
-        willows.push(createWillow(-20, 5, 1.1));
-        
-        // ===== 荷花系统 =====
-        const lotusFlowers = [];
-        
-        function createLotus(x, z) {
-            const group = new THREE.Group();
-            
-            // 荷叶
-            const leafGeo = new THREE.CylinderGeometry(1.5, 1.5, 0.1, 16);
-            const leafMat = new THREE.MeshBasicMaterial({ color: 0x2d5016 });
-            const leaf = new THREE.Mesh(leafGeo, leafMat);
-            leaf.position.y = -0.4;
-            group.add(leaf);
-            
-            // 荷花
-            const flowerGroup = new THREE.Group();
-            const petalColors = [0xff69b4, 0xffffff, 0xff1493];
-            const color = petalColors[Math.floor(Math.random() * petalColors.length)];
-            
-            for (let i = 0; i < 8; i++) {
-                const angle = (i / 8) * Math.PI * 2;
-                const petalGeo = new THREE.ConeGeometry(0.3, 1, 4);
-                const petalMat = new THREE.MeshBasicMaterial({ color: color });
-                const petal = new THREE.Mesh(petalGeo, petalMat);
+            chooseNewBehavior() {
+                const rand = Math.random();
                 
-                petal.position.set(Math.cos(angle) * 0.4, 0.5, Math.sin(angle) * 0.4);
-                petal.rotation.z = Math.PI / 4;
-                petal.rotation.y = angle;
-                
-                flowerGroup.add(petal);
-            }
-            
-            flowerGroup.position.y = 0.2;
-            group.add(flowerGroup);
-            
-            group.position.set(x, -0.5, z);
-            scene.add(group);
-            
-            return { group, flower: flowerGroup, baseY: -0.5, phase: Math.random() * Math.PI * 2 };
-        }
-        
-        // 添加荷花
-        for (let i = 0; i < 8; i++) {
-            const x = (Math.random() - 0.5) * 25;
-            const z = (Math.random() - 0.5) * 25;
-            lotusFlowers.push(createLotus(x, z));
-        }
-        
-        // ===== 鱼群系统 =====
-        const fishes = [];
-        const fishCount = 20;
-        const fishGroup = new THREE.Group();
-        scene.add(fishGroup);
-        
-        function createFish(color, scale = 1) {
-            const group = new THREE.Group();
-            
-            const bodyGeo = new THREE.ConeGeometry(0.3 * scale, 1.5 * scale, 8);
-            bodyGeo.rotateX(Math.PI / 2);
-            const bodyMat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.9 });
-            const body = new THREE.Mesh(bodyGeo, bodyMat);
-            group.add(body);
-            
-            const tailGeo = new THREE.BufferGeometry();
-            const tailVertices = new Float32Array([
-                0, 0, 0,
-                -0.4 * scale, 0.3 * scale, 0.3 * scale,
-                -0.4 * scale, -0.3 * scale, 0.3 * scale
-            ]);
-            tailGeo.setAttribute('position', new THREE.BufferAttribute(tailVertices, 3));
-            tailGeo.computeVertexNormals();
-            const tailMat = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
-            const tail = new THREE.Mesh(tailGeo, tailMat);
-            tail.position.z = -0.6 * scale;
-            group.add(tail);
-            
-            // 发光外壳
-            const glowGeo = new THREE.ConeGeometry(0.35 * scale, 1.6 * scale, 8);
-            glowGeo.rotateX(Math.PI / 2);
-            const glowMat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.15, side: THREE.BackSide });
-            const glow = new THREE.Mesh(glowGeo, glowMat);
-            group.add(glow);
-            
-            return { mesh: group, tail: tail };
-        }
-        
-        const colors = [0xff6b35, 0xf7931e, 0xffd700, 0xffffff, 0xff4500, 0x00d4ff];
-        for (let i = 0; i < fishCount; i++) {
-            const color = colors[Math.floor(Math.random() * colors.length)];
-            const scale = 0.8 + Math.random() * 0.6;
-            const fishObj = createFish(color, scale);
-            const fish = fishObj.mesh;
-            
-            fish.position.set((Math.random() - 0.5) * 30, -1 + Math.random() * 2, (Math.random() - 0.5) * 30);
-            fish.rotation.y = Math.random() * Math.PI * 2;
-            
-            fish.userData = {
-                speed: 0.03 + Math.random() * 0.04,
-                yOffset: Math.random() * Math.PI * 2,
-                ySpeed: 0.5 + Math.random() * 0.5,
-                tailSpeed: 8 + Math.random() * 4,
-                circleRadius: 5 + Math.random() * 10,
-                circleSpeed: 0.2 + Math.random() * 0.3,
-                angle: Math.random() * Math.PI * 2
-            };
-            
-            fishGroup.add(fish);
-            fishes.push({ mesh: fish, tail: fishObj.tail });
-        }
-        
-        // 主角锦鲤
-        const heroFishObj = createFish(0xffd700, 2.5);
-        const heroFish = heroFishObj.mesh;
-        heroFish.position.set(0, -2, 0);
-        heroFish.visible = false;
-        scene.add(heroFish);
-        
-        // 龙门
-        const gateGroup = new THREE.Group();
-        const pillarGeo = new THREE.CylinderGeometry(0.4, 0.5, 20, 8);
-        const pillarMat = new THREE.MeshBasicMaterial({ color: 0x333333 });
-        
-        const leftPillar = new THREE.Mesh(pillarGeo, pillarMat);
-        leftPillar.position.set(-4, 5, -10);
-        gateGroup.add(leftPillar);
-        
-        const rightPillar = new THREE.Mesh(pillarGeo, pillarMat);
-        rightPillar.position.set(4, 5, -10);
-        gateGroup.add(rightPillar);
-        
-        const beam = new THREE.Mesh(new THREE.BoxGeometry(9, 0.6, 1), pillarMat);
-        beam.position.set(0, 15, -10);
-        gateGroup.add(beam);
-        
-        const ringGeo = new THREE.TorusGeometry(1.5, 0.15, 8, 32);
-        const ringMat = new THREE.MeshBasicMaterial({ color: 0xffd700 });
-        const dragonRing = new THREE.Mesh(ringGeo, ringMat);
-        dragonRing.position.set(0, 15, -10);
-        gateGroup.add(dragonRing);
-        
-        gateGroup.visible = false;
-        scene.add(gateGroup);
-        
-        // 粒子系统
-        const particleCount = 500;
-        const particleGeo = new THREE.BufferGeometry();
-        const particlePositions = new Float32Array(particleCount * 3);
-        for (let i = 0; i < particleCount; i++) {
-            particlePositions[i * 3] = 0;
-            particlePositions[i * 3 + 1] = 0;
-            particlePositions[i * 3 + 2] = 0;
-        }
-        particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-        
-        const particleMat = new THREE.PointsMaterial({
-            color: 0xffd700,
-            size: 0.15,
-            transparent: true,
-            opacity: 0,
-            blending: THREE.AdditiveBlending
-        });
-        const particles = new THREE.Points(particleGeo, particleMat);
-        scene.add(particles);
-        
-        // 水泡
-        const bubbles = [];
-        for (let i = 0; i < 30; i++) {
-            const bubble = new THREE.Mesh(
-                new THREE.SphereGeometry(0.08, 8, 8),
-                new THREE.MeshBasicMaterial({ color: 0x87ceeb, transparent: true, opacity: 0.4 })
-            );
-            bubble.position.set((Math.random() - 0.5) * 40, -2 + Math.random() * 4, (Math.random() - 0.5) * 40);
-            bubble.userData = { speed: 0.02 + Math.random() * 0.03, wobble: Math.random() * Math.PI * 2 };
-            scene.add(bubble);
-            bubbles.push(bubble);
-        }
-        
-        // 龙鳞特效（跃龙门时）
-        const scales = [];
-        const scaleGeo = new THREE.CylinderGeometry(0.1, 0.15, 0.05, 6);
-        const scaleMat = new THREE.MeshBasicMaterial({ color: 0xffd700, transparent: true, opacity: 0.8 });
-        
-        for (let i = 0; i < 50; i++) {
-            const scale = new THREE.Mesh(scaleGeo, scaleMat.clone());
-            scale.visible = false;
-            scene.add(scale);
-            scales.push({ mesh: scale, active: false, velocity: new THREE.Vector3() });
-        }
-        
-        // 状态管理
-        let time = 0;
-        let currentPhase = 'pond';
-        let lastScrollProgress = 0;
-        
-        // GSAP 设置
-        gsap.registerPlugin(ScrollTrigger);
-        
-        // 使用 fromTo 确保可逆动画
-        const titleTl = gsap.timeline({
-            scrollTrigger: {
-                trigger: ".scroll-container",
-                start: "top top",
-                end: "20% top",
-                scrub: true
-            }
-        });
-        
-        titleTl.fromTo(".main-title", 
-            { opacity: 0, y: 50 },
-            { opacity: 1, y: 0, ease: "power2.out" }
-        );
-        
-        titleTl.fromTo(".sub-title",
-            { opacity: 0 },
-            { opacity: 1, ease: "power2.out" },
-            0.1
-        );
-        
-        // 阶段管理 - 使用 onUpdate 检测方向
-        ScrollTrigger.create({
-            trigger: ".scroll-container",
-            start: "top top",
-            end: "bottom bottom",
-            onUpdate: (self) => {
-                const progress = self.progress;
-                const direction = self.direction; // 1 = 向下, -1 = 向上
-                
-                // 隐藏滚动指示器
-                if (progress > 0.05) {
-                    gsap.to("#scrollIndicator", { opacity: 0, duration: 0.3 });
+                if (rand < 0.45) {
+                    // 巡航 - 最常用
+                    this.state = 'cruise';
+                    this.stateTimer = 80 + Math.random() * 120;
+                    this.targetSpeed = this.normalSpeed + (Math.random() - 0.5) * 0.4;
+                    // 小角度调整，保持水平趋势
+                    const currentDir = Math.cos(this.targetAngle) > 0 ? 1 : -1;
+                    this.targetAngle = currentDir * (Math.random() * Math.PI * 0.4);
+                } else if (rand < 0.7) {
+                    // 转向 - 明显改变方向但保持水平
+                    this.state = 'turn';
+                    this.stateTimer = 40 + Math.random() * 50;
+                    this.targetSpeed = this.normalSpeed * 0.8;
+                    // 翻转到另一侧，但限制角度
+                    const currentDir = Math.cos(this.targetAngle) > 0 ? 1 : -1;
+                    this.targetAngle = -currentDir * (Math.PI * 0.3 + Math.random() * 0.3);
+                } else if (rand < 0.85) {
+                    // 停顿
+                    this.state = 'pause';
+                    this.stateTimer = 40 + Math.random() * 80;
+                    this.targetSpeed = 0.1;
                 } else {
-                    gsap.to("#scrollIndicator", { opacity: 1, duration: 0.3 });
+                    // 冲刺 - 快速短距离
+                    this.state = 'dart';
+                    this.stateTimer = 25 + Math.random() * 25;
+                    this.targetSpeed = this.maxSpeed * (0.7 + Math.random() * 0.3);
+                    // 冲刺角度也限制
+                    const currentDir = Math.cos(this.targetAngle) > 0 ? 1 : -1;
+                    this.targetAngle = currentDir * (Math.random() * Math.PI * 0.5);
                 }
-                
-                // 阶段切换
-                if (progress < 0.15) {
-                    if (currentPhase !== 'pond') {
-                        currentPhase = 'pond';
-                        updatePhase('pond', direction);
-                    }
-                } else if (progress < 0.30) {
-                    if (currentPhase !== 'willow') {
-                        currentPhase = 'willow';
-                        updatePhase('willow', direction);
-                    }
-                } else if (progress < 0.45) {
-                    if (currentPhase !== 'lotus') {
-                        currentPhase = 'lotus';
-                        updatePhase('lotus', direction);
-                    }
-                } else if (progress < 0.65) {
-                    if (currentPhase !== 'jump') {
-                        currentPhase = 'jump';
-                        updatePhase('jump', direction);
-                    }
-                } else {
-                    if (currentPhase !== 'gallery') {
-                        currentPhase = 'gallery';
-                        updatePhase('gallery', direction);
-                    }
-                }
-                
-                lastScrollProgress = progress;
             }
-        });
-        
-        function updatePhase(phase, direction) {
-            const title = document.getElementById('mainTitle');
-            const subTitle = document.getElementById('subTitle');
             
-            // 文字动画
-            gsap.to([title, subTitle], {
-                opacity: 0,
-                y: -30,
-                duration: 0.3,
-                onComplete: () => {
-                    switch(phase) {
-                        case 'pond':
-                            title.textContent = '鱼塘';
-                            subTitle.textContent = 'SCROLL TO ASCEND';
-                            break;
-                        case 'willow':
-                            title.textContent = '柳岸';
-                            subTitle.textContent = 'WIND IN THE WILLOWS';
-                            break;
-                        case 'lotus':
-                            title.textContent = '荷塘';
-                            subTitle.textContent = 'LOTUS BLOOMING';
-                            break;
-                        case 'jump':
-                            title.textContent = '跃';
-                            subTitle.textContent = 'THE LEAP';
-                            break;
-                        case 'gallery':
-                            title.textContent = '化龙';
-                            subTitle.textContent = 'GALLERY';
-                            break;
-                    }
+            cruise() {
+                // 偶尔微调
+                if (Math.random() < 0.03) {
+                    this.targetAngle += (Math.random() - 0.5) * 0.2;
+                    // 限制角度范围
+                    this.targetAngle = Math.max(-Math.PI*0.6, Math.min(Math.PI*0.6, this.targetAngle));
+                }
+            }
+            
+            turn() {
+                // 转向中，角度变化在update中处理
+            }
+            
+            pause() {
+                // 轻微漂浮
+                this.targetAngle += Math.sin(Date.now() * 0.001) * 0.02;
+            }
+            
+            dart() {
+                if (this.stateTimer < 10) {
+                    this.targetSpeed *= 0.85;
+                }
+            }
+            
+            chaseFood() {
+                if (!this.targetFood || !document.body.contains(this.targetFood.element)) {
+                    this.targetFood = null;
+                    this.state = 'cruise';
+                    return;
+                }
+                
+                const dx = this.targetFood.x - this.x;
+                const dy = this.targetFood.y - this.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (dist < 5) {
+                    // 吃掉
+                    this.targetFood.element.remove();
+                    foods = foods.filter(f => f !== this.targetFood);
+                    this.targetFood = null;
+                    this.hunger = 0;
+                    this.size = Math.min(this.size * 1.02, 1.5);
+                    this.state = 'pause';
+                    this.stateTimer = 30;
+                    createBubble(this.x, this.y);
+                } else {
+                    // 追向食物
+                    const angle = Math.atan2(dy, dx);
+                    this.targetAngle = angle;
+                    this.targetSpeed = this.maxSpeed * 0.9;
                     
-                    gsap.to([title, subTitle], {
-                        opacity: 1,
-                        y: 0,
-                        duration: 0.3
-                    });
+                    // 限制垂直追逐角度
+                    if (Math.abs(this.targetAngle) > Math.PI * 0.6) {
+                        this.targetAngle = Math.sign(this.targetAngle) * Math.PI * 0.6;
+                    }
                 }
-            });
-            
-            // 3D 场景切换
-            if (phase === 'jump' && direction === 1) {
-                // 向下进入跳跃阶段
-                gateGroup.visible = true;
-                heroFish.visible = true;
-                
-                gsap.to(heroFish.position, {
-                    y: 18,
-                    z: -10,
-                    duration: 1.5,
-                    ease: "power2.inOut"
-                });
-                
-                gsap.to(heroFish.rotation, {
-                    x: -Math.PI / 3,
-                    duration: 1.5,
-                    ease: "power2.inOut"
-                });
-                
-                gsap.to("#dragonGate", { height: "100vh", opacity: 1, duration: 0.5 });
-                gsap.to(particleMat, { opacity: 1, duration: 0.3 });
-                
-                // 触发龙鳞特效
-                triggerScales();
-                
-            } else if (phase === 'jump' && direction === -1) {
-                // 向上返回，重置
-                gsap.to(heroFish.position, { y: -2, z: 0, duration: 0.8 });
-                gsap.to(heroFish.rotation, { x: 0, duration: 0.8 });
-                gsap.to("#dragonGate", { height: 0, opacity: 0, duration: 0.3 });
-                gsap.to(particleMat, { opacity: 0, duration: 0.3 });
-                
-            } else if (phase === 'gallery' && direction === 1) {
-                gsap.to("#gallerySection", { opacity: 1, pointerEvents: "all", duration: 0.5 });
-                gsap.to("#canvas-container", { opacity: 0.2, duration: 0.5 });
-                
-            } else if (phase !== 'gallery' && direction === -1) {
-                // 离开画廊
-                gsap.to("#gallerySection", { opacity: 0, pointerEvents: "none", duration: 0.5 });
-                gsap.to("#canvas-container", { opacity: 1, duration: 0.5 });
             }
             
-            if (phase !== 'jump') {
-                gateGroup.visible = false;
-                heroFish.visible = false;
+            animate(speed) {
+                const baseSpeed = 0.12;
+                const speedFactor = Math.min(speed * 0.12, 0.25);
+                this.tailPhase += baseSpeed + speedFactor;
+                
+                const tailAngle = Math.sin(this.tailPhase) * (12 + speed * 6);
+                this.tailElement.style.transform = `rotate(${tailAngle}deg)`;
+                
+                this.bodyPhase += 0.025;
+                const breath = 1 + Math.sin(this.bodyPhase) * 0.02;
+                this.bodyElement.style.transform = `scale(${breath})`;
+            }
+            
+            updateTransform() {
+                // 计算实际运动角度
+                const velocityAngle = Math.atan2(this.vy, this.vx);
+                const degrees = velocityAngle * 180 / Math.PI;
+                
+                // 确定朝向
+                const facingRight = this.vx >= 0;
+                
+                this.element.style.left = this.x + '%';
+                this.element.style.top = this.y + '%';
+                
+                // 限制旋转角度，避免竖直
+                let displayAngle = degrees;
+                if (facingRight) {
+                    displayAngle = Math.max(-60, Math.min(60, displayAngle));
+                    this.element.style.transform = `
+                        translate(-50%, -50%) 
+                        scale(${this.size}) 
+                        rotate(${displayAngle}deg)
+                    `;
+                } else {
+                    displayAngle = Math.max(-60, Math.min(60, displayAngle));
+                    this.element.style.transform = `
+                        translate(-50%, -50%) 
+                        scale(${-this.size}, ${this.size}) 
+                        rotate(${-displayAngle}deg)
+                    `;
+                }
+            }
+            
+            scatter() {
+                this.targetFood = null;
+                this.state = 'dart';
+                this.stateTimer = 50;
+                this.targetSpeed = this.maxSpeed;
+                this.targetAngle += Math.PI + (Math.random() - 0.5) * 0.5;
+                // 限制惊吓后的角度
+                if (Math.abs(this.targetAngle) > Math.PI * 0.6) {
+                    this.targetAngle = Math.sign(this.targetAngle) * Math.PI * 0.5;
+                }
             }
         }
         
-        function triggerScales() {
-            scales.forEach((scaleData, i) => {
+        // 鼠标特效
+        tank.addEventListener('mousemove', (e) => {
+            const rect = waterBody.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+            mouseY = e.clientY - rect.top;
+            isMouseInTank = true;
+            
+            cursorGlow.style.left = mouseX + 'px';
+            cursorGlow.style.top = mouseY + 'px';
+            
+            const now = Date.now();
+            if (now - lastMouseTime > 60) {
+                createParticle(mouseX, mouseY);
+                lastMouseTime = now;
+            }
+        });
+        
+        tank.addEventListener('mouseleave', () => {
+            isMouseInTank = false;
+            cursorGlow.style.opacity = '0';
+        });
+        
+        tank.addEventListener('mouseenter', () => {
+            cursorGlow.style.opacity = '1';
+        });
+        
+        function createParticle(x, y) {
+            const particle = document.createElement('div');
+            particle.className = 'cursor-particle';
+            particle.style.left = x + 'px';
+            particle.style.top = y + 'px';
+            waterBody.appendChild(particle);
+            setTimeout(() => particle.remove(), 1000);
+        }
+        
+        tank.addEventListener('click', (e) => {
+            const rect = waterBody.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const ripple = document.createElement('div');
+            ripple.className = 'water-ripple';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            waterBody.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 2000);
+        });
+        
+        // 投喂功能
+        function feedFish() {
+            for (let i = 0; i < 5; i++) {
                 setTimeout(() => {
-                    scaleData.mesh.visible = true;
-                    scaleData.mesh.position.set(
-                        (Math.random() - 0.5) * 4,
-                        15,
-                        -10
-                    );
-                    scaleData.velocity.set(
-                        (Math.random() - 0.5) * 0.2,
-                        Math.random() * 0.3,
-                        (Math.random() - 0.5) * 0.2
-                    );
-                    scaleData.active = true;
-                }, i * 50);
-            });
-        }
-        
-        // 画廊滚动
-        gsap.to("#galleryTrack", {
-            x: () => -(document.getElementById("galleryTrack").scrollWidth - window.innerWidth),
-            ease: "none",
-            scrollTrigger: {
-                trigger: ".scroll-container",
-                start: "80% top",
-                end: "bottom bottom",
-                scrub: 1
-            }
-        });
-        
-        // 动画函数
-        function animateWater() {
-            const positions = waterGeometry.attributes.position;
-            for (let i = 0; i < positions.count; i++) {
-                const x = positions.getX(i);
-                const y = positions.getY(i);
-                const wave1 = Math.sin(x * 0.3 + time * 1.5) * 0.3;
-                const wave2 = Math.cos(y * 0.2 + time * 1.2) * 0.3;
-                positions.setZ(i, wave1 + wave2);
-            }
-            positions.needsUpdate = true;
-        }
-        
-        function animateWillows() {
-            willows.forEach((willow, idx) => {
-                willow.branches.forEach(branch => {
-                    const windStrength = 0.1 + Math.sin(time * 0.5 + idx) * 0.05;
-                    branch.links.forEach((link, i) => {
-                        // 柳条随风摆动
-                        link.mesh.rotation.z = Math.sin(time * 2 + branch.angle + i * 0.3) * windStrength * (i + 1) * 0.1;
-                        link.mesh.rotation.x = Math.cos(time * 1.5 + idx) * windStrength * 0.05;
-                    });
-                });
-            });
-        }
-        
-        function animateLotus() {
-            lotusFlowers.forEach((lotus, i) => {
-                // 荷花随水波浮动
-                lotus.group.position.y = lotus.baseY + Math.sin(time * 1.5 + lotus.phase) * 0.1;
-                lotus.group.rotation.y = Math.sin(time * 0.5 + lotus.phase) * 0.05;
-                
-                // 花朵开合
-                const openAmount = 0.8 + Math.sin(time * 0.3 + lotus.phase) * 0.2;
-                lotus.flower.scale.setScalar(openAmount);
-            });
-        }
-        
-        function animateFishes() {
-            fishes.forEach((fishData, i) => {
-                const fish = fishData.mesh;
-                const data = fish.userData;
-                
-                if (currentPhase === 'pond' || currentPhase === 'willow' || currentPhase === 'lotus') {
-                    data.angle += data.circleSpeed * 0.01;
-                    fish.position.x = Math.cos(data.angle) * data.circleRadius;
-                    fish.position.z = Math.sin(data.angle) * data.circleRadius;
-                    fish.rotation.y = -data.angle;
-                    fish.position.y = -1 + Math.sin(time * data.ySpeed + data.yOffset) * 0.5;
-                    fishData.tail.rotation.y = Math.sin(time * data.tailSpeed) * 0.4;
-                } else if (currentPhase === 'jump') {
-                    const dir = fish.position.clone().normalize();
-                    fish.position.add(dir.multiplyScalar(0.08));
-                    fishData.tail.rotation.y = Math.sin(time * 15) * 0.6;
-                }
-            });
-        }
-        
-        function animateScales() {
-            scales.forEach(scaleData => {
-                if (!scaleData.active) return;
-                
-                scaleData.mesh.position.add(scaleData.velocity);
-                scaleData.velocity.y -= 0.01; // 重力
-                scaleData.mesh.rotation.x += 0.1;
-                scaleData.mesh.rotation.z += 0.05;
-                
-                // 淡出
-                scaleData.mesh.material.opacity -= 0.01;
-                
-                if (scaleData.mesh.material.opacity <= 0) {
-                    scaleData.active = false;
-                    scaleData.mesh.visible = false;
-                    scaleData.mesh.material.opacity = 0.8;
-                }
-            });
-        }
-        
-        function animateParticles() {
-            if (particleMat.opacity <= 0.01) return;
-            const positions = particleGeo.attributes.position.array;
-            for (let i = 0; i < particleCount; i++) {
-                const i3 = i * 3;
-                positions[i3] += (Math.random() - 0.5) * 0.3;
-                positions[i3 + 1] += Math.random() * 0.3;
-                positions[i3 + 2] += (Math.random() - 0.5) * 0.3;
-                
-                if (positions[i3 + 1] > 20) {
-                    positions[i3] = 0;
-                    positions[i3 + 1] = 15;
-                    positions[i3 + 2] = -10;
-                }
-            }
-            particleGeo.attributes.position.needsUpdate = true;
-        }
-        
-        function animateBubbles() {
-            bubbles.forEach(bubble => {
-                bubble.position.y += bubble.userData.speed;
-                bubble.position.x += Math.sin(time * 2 + bubble.userData.wobble) * 0.01;
-                if (bubble.position.y > 5) {
-                    bubble.position.y = -3;
-                    bubble.position.x = (Math.random() - 0.5) * 40;
-                    bubble.position.z = (Math.random() - 0.5) * 40;
-                }
-            });
-        }
-        
-        function updateCamera() {
-            if (currentPhase === 'pond') {
-                camera.position.x = Math.sin(time * 0.1) * 3;
-                camera.position.z = 25 + Math.cos(time * 0.1) * 2;
-                camera.lookAt(0, 0, 0);
-            } else if (currentPhase === 'willow') {
-                camera.position.x = -10 + Math.sin(time * 0.2) * 2;
-                camera.position.z = 20;
-                camera.lookAt(-10, 3, 0);
-            } else if (currentPhase === 'lotus') {
-                camera.position.set(0, 6, 15);
-                camera.lookAt(0, 0, 0);
-            } else if (currentPhase === 'jump') {
-                camera.position.z = 25;
-                camera.position.y = 8;
-                camera.lookAt(0, 5, -5);
+                    const food = document.createElement('div');
+                    food.className = 'food-pellet';
+                    
+                    // 随机位置从顶部落下
+                    const startX = 15 + Math.random() * 70;
+                    food.style.left = startX + '%';
+                    food.style.top = '5%';
+                    foodLayer.appendChild(food);
+                    
+                    const foodObj = {
+                        x: startX,
+                        y: 5,
+                        element: food,
+                        vy: 0.2 + Math.random() * 0.15
+                    };
+                    foods.push(foodObj);
+                    
+                    // 食物下沉动画
+                    const sink = () => {
+                        if (!document.body.contains(food)) return;
+                        
+                        foodObj.y += foodObj.vy;
+                        food.style.top = foodObj.y + '%';
+                        
+                        // 轻微摆动
+                        foodObj.x += Math.sin(foodObj.y * 0.1) * 0.1;
+                        food.style.left = foodObj.x + '%';
+                        
+                        if (foodObj.y < 90) {
+                            requestAnimationFrame(sink);
+                        } else {
+                            // 到底部消失
+                            food.style.opacity = '0.3';
+                            setTimeout(() => {
+                                if (document.body.contains(food)) {
+                                    food.remove();
+                                    foods = foods.filter(f => f !== foodObj);
+                                }
+                            }, 2000);
+                        }
+                    };
+                    requestAnimationFrame(sink);
+                }, i * 100);
             }
         }
         
-        function animate() {
+        function createBubble(x, y) {
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            const size = 6 + Math.random() * 10;
+            bubble.style.width = size + 'px';
+            bubble.style.height = size + 'px';
+            bubble.style.left = (x || (10 + Math.random() * 80)) + '%';
+            bubble.style.bottom = y ? (100 - y) + '%' : (5 + Math.random() * 15) + '%';
+            bubble.style.animationDuration = (5 + Math.random() * 4) + 's';
+            bubbleLayer.appendChild(bubble);
+            
+            setTimeout(() => bubble.remove(), 9000);
+        }
+        
+        function addFish() {
+            if (fishes.length < 12) {
+                fishes.push(new Fish());
+            }
+        }
+        
+        function scatterFish() {
+            fishes.forEach(fish => fish.scatter());
+            for(let i=0; i<3; i++) {
+                setTimeout(() => {
+                    const ripple = document.createElement('div');
+                    ripple.className = 'water-ripple';
+                    ripple.style.left = (20 + Math.random() * 60) + '%';
+                    ripple.style.top = (20 + Math.random() * 60) + '%';
+                    waterBody.appendChild(ripple);
+                    setTimeout(() => ripple.remove(), 2000);
+                }, i*100);
+            }
+        }
+        
+        // 初始化
+        function init() {
+            for(let i=0; i<6; i++) {
+                setTimeout(() => fishes.push(new Fish()), i*400);
+            }
+            
+            setInterval(() => createBubble(), 3000);
+            
+            function animate() {
+                fishes.forEach(fish => fish.update());
+                requestAnimationFrame(animate);
+            }
             requestAnimationFrame(animate);
-            time += 0.016;
-            
-            animateWater();
-            animateWillows();
-            animateLotus();
-            animateFishes();
-            animateScales();
-            animateParticles();
-            animateBubbles();
-            updateCamera();
-            
-            dragonRing.rotation.z = time * 0.5;
-            dragonRing.rotation.y = time * 0.2;
-            
-            renderer.render(scene, camera);
         }
         
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-        
-        document.addEventListener('mousemove', (e) => {
-            const mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-            const mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
-            
-            if (currentPhase === 'pond' || currentPhase === 'willow' || currentPhase === 'lotus') {
-                pointLight.position.x = mouseX * 15;
-                pointLight.position.z = -mouseY * 15;
-            }
-        });
-        
-        animate();
-        
-        // 初始相机进入
-        gsap.from(camera.position, {
-            y: 25,
-            z: 40,
-            duration: 2,
-            ease: "power2.out"
-        });
+        init();
     </script>
 </body>
 </html>
