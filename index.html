@@ -1,345 +1,915 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>醉美泸州</title>
-  <link rel="Shortcut Icon" href="./resources/logo_none.png" />
-  <link rel="stylesheet" href="./css/main.css">
-  <link rel="stylesheet" href="./bootstrap-5.1.3/css/bootstrap.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鱼跃龙门 · 数字画卷</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background: #0f172a;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 1;
+        }
+        
+        .scroll-container {
+            position: relative;
+            z-index: 10;
+            height: 500vh; /* 增加高度给更多滚动空间 */
+        }
+        
+        .scroll-section {
+            height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .title-layer {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            pointer-events: none;
+            text-align: center;
+            mix-blend-mode: exclusion;
+        }
+        
+        .main-title {
+            font-size: clamp(3rem, 10vw, 8rem);
+            font-weight: 900;
+            letter-spacing: 0.5em;
+            color: #fff;
+            opacity: 0;
+            transform: translateY(50px);
+            text-shadow: 0 0 30px rgba(0,212,255,0.5);
+        }
+        
+        .sub-title {
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            color: #00d4ff;
+            margin-top: 2rem;
+            letter-spacing: 0.3em;
+            opacity: 0;
+        }
+        
+        .gallery-section {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+            background: #000;
+        }
+        
+        .gallery-track {
+            display: flex;
+            gap: 4rem;
+            padding: 0 10vw;
+            height: 100%;
+            align-items: center;
+            will-change: transform;
+        }
+        
+        .gallery-item {
+            flex-shrink: 0;
+            width: 60vw;
+            height: 70vh;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #333;
+            background: #111;
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(100%) contrast(1.2);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .gallery-item:hover img {
+            filter: grayscale(0%) contrast(1);
+            transform: scale(1.05);
+        }
+        
+        .gallery-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 2rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            transform: translateY(100%);
+            transition: transform 0.4s ease;
+        }
+        
+        .gallery-item:hover .gallery-caption {
+            transform: translateY(0);
+        }
+        
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+        
+        .dragon-gate {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 2px;
+            height: 0;
+            background: #ffd700;
+            box-shadow: 0 0 20px #ffd700, 0 0 40px #ffd700;
+            z-index: 15;
+            opacity: 0;
+        }
+        
+        .scroll-indicator {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+            animation: bounce 2s infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-10px); }
+            60% { transform: translateX(-50%) translateY(-5px); }
+        }
+    </style>
 </head>
-
 <body>
-  <a class="return-top" title="点击返回顶部" style="visibility: visible;"></a>
-  <section id="nav">
-    <!-- navbar-expand-lg -->
-    <nav class="navbar navbar-dark bg-success" id="navbar">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="./index.html">
-          <img class="img-fluid" src="./resources/logo_none.png" alt="醉美泸州">
-        </a>
-        <!-- 这里多一个按钮会挤压 -->
-        <a href="#" class="btn fs-6 text-light" id="btn_senic">
-          景点大全
-        </a>
-        <a href="#" class="btn fs-6 text-light" id="btn_route">
-          旅游路线
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo01"
-          aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
 
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item" id="item_1">
-              <a class="nav-link" href="#">泸州美食</a>
-            </li>
-            <li class="nav-item" id="item_2">
-              <a class="nav-link" href="#">时事政治</a>
-            </li>
-            <li class="nav-item" id="item_3">
-              <a class="nav-link" href="#">购物商城</a>
-            </li>
-          </ul>
-          <form class="d-flex">
-            <input id="input_search" class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-            <!-- <button class="btn btn-outline-light" type="submit">Search</button> -->
-            <div class="dropdown">
-              <button class="btn btn-outline-light dropdown-toggle" type="submit" id="dropdownMenuButton1"
-                data-bs-toggle="dropdown" aria-expanded="false">
-                Search
-              </button>
-              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                <li id="search_1"><a class="dropdown-item" href="#">服务搜索</a></li>
-                <li id="search_2"><a class="dropdown-item" href="#">内容搜索</a></li>
-              </ul>
-            </div>
-          </form>
-        </div>
-      </div>
-    </nav>
-
-
-    <div class="info container mx-auto mt-5 d-none d-lg-block rounded-3" style="border-bottom: 1px solid darkgreen;">
-      <img src="./resources/logo.png" class="img-thumbnail img-fluid" alt="logo">
-      <div class="text-center shadow-sm">
-        <h1 class="text-secondary fw-bold">🐟中国酒城~</h1>
-        <p class="fs-5 text-success">高山仰止，景行行止🐾</p>
-      </div>
-    </div>
-
-
-    <div class="container mt-4 order-lg-2 text-left" id="index_account">
-      <div>
-        <p class="fs-5 fw-bold text-success">了解更多💡</p>
-        <div class="d-grid gap-2 col-6 mx-auto">
-          <button class="btn btn-outline-success bg-gradient" id="account_btn">我的账户</button>
-        </div>
-      </div>
-    </div>
-
-  </section>
-
-  <!-- 右侧标签 -->
-  <main>
-    <iframe class="d-none col-12" id="sub_box" src="" frameborder="0"></iframe>
-    <div class="clearfix" id="main_box">
-      <div class="container-fluid order-lg-1" id="img_box">
-        <div class="row">
-          <div class="p-0">
-            <div id="carouselExampleCaptions" class="carousel slide overflow-hidden" data-bs-ride="carousel">
-              <div class="carousel-indicators">
-                <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="0" class="active"
-                  aria-current="true" aria-label="Slide 1"></button>
-                <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="1"
-                  aria-label="Slide 2"></button>
-                <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="2"
-                  aria-label="Slide 3"></button>
-                <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="3"
-                  aria-label="Slide 3"></button>
-                <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="4"
-                  aria-label="Slide 3"></button>
-                <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="5"
-                  aria-label="Slide 3"></button>
-              </div>
-              <div class="carousel-inner">
-                <div class="carousel-item active">
-                  <img src="./resources/bg001.jpg" class="d-block w-100 img-fluid" alt="...">
-                  <div class="carousel-caption d-none d-md-block text-end">
-                    <h5>清凉一夏</h5>
-                    <p>马光焱 摄</p>
-                  </div>
-                </div>
-                <div class="carousel-item">
-                  <img src="./resources/bg002.jpg" class="d-block w-100" alt="...">
-                  <div class="carousel-caption d-none d-md-block text-end">
-                    <h5>鸡鸣三省大峡谷</h5>
-                    <p>刘莹 摄</p>
-                  </div>
-                </div>
-                <div class="carousel-item">
-                  <img src="./resources/bg003.jpg" class="d-block w-100" alt="...">
-                  <div class="carousel-caption d-none d-md-block text-end">
-                    <h5>苗家美酒敬贵客</h5>
-                    <p>姜永宁 摄</p>
-                  </div>
-                </div>
-                <div class="carousel-item">
-                  <img src="./resources/bg004.jpg" class="d-block w-100" alt="...">
-                  <div class="carousel-caption d-none d-md-block text-end">
-                    <h5>酒城夜色</h5>
-                    <p>黄梦春 摄</p>
-                  </div>
-                </div>
-                <div class="carousel-item">
-                  <img src="./resources/bg005.jpg" class="d-block w-100" alt="...">
-                  <div class="carousel-caption d-none d-md-block text-end">
-                    <h5>田园春意浓</h5>
-                    <p>龙灵 摄</p>
-                  </div>
-                </div>
-                <div class="carousel-item">
-                  <img src="./resources/bg006.jpg" class="d-block w-100" alt="...">
-                  <div class="carousel-caption d-none d-md-block text-end">
-                    <h5>福宝仙境</h5>
-                    <p>王进 摄</p>
-                  </div>
-                </div>
-              </div>
-              <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions"
-                data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-              </button>
-              <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions"
-                data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 小屏登录 登录卡片 -->
-    <div class="container mt-4 text-left" id="index_account_temp">
-      <div>
-        <p class="fs-5 fw-bold text-success">了解更多💡</p>
-        <div class="d-grid gap-2 col-6 mx-auto">
-          <button class="btn btn-outline-success bg-gradient" id="account_btn_temp">我的账户</button>
-        </div>
-      </div>
-    </div>
-
-
-      <br><br>
-      <h2 class="text-center">✨简介✨</h2>
-      <br>
-
-      <div class="container-fluid d-flex gift mb-2 overflow-hidden img_hover">
-        <img src="./resources/gift_1.jpg" class="img-fluid p-3" alt="gift_1" style="width: 50%;">
-        <div class="container">
-          <br><br><br><br>
-          <h3>泸川杯里春光好🥂</h3>
-          <p>
-            始建于明代万历年间的1573国宝窖池群，1996年12月经国务院批准成为行业首家“全国重点文物保护单位”，2013年3月，泸州老窖1619口百年以上酿酒窖池、16个酿酒古作坊及三大天然藏酒洞，一并入选“全国重点文物保护单位”。2006年、2012年相继入选《中国世界文化遗产预备名单》；另外，自元代传承至今的“泸州老窖酒传统酿制技艺”于2006年5月入选首批“国家非物质文化遗产名录”。
-          </p>
-        </div>
-      </div>
-
-      <div class="container-fluid d-flex gift mb-2 overflow-hidden img_hover">
-        <img src="./resources/gift_2.jpg" class="img-fluid p-3" alt="gift_1" style="width: 50%;">
-        <div class="container">
-          <br><br><br><br>
-          <h3>城下人家水上城🌱</h3>
-          <p>
-            泸州这座城市，地处四川、云南、贵州、重庆四省市的交界地带，地理位置特殊，而且，境内河网密集，水系发达，森林众多，气候宜人，是一座宜居的城市。
-          </p>
-        </div>
-      </div>
-
-      <div class="container-fluid d-flex gift mb-2 overflow-hidden img_hover">
-        <img src="./resources/gift_3.jpg" class="img-fluid p-3" alt="gift_1" style="width: 50%;">
-        <div class="container">
-          <br><br><br><br>
-          <h3>浪花淘尽英雄🔥</h3>
-          <p>
-            泸州，也是一座历史文化名城，泸州的历史，可谓源远流长，文化积淀深厚！早在西汉时期，这片土地之上，便设立了江阳侯国，南北朝时期，始更名为泸州。
-          </p>
-          <p>
-            之后的数千年，虽然这里数易其名，但是，最后，还是用了泸州这个名字。
-          </p>
-          <p>
-            我们知道，泸州有3个别称，一个叫做：江阳，一个叫做：酒城，还有一个叫做：江城。
-          </p>
-        </div>
-      </div>
-
-      <!-- 第三方链接 -->
-      <br><br>
-      <h2 class="text-center">🔗友情链接🔗</h2>
-      <br><br><br>
-      <div class="container d-flex flex-row flex-wrap justify-content-around"> 
-        <div class="card mx-auto mb-5" style="width: 18rem;" onclick="window.open('http://www.luzhou.gov.cn/')">
-          <img src="./resources/illustrations/1.png" class="card-img-top" alt="...">
-          <div class="card-body">
-            <p class="card-text text-center">
-              泸州市政府官网
-            </p>
-          </div>
-        </div>
-
-        <div class="card mx-auto mb-5" style="width: 18rem;" onclick="window.open('http://www.luzhou.gov.cn/zw/zfxxgkzn')">
-          <img src="./resources/illustrations/2.png" class="card-img-top" alt="...">
-          <div class="card-body">
-            <p class="card-text text-center">
-              泸州市政府信息公开
-            </p>
-          </div>
-        </div>
-
-        <div class="card mx-auto mb-5" style="width: 18rem;" onclick="window.open('https://data.luzhou.cn/portal/index;jsessionid=8EFE2FCDB3BDDBA18F3B5ED869D8C29A')">
-          <img src="./resources/illustrations/3.png" class="card-img-top" alt="...">
-          <div class="card-body">
-            <p class="card-text text-center">
-              泸州市政府数据开放平台
-            </p>
-          </div>
-        </div>
-
-        <div class="card mx-auto mb-5" style="width: 18rem;" onclick="window.open('http://www.luzhou.gov.cn/zt/zxzt/mxsh')">
-          <img src="./resources/illustrations/4.png" class="card-img-top" alt="...">
-          <div class="card-body">
-            <p class="card-text text-center">
-              泸州市惠民政策一本通
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <br><br><br>
-
-      <!-- 这里放个漂浮的卡片 -->
-      <div class="info_author card mb-3">
-        <div class="row g-0">
-          <div class="col-md-4 h-100">
-            <img src="./resources/author.jpg" alt="fish" class="img-fluid img-thumbnail" style="transition: all 2s;">
-          </div>
-          <span id="info_author_close">X</span>
-          <div class="col-md-8">
-            <div class="card-body">
-              <h5 class="card-title text-success">iFishing>>></h5>
-              <p class="card-text">Fishing is Funny!</p>
-              <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-
-    </div>
-
+    <div class="noise"></div>
     
-
-
-    <!-- 脚注说明 -->
-    <footer>
-      <div class="accordion" id="accordionExample">
-        <div class="accordion-item">
-          <h2 class="accordion-header" id="headingOne">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-              data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-              🎉关于🎉
-            </button>
-          </h2>
-          <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne"
-            data-bs-parent="#accordionExample">
-            <div class="accordion-body">
-              <strong>2022-2023-1学期</strong>
-              <code class="fs-5 d-block">Web前端开发技术课程设计 玉米 202009601322 软件Q201</code>
+    <div id="canvas-container"></div>
+    
+    <div class="title-layer">
+        <h1 class="main-title" id="mainTitle">鱼塘</h1>
+        <p class="sub-title" id="subTitle">SCROLL TO ASCEND</p>
+    </div>
+    
+    <div class="dragon-gate" id="dragonGate"></div>
+    
+    <div class="scroll-indicator" id="scrollIndicator">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M19 12l-7 7-7-7"/>
+        </svg>
+    </div>
+    
+    <div class="scroll-container">
+        <div class="scroll-section" data-phase="pond"></div>
+        <div class="scroll-section" data-phase="willow"></div>
+        <div class="scroll-section" data-phase="lotus"></div>
+        <div class="scroll-section" data-phase="jump"></div>
+        <div class="scroll-section" data-phase="gallery"></div>
+    </div>
+    
+    <div class="gallery-section" id="gallerySection">
+        <div class="gallery-track" id="galleryTrack">
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=1200&q=80" alt="Koi 1">
+                <div class="gallery-caption">
+                    <h3 class="text-2xl font-bold text-white mb-2">锦鲤</h3>
+                    <p class="text-gray-300">水中游动的幸运符</p>
+                </div>
             </div>
-          </div>
-        </div>
-
-        <div class="accordion-item">
-          <h2 class="accordion-header" id="headingTwo">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-              data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-              🎉说明🎉
-            </button>
-          </h2>
-          <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo"
-            data-bs-parent="#accordionExample">
-            <div class="accordion-body">
-              <strong>课程作业</strong>
-              <code class="fs-5 d-block">目前页面实现了响应式，但又没完全实现，还在修改中...</code>
-              <code>页面大部分只是实现了展示功能，其他功能未开发~</code>
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&q=80" alt="Koi 2">
+                <div class="gallery-caption">
+                    <h3 class="text-2xl font-bold text-white mb-2">龙门</h3>
+                    <p class="text-gray-300">跨越界限的瞬间</p>
+                </div>
             </div>
-          </div>
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=1200&q=80" alt="Koi 3">
+                <div class="gallery-caption">
+                    <h3 class="text-2xl font-bold text-white mb-2">化龙</h3>
+                    <p class="text-gray-300">蜕变与重生</p>
+                </div>
+            </div>
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1200&q=80" alt="Koi 4">
+                <div class="gallery-caption">
+                    <h3 class="text-2xl font-bold text-white mb-2">深渊</h3>
+                    <p class="text-gray-300">深邃的未知领域</p>
+                </div>
+            </div>
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1571752726703-4e7092110d61?w=1200&q=80" alt="Koi 5">
+                <div class="gallery-caption">
+                    <h3 class="text-2xl font-bold text-white mb-2">流光</h3>
+                    <p class="text-gray-300">时间与水的交织</p>
+                </div>
+            </div>
         </div>
+    </div>
 
-      </div>
-    </footer>
-
-
-
-
-
-  </main>
-
-
-
-
-
-
-
-  <script src="./jquery/jquery-3.6.1.min.js"></script>
-  <script src="./bootstrap-5.1.3/js/bootstrap.min.js"></script>
-  <script src="./scripts/main.js"></script>
+    <script>
+        // 场景设置
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0f172a);
+        scene.fog = new THREE.Fog(0x0f172a, 15, 60);
+        
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 12, 25);
+        camera.lookAt(0, 0, 0);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+        
+        // 灯光
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+        
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+        dirLight.position.set(10, 20, 10);
+        scene.add(dirLight);
+        
+        const pointLight = new THREE.PointLight(0x00d4ff, 2, 100);
+        pointLight.position.set(0, 5, 0);
+        scene.add(pointLight);
+        
+        // 水面
+        const waterGeometry = new THREE.PlaneGeometry(100, 100, 64, 64);
+        const waterMaterial = new THREE.MeshBasicMaterial({
+            color: 0x0066cc,
+            transparent: true,
+            opacity: 0.6,
+            side: THREE.DoubleSide
+        });
+        const water = new THREE.Mesh(waterGeometry, waterMaterial);
+        water.rotation.x = -Math.PI / 2;
+        water.position.y = -0.5;
+        scene.add(water);
+        
+        // 水底
+        const floor = new THREE.Mesh(
+            new THREE.PlaneGeometry(100, 100),
+            new THREE.MeshBasicMaterial({ color: 0x001133 })
+        );
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = -3;
+        scene.add(floor);
+        
+        // ===== 柳树系统 =====
+        const willows = [];
+        const willowColors = [0x2d5016, 0x3a6318, 0x1e3d0f];
+        
+        function createWillow(x, z, scale = 1) {
+            const group = new THREE.Group();
+            
+            // 树干
+            const trunkGeo = new THREE.CylinderGeometry(0.2 * scale, 0.4 * scale, 8 * scale, 6);
+            const trunkMat = new THREE.MeshBasicMaterial({ color: 0x4a3728 });
+            const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+            trunk.position.y = 4 * scale;
+            group.add(trunk);
+            
+            // 树冠 - 多个枝条
+            const branches = [];
+            for (let i = 0; i < 12; i++) {
+                const branchGroup = new THREE.Group();
+                const angle = (i / 12) * Math.PI * 2;
+                const radius = 2 * scale;
+                
+                branchGroup.position.set(
+                    Math.cos(angle) * radius,
+                    7 * scale,
+                    Math.sin(angle) * radius
+                );
+                
+                // 创建下垂的柳条
+                const segments = 8;
+                const branchLinks = [];
+                let currentY = 0;
+                
+                for (let j = 0; j < segments; j++) {
+                    const leafGeo = new THREE.ConeGeometry(0.15 * scale * (1 - j/segments), 0.8 * scale, 4);
+                    leafGeo.rotateX(Math.PI);
+                    const leafMat = new THREE.MeshBasicMaterial({ 
+                        color: willowColors[Math.floor(Math.random() * willowColors.length)],
+                        transparent: true,
+                        opacity: 0.9
+                    });
+                    const leaf = new THREE.Mesh(leafGeo, leafMat);
+                    leaf.position.y = currentY;
+                    currentY -= 0.6 * scale;
+                    
+                    branchGroup.add(leaf);
+                    branchLinks.push({ mesh: leaf, baseRotX: 0, index: j });
+                }
+                
+                group.add(branchGroup);
+                branches.push({ group: branchGroup, links: branchLinks, angle: angle });
+            }
+            
+            group.position.set(x, -0.5, z);
+            scene.add(group);
+            
+            return { group, branches, baseX: x, baseZ: z };
+        }
+        
+        // 在池塘边缘种植柳树
+        willows.push(createWillow(-15, -10, 1.2));
+        willows.push(createWillow(-12, -15, 1));
+        willows.push(createWillow(18, -8, 1.3));
+        willows.push(createWillow(15, -12, 0.9));
+        willows.push(createWillow(-20, 5, 1.1));
+        
+        // ===== 荷花系统 =====
+        const lotusFlowers = [];
+        
+        function createLotus(x, z) {
+            const group = new THREE.Group();
+            
+            // 荷叶
+            const leafGeo = new THREE.CylinderGeometry(1.5, 1.5, 0.1, 16);
+            const leafMat = new THREE.MeshBasicMaterial({ color: 0x2d5016 });
+            const leaf = new THREE.Mesh(leafGeo, leafMat);
+            leaf.position.y = -0.4;
+            group.add(leaf);
+            
+            // 荷花
+            const flowerGroup = new THREE.Group();
+            const petalColors = [0xff69b4, 0xffffff, 0xff1493];
+            const color = petalColors[Math.floor(Math.random() * petalColors.length)];
+            
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                const petalGeo = new THREE.ConeGeometry(0.3, 1, 4);
+                const petalMat = new THREE.MeshBasicMaterial({ color: color });
+                const petal = new THREE.Mesh(petalGeo, petalMat);
+                
+                petal.position.set(Math.cos(angle) * 0.4, 0.5, Math.sin(angle) * 0.4);
+                petal.rotation.z = Math.PI / 4;
+                petal.rotation.y = angle;
+                
+                flowerGroup.add(petal);
+            }
+            
+            flowerGroup.position.y = 0.2;
+            group.add(flowerGroup);
+            
+            group.position.set(x, -0.5, z);
+            scene.add(group);
+            
+            return { group, flower: flowerGroup, baseY: -0.5, phase: Math.random() * Math.PI * 2 };
+        }
+        
+        // 添加荷花
+        for (let i = 0; i < 8; i++) {
+            const x = (Math.random() - 0.5) * 25;
+            const z = (Math.random() - 0.5) * 25;
+            lotusFlowers.push(createLotus(x, z));
+        }
+        
+        // ===== 鱼群系统 =====
+        const fishes = [];
+        const fishCount = 20;
+        const fishGroup = new THREE.Group();
+        scene.add(fishGroup);
+        
+        function createFish(color, scale = 1) {
+            const group = new THREE.Group();
+            
+            const bodyGeo = new THREE.ConeGeometry(0.3 * scale, 1.5 * scale, 8);
+            bodyGeo.rotateX(Math.PI / 2);
+            const bodyMat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.9 });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            group.add(body);
+            
+            const tailGeo = new THREE.BufferGeometry();
+            const tailVertices = new Float32Array([
+                0, 0, 0,
+                -0.4 * scale, 0.3 * scale, 0.3 * scale,
+                -0.4 * scale, -0.3 * scale, 0.3 * scale
+            ]);
+            tailGeo.setAttribute('position', new THREE.BufferAttribute(tailVertices, 3));
+            tailGeo.computeVertexNormals();
+            const tailMat = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
+            const tail = new THREE.Mesh(tailGeo, tailMat);
+            tail.position.z = -0.6 * scale;
+            group.add(tail);
+            
+            // 发光外壳
+            const glowGeo = new THREE.ConeGeometry(0.35 * scale, 1.6 * scale, 8);
+            glowGeo.rotateX(Math.PI / 2);
+            const glowMat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.15, side: THREE.BackSide });
+            const glow = new THREE.Mesh(glowGeo, glowMat);
+            group.add(glow);
+            
+            return { mesh: group, tail: tail };
+        }
+        
+        const colors = [0xff6b35, 0xf7931e, 0xffd700, 0xffffff, 0xff4500, 0x00d4ff];
+        for (let i = 0; i < fishCount; i++) {
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const scale = 0.8 + Math.random() * 0.6;
+            const fishObj = createFish(color, scale);
+            const fish = fishObj.mesh;
+            
+            fish.position.set((Math.random() - 0.5) * 30, -1 + Math.random() * 2, (Math.random() - 0.5) * 30);
+            fish.rotation.y = Math.random() * Math.PI * 2;
+            
+            fish.userData = {
+                speed: 0.03 + Math.random() * 0.04,
+                yOffset: Math.random() * Math.PI * 2,
+                ySpeed: 0.5 + Math.random() * 0.5,
+                tailSpeed: 8 + Math.random() * 4,
+                circleRadius: 5 + Math.random() * 10,
+                circleSpeed: 0.2 + Math.random() * 0.3,
+                angle: Math.random() * Math.PI * 2
+            };
+            
+            fishGroup.add(fish);
+            fishes.push({ mesh: fish, tail: fishObj.tail });
+        }
+        
+        // 主角锦鲤
+        const heroFishObj = createFish(0xffd700, 2.5);
+        const heroFish = heroFishObj.mesh;
+        heroFish.position.set(0, -2, 0);
+        heroFish.visible = false;
+        scene.add(heroFish);
+        
+        // 龙门
+        const gateGroup = new THREE.Group();
+        const pillarGeo = new THREE.CylinderGeometry(0.4, 0.5, 20, 8);
+        const pillarMat = new THREE.MeshBasicMaterial({ color: 0x333333 });
+        
+        const leftPillar = new THREE.Mesh(pillarGeo, pillarMat);
+        leftPillar.position.set(-4, 5, -10);
+        gateGroup.add(leftPillar);
+        
+        const rightPillar = new THREE.Mesh(pillarGeo, pillarMat);
+        rightPillar.position.set(4, 5, -10);
+        gateGroup.add(rightPillar);
+        
+        const beam = new THREE.Mesh(new THREE.BoxGeometry(9, 0.6, 1), pillarMat);
+        beam.position.set(0, 15, -10);
+        gateGroup.add(beam);
+        
+        const ringGeo = new THREE.TorusGeometry(1.5, 0.15, 8, 32);
+        const ringMat = new THREE.MeshBasicMaterial({ color: 0xffd700 });
+        const dragonRing = new THREE.Mesh(ringGeo, ringMat);
+        dragonRing.position.set(0, 15, -10);
+        gateGroup.add(dragonRing);
+        
+        gateGroup.visible = false;
+        scene.add(gateGroup);
+        
+        // 粒子系统
+        const particleCount = 500;
+        const particleGeo = new THREE.BufferGeometry();
+        const particlePositions = new Float32Array(particleCount * 3);
+        for (let i = 0; i < particleCount; i++) {
+            particlePositions[i * 3] = 0;
+            particlePositions[i * 3 + 1] = 0;
+            particlePositions[i * 3 + 2] = 0;
+        }
+        particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+        
+        const particleMat = new THREE.PointsMaterial({
+            color: 0xffd700,
+            size: 0.15,
+            transparent: true,
+            opacity: 0,
+            blending: THREE.AdditiveBlending
+        });
+        const particles = new THREE.Points(particleGeo, particleMat);
+        scene.add(particles);
+        
+        // 水泡
+        const bubbles = [];
+        for (let i = 0; i < 30; i++) {
+            const bubble = new THREE.Mesh(
+                new THREE.SphereGeometry(0.08, 8, 8),
+                new THREE.MeshBasicMaterial({ color: 0x87ceeb, transparent: true, opacity: 0.4 })
+            );
+            bubble.position.set((Math.random() - 0.5) * 40, -2 + Math.random() * 4, (Math.random() - 0.5) * 40);
+            bubble.userData = { speed: 0.02 + Math.random() * 0.03, wobble: Math.random() * Math.PI * 2 };
+            scene.add(bubble);
+            bubbles.push(bubble);
+        }
+        
+        // 龙鳞特效（跃龙门时）
+        const scales = [];
+        const scaleGeo = new THREE.CylinderGeometry(0.1, 0.15, 0.05, 6);
+        const scaleMat = new THREE.MeshBasicMaterial({ color: 0xffd700, transparent: true, opacity: 0.8 });
+        
+        for (let i = 0; i < 50; i++) {
+            const scale = new THREE.Mesh(scaleGeo, scaleMat.clone());
+            scale.visible = false;
+            scene.add(scale);
+            scales.push({ mesh: scale, active: false, velocity: new THREE.Vector3() });
+        }
+        
+        // 状态管理
+        let time = 0;
+        let currentPhase = 'pond';
+        let lastScrollProgress = 0;
+        
+        // GSAP 设置
+        gsap.registerPlugin(ScrollTrigger);
+        
+        // 使用 fromTo 确保可逆动画
+        const titleTl = gsap.timeline({
+            scrollTrigger: {
+                trigger: ".scroll-container",
+                start: "top top",
+                end: "20% top",
+                scrub: true
+            }
+        });
+        
+        titleTl.fromTo(".main-title", 
+            { opacity: 0, y: 50 },
+            { opacity: 1, y: 0, ease: "power2.out" }
+        );
+        
+        titleTl.fromTo(".sub-title",
+            { opacity: 0 },
+            { opacity: 1, ease: "power2.out" },
+            0.1
+        );
+        
+        // 阶段管理 - 使用 onUpdate 检测方向
+        ScrollTrigger.create({
+            trigger: ".scroll-container",
+            start: "top top",
+            end: "bottom bottom",
+            onUpdate: (self) => {
+                const progress = self.progress;
+                const direction = self.direction; // 1 = 向下, -1 = 向上
+                
+                // 隐藏滚动指示器
+                if (progress > 0.05) {
+                    gsap.to("#scrollIndicator", { opacity: 0, duration: 0.3 });
+                } else {
+                    gsap.to("#scrollIndicator", { opacity: 1, duration: 0.3 });
+                }
+                
+                // 阶段切换
+                if (progress < 0.15) {
+                    if (currentPhase !== 'pond') {
+                        currentPhase = 'pond';
+                        updatePhase('pond', direction);
+                    }
+                } else if (progress < 0.30) {
+                    if (currentPhase !== 'willow') {
+                        currentPhase = 'willow';
+                        updatePhase('willow', direction);
+                    }
+                } else if (progress < 0.45) {
+                    if (currentPhase !== 'lotus') {
+                        currentPhase = 'lotus';
+                        updatePhase('lotus', direction);
+                    }
+                } else if (progress < 0.65) {
+                    if (currentPhase !== 'jump') {
+                        currentPhase = 'jump';
+                        updatePhase('jump', direction);
+                    }
+                } else {
+                    if (currentPhase !== 'gallery') {
+                        currentPhase = 'gallery';
+                        updatePhase('gallery', direction);
+                    }
+                }
+                
+                lastScrollProgress = progress;
+            }
+        });
+        
+        function updatePhase(phase, direction) {
+            const title = document.getElementById('mainTitle');
+            const subTitle = document.getElementById('subTitle');
+            
+            // 文字动画
+            gsap.to([title, subTitle], {
+                opacity: 0,
+                y: -30,
+                duration: 0.3,
+                onComplete: () => {
+                    switch(phase) {
+                        case 'pond':
+                            title.textContent = '鱼塘';
+                            subTitle.textContent = 'SCROLL TO ASCEND';
+                            break;
+                        case 'willow':
+                            title.textContent = '柳岸';
+                            subTitle.textContent = 'WIND IN THE WILLOWS';
+                            break;
+                        case 'lotus':
+                            title.textContent = '荷塘';
+                            subTitle.textContent = 'LOTUS BLOOMING';
+                            break;
+                        case 'jump':
+                            title.textContent = '跃';
+                            subTitle.textContent = 'THE LEAP';
+                            break;
+                        case 'gallery':
+                            title.textContent = '化龙';
+                            subTitle.textContent = 'GALLERY';
+                            break;
+                    }
+                    
+                    gsap.to([title, subTitle], {
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.3
+                    });
+                }
+            });
+            
+            // 3D 场景切换
+            if (phase === 'jump' && direction === 1) {
+                // 向下进入跳跃阶段
+                gateGroup.visible = true;
+                heroFish.visible = true;
+                
+                gsap.to(heroFish.position, {
+                    y: 18,
+                    z: -10,
+                    duration: 1.5,
+                    ease: "power2.inOut"
+                });
+                
+                gsap.to(heroFish.rotation, {
+                    x: -Math.PI / 3,
+                    duration: 1.5,
+                    ease: "power2.inOut"
+                });
+                
+                gsap.to("#dragonGate", { height: "100vh", opacity: 1, duration: 0.5 });
+                gsap.to(particleMat, { opacity: 1, duration: 0.3 });
+                
+                // 触发龙鳞特效
+                triggerScales();
+                
+            } else if (phase === 'jump' && direction === -1) {
+                // 向上返回，重置
+                gsap.to(heroFish.position, { y: -2, z: 0, duration: 0.8 });
+                gsap.to(heroFish.rotation, { x: 0, duration: 0.8 });
+                gsap.to("#dragonGate", { height: 0, opacity: 0, duration: 0.3 });
+                gsap.to(particleMat, { opacity: 0, duration: 0.3 });
+                
+            } else if (phase === 'gallery' && direction === 1) {
+                gsap.to("#gallerySection", { opacity: 1, pointerEvents: "all", duration: 0.5 });
+                gsap.to("#canvas-container", { opacity: 0.2, duration: 0.5 });
+                
+            } else if (phase !== 'gallery' && direction === -1) {
+                // 离开画廊
+                gsap.to("#gallerySection", { opacity: 0, pointerEvents: "none", duration: 0.5 });
+                gsap.to("#canvas-container", { opacity: 1, duration: 0.5 });
+            }
+            
+            if (phase !== 'jump') {
+                gateGroup.visible = false;
+                heroFish.visible = false;
+            }
+        }
+        
+        function triggerScales() {
+            scales.forEach((scaleData, i) => {
+                setTimeout(() => {
+                    scaleData.mesh.visible = true;
+                    scaleData.mesh.position.set(
+                        (Math.random() - 0.5) * 4,
+                        15,
+                        -10
+                    );
+                    scaleData.velocity.set(
+                        (Math.random() - 0.5) * 0.2,
+                        Math.random() * 0.3,
+                        (Math.random() - 0.5) * 0.2
+                    );
+                    scaleData.active = true;
+                }, i * 50);
+            });
+        }
+        
+        // 画廊滚动
+        gsap.to("#galleryTrack", {
+            x: () => -(document.getElementById("galleryTrack").scrollWidth - window.innerWidth),
+            ease: "none",
+            scrollTrigger: {
+                trigger: ".scroll-container",
+                start: "80% top",
+                end: "bottom bottom",
+                scrub: 1
+            }
+        });
+        
+        // 动画函数
+        function animateWater() {
+            const positions = waterGeometry.attributes.position;
+            for (let i = 0; i < positions.count; i++) {
+                const x = positions.getX(i);
+                const y = positions.getY(i);
+                const wave1 = Math.sin(x * 0.3 + time * 1.5) * 0.3;
+                const wave2 = Math.cos(y * 0.2 + time * 1.2) * 0.3;
+                positions.setZ(i, wave1 + wave2);
+            }
+            positions.needsUpdate = true;
+        }
+        
+        function animateWillows() {
+            willows.forEach((willow, idx) => {
+                willow.branches.forEach(branch => {
+                    const windStrength = 0.1 + Math.sin(time * 0.5 + idx) * 0.05;
+                    branch.links.forEach((link, i) => {
+                        // 柳条随风摆动
+                        link.mesh.rotation.z = Math.sin(time * 2 + branch.angle + i * 0.3) * windStrength * (i + 1) * 0.1;
+                        link.mesh.rotation.x = Math.cos(time * 1.5 + idx) * windStrength * 0.05;
+                    });
+                });
+            });
+        }
+        
+        function animateLotus() {
+            lotusFlowers.forEach((lotus, i) => {
+                // 荷花随水波浮动
+                lotus.group.position.y = lotus.baseY + Math.sin(time * 1.5 + lotus.phase) * 0.1;
+                lotus.group.rotation.y = Math.sin(time * 0.5 + lotus.phase) * 0.05;
+                
+                // 花朵开合
+                const openAmount = 0.8 + Math.sin(time * 0.3 + lotus.phase) * 0.2;
+                lotus.flower.scale.setScalar(openAmount);
+            });
+        }
+        
+        function animateFishes() {
+            fishes.forEach((fishData, i) => {
+                const fish = fishData.mesh;
+                const data = fish.userData;
+                
+                if (currentPhase === 'pond' || currentPhase === 'willow' || currentPhase === 'lotus') {
+                    data.angle += data.circleSpeed * 0.01;
+                    fish.position.x = Math.cos(data.angle) * data.circleRadius;
+                    fish.position.z = Math.sin(data.angle) * data.circleRadius;
+                    fish.rotation.y = -data.angle;
+                    fish.position.y = -1 + Math.sin(time * data.ySpeed + data.yOffset) * 0.5;
+                    fishData.tail.rotation.y = Math.sin(time * data.tailSpeed) * 0.4;
+                } else if (currentPhase === 'jump') {
+                    const dir = fish.position.clone().normalize();
+                    fish.position.add(dir.multiplyScalar(0.08));
+                    fishData.tail.rotation.y = Math.sin(time * 15) * 0.6;
+                }
+            });
+        }
+        
+        function animateScales() {
+            scales.forEach(scaleData => {
+                if (!scaleData.active) return;
+                
+                scaleData.mesh.position.add(scaleData.velocity);
+                scaleData.velocity.y -= 0.01; // 重力
+                scaleData.mesh.rotation.x += 0.1;
+                scaleData.mesh.rotation.z += 0.05;
+                
+                // 淡出
+                scaleData.mesh.material.opacity -= 0.01;
+                
+                if (scaleData.mesh.material.opacity <= 0) {
+                    scaleData.active = false;
+                    scaleData.mesh.visible = false;
+                    scaleData.mesh.material.opacity = 0.8;
+                }
+            });
+        }
+        
+        function animateParticles() {
+            if (particleMat.opacity <= 0.01) return;
+            const positions = particleGeo.attributes.position.array;
+            for (let i = 0; i < particleCount; i++) {
+                const i3 = i * 3;
+                positions[i3] += (Math.random() - 0.5) * 0.3;
+                positions[i3 + 1] += Math.random() * 0.3;
+                positions[i3 + 2] += (Math.random() - 0.5) * 0.3;
+                
+                if (positions[i3 + 1] > 20) {
+                    positions[i3] = 0;
+                    positions[i3 + 1] = 15;
+                    positions[i3 + 2] = -10;
+                }
+            }
+            particleGeo.attributes.position.needsUpdate = true;
+        }
+        
+        function animateBubbles() {
+            bubbles.forEach(bubble => {
+                bubble.position.y += bubble.userData.speed;
+                bubble.position.x += Math.sin(time * 2 + bubble.userData.wobble) * 0.01;
+                if (bubble.position.y > 5) {
+                    bubble.position.y = -3;
+                    bubble.position.x = (Math.random() - 0.5) * 40;
+                    bubble.position.z = (Math.random() - 0.5) * 40;
+                }
+            });
+        }
+        
+        function updateCamera() {
+            if (currentPhase === 'pond') {
+                camera.position.x = Math.sin(time * 0.1) * 3;
+                camera.position.z = 25 + Math.cos(time * 0.1) * 2;
+                camera.lookAt(0, 0, 0);
+            } else if (currentPhase === 'willow') {
+                camera.position.x = -10 + Math.sin(time * 0.2) * 2;
+                camera.position.z = 20;
+                camera.lookAt(-10, 3, 0);
+            } else if (currentPhase === 'lotus') {
+                camera.position.set(0, 6, 15);
+                camera.lookAt(0, 0, 0);
+            } else if (currentPhase === 'jump') {
+                camera.position.z = 25;
+                camera.position.y = 8;
+                camera.lookAt(0, 5, -5);
+            }
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.016;
+            
+            animateWater();
+            animateWillows();
+            animateLotus();
+            animateFishes();
+            animateScales();
+            animateParticles();
+            animateBubbles();
+            updateCamera();
+            
+            dragonRing.rotation.z = time * 0.5;
+            dragonRing.rotation.y = time * 0.2;
+            
+            renderer.render(scene, camera);
+        }
+        
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            const mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+            const mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+            
+            if (currentPhase === 'pond' || currentPhase === 'willow' || currentPhase === 'lotus') {
+                pointLight.position.x = mouseX * 15;
+                pointLight.position.z = -mouseY * 15;
+            }
+        });
+        
+        animate();
+        
+        // 初始相机进入
+        gsap.from(camera.position, {
+            y: 25,
+            z: 40,
+            duration: 2,
+            ease: "power2.out"
+        });
+    </script>
 </body>
-
 </html>
