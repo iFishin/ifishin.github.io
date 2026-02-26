@@ -7,24 +7,23 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500&display=swap');
-        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
         body {
             font-family: 'Noto Serif SC', serif;
             background-color: #f0fdf4;
-            min-height: 100vh;
             overflow: hidden;
             position: relative;
             display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            width: 100vw;
             align-items: center;
             justify-content: center;
         }
-        
         .paper-texture {
             position: fixed;
             top: 0;
@@ -36,7 +35,6 @@
             pointer-events: none;
             z-index: 1;
         }
-        
         .ink-wash {
             position: absolute;
             border-radius: 50%;
@@ -44,14 +42,61 @@
             opacity: 0.08;
             pointer-events: none;
         }
-        
         .glass-tank {
             position: relative;
-            width: 50vw;
+            width: 80vw;
             height: 60vh;
-            min-width: 600px;
-            min-height: 500px;
             z-index: 10;
+            margin: 0 auto;
+            transition: width 0.3s, height 0.3s, min-width 0.3s, min-height 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        /* 移动端适配 */
+        @media (max-width: 900px) {
+            html, body {
+                height: 100%;
+            }
+            body {
+                height: 100vh;
+                width: 100vw;
+                display: flex;
+                flex-direction: column;
+                align-items: center !important;
+                justify-content: center !important;
+                padding: 0;
+            }
+            .glass-tank {
+                height: 70vh;
+                margin: 0 auto;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+            .title {
+                top: 16px;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 1.2rem;
+                letter-spacing: 0.2em;
+                text-align: center;
+            }
+            .controls {
+                position: fixed;
+                bottom: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                gap: 16px;
+                z-index: 30;
+            }
+            .control-btn {
+                padding: 10px 20px;
+                font-size: 12px;
+            }
         }
         
         .glass-base {
@@ -305,46 +350,36 @@
 </head>
 <body>
     <div class="paper-texture"></div>
-    
     <div class="ink-wash w-[600px] h-[600px] bg-emerald-800 -top-32 -left-32"></div>
     <div class="ink-wash w-[500px] h-[500px] bg-blue-900 -bottom-32 -right-32"></div>
-    
     <div class="title">观鱼</div>
-    
+    <!-- 移动端底部按钮已集成在.controls，无需侧边栏按钮和菜单 -->
     <div class="glass-tank" id="tank">
         <div class="glass-base"></div>
         <div class="glass-reflection"></div>
         <div class="glass-rim"></div>
-        
         <div class="water-body">
             <div class="cursor-glow" id="cursorGlow"></div>
-            
             <svg class="seaweed left-[8%] w-28 h-52 text-emerald-800/30" viewBox="0 0 100 200" style="animation-delay: 0s;">
                 <path d="M50,200 Q15,140 50,90 T45,0" stroke="currentColor" stroke-width="4" fill="none" opacity="0.6"/>
                 <path d="M50,200 Q85,150 50,100 T55,20" stroke="currentColor" stroke-width="3" fill="none" opacity="0.4"/>
             </svg>
-            
             <svg class="seaweed left-[22%] w-20 h-40 text-teal-800/25" viewBox="0 0 100 200" style="animation-delay: -2s;">
                 <path d="M50,200 Q25,140 50,80 T55,10" stroke="currentColor" stroke-width="3" fill="none" opacity="0.5"/>
             </svg>
-            
             <svg class="seaweed right-[12%] w-32 h-60 text-emerald-900/35" viewBox="0 0 100 200" style="animation-delay: -4s;">
                 <path d="M50,200 Q10,160 50,110 T45,0" stroke="currentColor" stroke-width="5" fill="none" opacity="0.6"/>
                 <path d="M50,200 Q90,140 50,90 T55,30" stroke="currentColor" stroke-width="3" fill="none" opacity="0.4"/>
                 <path d="M50,200 Q30,130 60,80 T40,40" stroke="currentColor" stroke-width="2" fill="none" opacity="0.5"/>
             </svg>
-            
             <svg class="seaweed right-[30%] w-16 h-36 text-cyan-900/20" viewBox="0 0 100 200" style="animation-delay: -1s;">
                 <path d="M50,200 Q30,150 50,100 T50,20" stroke="currentColor" stroke-width="3" fill="none" opacity="0.4"/>
             </svg>
-            
             <div class="sand"></div>
-            
             <div id="fishLayer"></div>
             <div id="foodLayer"></div>
             <div id="bubbleLayer"></div>
         </div>
-        
         <div class="controls">
             <button class="control-btn" onclick="addFish()">添鱼</button>
             <button class="control-btn" onclick="feedFish()">投喂</button>
@@ -353,6 +388,7 @@
     </div>
 
     <script>
+                // 移动端底部按钮，无需侧边栏功能
         const tank = document.getElementById('tank');
         const waterBody = tank.querySelector('.water-body');
         const fishLayer = document.getElementById('fishLayer');
@@ -561,22 +597,32 @@
                     this.chooseBehavior();
                     this.behaviorTimer = 0;
                 }
-                
+
                 // 快速判断食物（每3帧检查一次）
                 if (foods.length > 0 && this.behaviorTimer % 3 === 0 && !this.targetFood) {
                     this.findNearestFood();
                 }
-                
+
                 // 随机鱼主动争抢食物
                 if (foods.length > 0 && this.behaviorTimer % 15 === 0) {
                     this.tryRandomFoodHunt();
                 }
-                
+
                 // 清理已消失的食物
                 if (this.targetFood && !document.body.contains(this.targetFood.element)) {
                     this.targetFood = null;
                 }
-                
+
+                // 生动性增强：偶尔小幅度上下浮动
+                if (this.behavior === 'wander' && Math.random() < 0.04) {
+                    this.targetVy += (Math.random() - 0.5) * 0.5;
+                }
+                // 生动性增强：偶尔突然加速
+                if (Math.random() < 0.01) {
+                    this.targetVx += (Math.random() - 0.5) * 1.2;
+                    this.targetVy += (Math.random() - 0.5) * 1.2;
+                }
+
                 // 根据行为执行动作
                 switch(this.behavior) {
                     case 'wander':
@@ -592,7 +638,7 @@
                         this.restBehavior();
                         break;
                 }
-                
+
                 // 应用避免力
                 if (this.behaviorTimer % 5 === 0) {
                     this.updateAvoidance();
@@ -600,37 +646,40 @@
                     this.avoidForce.x *= 0.9;
                     this.avoidForce.y *= 0.9;
                 }
-                
+
                 // 速度平滑
                 this.targetVx += this.avoidForce.x;
                 this.targetVy += this.avoidForce.y;
-                
+
+                // 下游时速度提升
+                let vyBoost = 1;
+                if (this.targetVy > 0.2) vyBoost = 1.25;
                 // 限制速度不超过最大值
-                const targetSpeed = Math.sqrt(this.targetVx * this.targetVx + this.targetVy * this.targetVy);
-                if (targetSpeed > this.maxSpeed) {
-                    this.targetVx = (this.targetVx / targetSpeed) * this.maxSpeed;
-                    this.targetVy = (this.targetVy / targetSpeed) * this.maxSpeed;
+                let targetSpeed = Math.sqrt(this.targetVx * this.targetVx + this.targetVy * this.targetVy);
+                if (targetSpeed > this.maxSpeed * vyBoost) {
+                    this.targetVx = (this.targetVx / targetSpeed) * this.maxSpeed * vyBoost;
+                    this.targetVy = (this.targetVy / targetSpeed) * this.maxSpeed * vyBoost;
                 }
-                
+
                 // 速度缓和平滑 - 关键优化点
-                this.vx += (this.targetVx - this.vx) * 0.08;
-                this.vy += (this.targetVy - this.vy) * 0.08;
-                
+                this.vx += (this.targetVx - this.vx) * 0.10;
+                this.vy += (this.targetVy - this.vy) * 0.10;
+
                 // 应用阻力
                 this.vx *= this.dragCoeff;
                 this.vy *= this.dragCoeff;
-                
+
                 // 边界检测和反弹
                 this.handleBoundaries();
-                
+
                 // 位置更新
-                this.x += this.vx * 0.12;
-                this.y += this.vy * 0.12;
-                
+                this.x += this.vx * 0.13;
+                this.y += this.vy * 0.13;
+
                 // 限制位置在范围内
                 this.x = Math.max(2, Math.min(98, this.x));
                 this.y = Math.max(5, Math.min(93, this.y));
-                
+
                 // 更新动画和视觉
                 this.updateAnimation();
                 this.updateTransform();
@@ -1051,7 +1100,7 @@
                             food.remove();
                             foods = foods.filter(f => f !== foodObj);
                         }
-                    }, 2000);
+                    }, 8000); // 停留8秒再消失
                 }
             };
             requestAnimationFrame(sink);
@@ -1156,7 +1205,7 @@
                                     food.remove();
                                     foods = foods.filter(f => f !== foodObj);
                                 }
-                            }, 1500 + Math.random() * 1000);
+                            }, 3500 + Math.random() * 1500); // 停留3.5~5秒
                         }
                     };
                     requestAnimationFrame(sink);
