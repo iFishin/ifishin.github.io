@@ -57,15 +57,17 @@
         .glass-base {
             position: absolute;
             inset: 0;
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(30px) saturate(180%);
-            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.15));
+            backdrop-filter: blur(40px) saturate(200%);
+            -webkit-backdrop-filter: blur(40px) saturate(200%);
             border-radius: 40px;
-            border: 1px solid rgba(255, 255, 255, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.8);
             box-shadow: 
-                0 40px 80px -20px rgba(0, 0, 0, 0.15),
-                inset 0 0 0 1px rgba(255, 255, 255, 0.8),
-                inset 0 0 120px rgba(255, 255, 255, 0.4);
+                0 50px 100px -25px rgba(0, 0, 0, 0.2),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.95),
+                inset 0 0 60px 10px rgba(255, 255, 255, 0.3),
+                inset -20px -20px 60px rgba(0, 0, 0, 0.05),
+                inset 20px 20px 60px rgba(255, 255, 255, 0.5);
         }
         
         .glass-reflection {
@@ -84,15 +86,15 @@
             width: 200%;
             height: 200%;
             background: linear-gradient(
-                45deg,
-                transparent 40%,
-                rgba(255, 255, 255, 0.4) 45%,
-                rgba(255, 255, 255, 0.6) 50%,
-                rgba(255, 255, 255, 0.4) 55%,
-                transparent 60%
+                120deg,
+                transparent 30%,
+                rgba(255, 255, 255, 0.5) 40%,
+                rgba(255, 255, 255, 0.8) 50%,
+                rgba(255, 255, 255, 0.5) 60%,
+                transparent 70%
             );
             transform: translateX(-100%);
-            animation: glassShine 8s ease-in-out infinite;
+            animation: glassShine 6s ease-in-out infinite;
         }
         
         @keyframes glassShine {
@@ -105,8 +107,9 @@
             inset: 0;
             border-radius: 40px;
             box-shadow: 
-                inset 0 2px 4px rgba(255, 255, 255, 0.9),
-                inset 0 -2px 4px rgba(0, 0, 0, 0.05);
+                inset 0 3px 6px rgba(255, 255, 255, 1),
+                inset 0 -3px 8px rgba(0, 0, 0, 0.08),
+                inset 0 1px 2px rgba(255, 255, 255, 0.7);
             pointer-events: none;
         }
         
@@ -186,6 +189,11 @@
             z-index: 15;
             filter: drop-shadow(0 8px 16px rgba(0,0,0,0.12));
             will-change: transform;
+            transition: filter 0.3s ease;
+        }
+        
+        .fish.excited {
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.12)) brightness(1.1);
         }
         
         .bubble {
@@ -369,41 +377,52 @@
         
         class Fish {
             constructor(x, y) {
-                this.x = x || (15 + Math.random() * 70);
-                this.y = y || (20 + Math.random() * 60);
+                this.x = x || (12 + Math.random() * 76);
+                this.y = y || (15 + Math.random() * 65);
                 
-                // 初始角度限制在水平范围（避免竖直）
-                this.angle = (Math.random() - 0.5) * Math.PI * 0.6; // -54度到54度
-                if (Math.random() > 0.5) this.angle += Math.PI; // 一半向左
+                // 初始速度向量 - 随机化
+                this.vx = (Math.random() - 0.5) * (1.0 + Math.random() * 0.6);
+                this.vy = (Math.random() - 0.5) * (0.3 + Math.random() * 0.3);
                 
-                this.speed = 0.8 + Math.random() * 0.6;
-                this.vx = Math.cos(this.angle) * this.speed;
-                this.vy = Math.sin(this.angle) * this.speed;
+                // 目标速度和角度
+                this.targetVx = this.vx;
+                this.targetVy = this.vy;
+                this.baseTurnAmount = 0.04;
                 
-                this.targetSpeed = this.speed;
-                this.targetAngle = this.angle;
+                // 参数调优 - 每条鱼都有微妙不同
+                this.maxSpeed = 2.5 + Math.random() * 0.8;
+                this.normalSpeed = 0.8 + Math.random() * 0.4;
+                this.dragCoeff = 0.92 + Math.random() * 0.04;  // 阻力系数随机化
                 
-                this.maxSpeed = 2.5;
-                this.normalSpeed = 1.0;
-                this.minSpeed = 0.3;
-                this.acceleration = 0.05;
-                this.turnRate = 0.06;
-                this.friction = 0.98;
-                
-                this.size = 0.9 + Math.random() * 0.4;
+                this.size = 0.8 + Math.random() * 0.4;
                 this.color = fishColors[Math.floor(Math.random() * fishColors.length)];
-                this.state = 'cruise';
-                this.stateTimer = 0;
                 
-                // 饥饿系统
+                // 状态管理 - 简化版本
+                this.behavior = 'wander';
+                this.behaviorTimer = 0;
+                this.nextBehaviorTime = 50 + Math.random() * 130;
+                
+                // 目标系统
                 this.hunger = 0;
                 this.targetFood = null;
+                this.targetFoodDist = Infinity;
                 
+                // 避免系统
+                this.avoidForce = { x: 0, y: 0 };
+                this.lastAvoidCheck = 0;
+                
+                // 动画参数 - 初始化时随机
                 this.tailPhase = Math.random() * Math.PI * 2;
                 this.bodyPhase = Math.random() * Math.PI * 2;
+                this.eyePhase = Math.random() * Math.PI * 2;
+                
+                // 眼睛眨眼系统 - 新增
+                this.eyeBlinkTimer = 0;
+                this.eyeBlinkDuration = 0;
+                this.nextBlinkTime = 60 + Math.random() * 180; // 眨眼间隔
+                this.isBlinking = false;
                 
                 this.element = this.createSVGElement();
-                this.updateTransform();
             }
             
             createSVGElement() {
@@ -428,19 +447,46 @@
                 `;
                 svg.appendChild(defs);
                 
+                // 尾鳍 - 更灵活的设计
                 const tail = document.createElementNS(svgNS, 'path');
-                tail.setAttribute('d', 'M 12,30 Q -8,12 3,30 Q -8,48 12,30');
+                tail.setAttribute('d', 'M 10,30 Q -5,15 2,30 Q -8,45 10,30 Z');
                 tail.setAttribute('fill', this.color.tail);
-                tail.style.transformOrigin = '12px 30px';
+                tail.style.transformOrigin = '10px 30px';
                 this.tailElement = tail;
                 svg.appendChild(tail);
                 
+                // 背鳍 - 可以摆动
                 const dorsal = document.createElementNS(svgNS, 'path');
-                dorsal.setAttribute('d', 'M 40,16 Q 60,2 80,16');
+                dorsal.setAttribute('d', 'M 35,14 Q 50,2 70,14 L 65,25 Q 50,18 40,25 Z');
                 dorsal.setAttribute('fill', this.color.tail);
-                dorsal.setAttribute('opacity', '0.7');
+                dorsal.setAttribute('opacity', '0.8');
+                dorsal.style.transformOrigin = '52px 20px';
+                this.dorsalElement = dorsal;
                 svg.appendChild(dorsal);
                 
+                // 胸鳍（左）
+                const pectoralLeft = document.createElementNS(svgNS, 'path');
+                pectoralLeft.setAttribute('d', 'M 45,38 Q 35,42 38,52');
+                pectoralLeft.setAttribute('stroke', this.color.tail);
+                pectoralLeft.setAttribute('stroke-width', '2');
+                pectoralLeft.setAttribute('fill', 'none');
+                pectoralLeft.setAttribute('opacity', '0.6');
+                pectoralLeft.style.transformOrigin = '45px 38px';
+                this.pectoralLeftElement = pectoralLeft;
+                svg.appendChild(pectoralLeft);
+                
+                // 胸鳍（右）
+                const pectoralRight = document.createElementNS(svgNS, 'path');
+                pectoralRight.setAttribute('d', 'M 45,22 Q 35,18 38,8');
+                pectoralRight.setAttribute('stroke', this.color.tail);
+                pectoralRight.setAttribute('stroke-width', '2');
+                pectoralRight.setAttribute('fill', 'none');
+                pectoralRight.setAttribute('opacity', '0.6');
+                pectoralRight.style.transformOrigin = '45px 22px';
+                this.pectoralRightElement = pectoralRight;
+                svg.appendChild(pectoralRight);
+                
+                // 身体
                 const body = document.createElementNS(svgNS, 'ellipse');
                 body.setAttribute('cx', '62');
                 body.setAttribute('cy', '30');
@@ -450,8 +496,9 @@
                 this.bodyElement = body;
                 svg.appendChild(body);
                 
+                // 鳞片
                 const scales = document.createElementNS(svgNS, 'g');
-                scales.setAttribute('opacity', '0.2');
+                scales.setAttribute('opacity', '0.15');
                 for(let i=0; i<4; i++) {
                     for(let j=0; j<2; j++) {
                         const path = document.createElementNS(svgNS, 'path');
@@ -463,18 +510,23 @@
                 }
                 svg.appendChild(scales);
                 
+                // 眼睛组
                 const eyeGroup = document.createElementNS(svgNS, 'g');
+                this.eyeGroup = eyeGroup;
+                
                 const eyeWhite = document.createElementNS(svgNS, 'circle');
                 eyeWhite.setAttribute('cx', '92');
                 eyeWhite.setAttribute('cy', '20');
                 eyeWhite.setAttribute('r', '6');
                 eyeWhite.setAttribute('fill', 'white');
+                this.eyeWhite = eyeWhite;
                 
                 const eyeBlack = document.createElementNS(svgNS, 'circle');
                 eyeBlack.setAttribute('cx', '94');
                 eyeBlack.setAttribute('cy', '20');
                 eyeBlack.setAttribute('r', '3');
                 eyeBlack.setAttribute('fill', '#0f172a');
+                this.eyeBlack = eyeBlack;
                 
                 const eyeShine = document.createElementNS(svgNS, 'circle');
                 eyeShine.setAttribute('cx', '95');
@@ -487,216 +539,279 @@
                 eyeGroup.appendChild(eyeShine);
                 svg.appendChild(eyeGroup);
                 
+                // 嘴
+                const mouth = document.createElementNS(svgNS, 'path');
+                mouth.setAttribute('d', 'M 105,32 Q 108,30 105,28');
+                mouth.setAttribute('stroke', '#0f172a');
+                mouth.setAttribute('stroke-width', '1.5');
+                mouth.setAttribute('fill', 'none');
+                mouth.setAttribute('opacity', '0.4');
+                this.mouthElement = mouth;
+                svg.appendChild(mouth);
+                
                 div.appendChild(svg);
                 fishLayer.appendChild(div);
                 return div;
             }
             
             update() {
-                // 饥饿增长
-                this.hunger += 0.0005;
-                
-                // 检测食物
-                if (foods.length > 0 && !this.targetFood) {
-                    let nearest = null;
-                    let minDist = Infinity;
-                    foods.forEach(food => {
-                        const dx = food.x - this.x;
-                        const dy = food.y - this.y;
-                        const dist = Math.sqrt(dx*dx + dy*dy);
-                        if (dist < minDist && dist < 35) {
-                            minDist = dist;
-                            nearest = food;
-                        }
-                    });
-                    if (nearest) {
-                        this.targetFood = nearest;
-                        this.state = 'chase';
-                        this.stateTimer = 200;
-                    }
+                // 状态管理
+                this.behaviorTimer++;
+                if (this.behaviorTimer >= this.nextBehaviorTime) {
+                    this.chooseBehavior();
+                    this.behaviorTimer = 0;
                 }
                 
-                // 状态机
-                this.stateTimer--;
-                if (this.stateTimer <= 0) {
-                    if (this.targetFood) {
-                        this.targetFood = null;
-                    }
-                    this.chooseNewBehavior();
+                // 快速判断食物（每3帧检查一次）
+                if (foods.length > 0 && this.behaviorTimer % 3 === 0 && !this.targetFood) {
+                    this.findNearestFood();
                 }
                 
-                // 执行状态
-                switch(this.state) {
-                    case 'cruise':
-                        this.cruise();
+                // 随机鱼主动争抢食物
+                if (foods.length > 0 && this.behaviorTimer % 15 === 0) {
+                    this.tryRandomFoodHunt();
+                }
+                
+                // 清理已消失的食物
+                if (this.targetFood && !document.body.contains(this.targetFood.element)) {
+                    this.targetFood = null;
+                }
+                
+                // 根据行为执行动作
+                switch(this.behavior) {
+                    case 'wander':
+                        this.wanderBehavior();
                         break;
-                    case 'turn':
-                        this.turn();
+                    case 'hunt':
+                        this.huntBehavior();
                         break;
-                    case 'pause':
-                        this.pause();
+                    case 'flee':
+                        this.fleeBehavior();
                         break;
-                    case 'dart':
-                        this.dart();
-                        break;
-                    case 'chase':
-                        this.chaseFood();
+                    case 'rest':
+                        this.restBehavior();
                         break;
                 }
                 
-                // 物理更新
-                const currentSpeed = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
-                
-                // 平滑速度过渡
-                if (Math.abs(currentSpeed - this.targetSpeed) > 0.05) {
-                    const speedDiff = this.targetSpeed - currentSpeed;
-                    const adjustment = Math.sign(speedDiff) * Math.min(Math.abs(speedDiff), this.acceleration);
-                    
-                    if (currentSpeed > 0.01) {
-                        this.vx = (this.vx / currentSpeed) * (currentSpeed + adjustment);
-                        this.vy = (this.vy / currentSpeed) * (currentSpeed + adjustment);
-                    } else {
-                        // 从静止启动
-                        this.vx = Math.cos(this.targetAngle) * (currentSpeed + adjustment);
-                        this.vy = Math.sin(this.targetAngle) * (currentSpeed + adjustment);
-                    }
+                // 应用避免力
+                if (this.behaviorTimer % 5 === 0) {
+                    this.updateAvoidance();
+                } else {
+                    this.avoidForce.x *= 0.9;
+                    this.avoidForce.y *= 0.9;
                 }
                 
-                // 平滑转向 - 限制最大转向角度
-                const currentAngle = Math.atan2(this.vy, this.vx);
-                let angleDiff = this.targetAngle - currentAngle;
-                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-                while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                // 速度平滑
+                this.targetVx += this.avoidForce.x;
+                this.targetVy += this.avoidForce.y;
                 
-                // 限制每帧转向角度，避免瞬间掉头
-                const maxTurn = this.turnRate;
-                const turnAmount = Math.max(-maxTurn, Math.min(maxTurn, angleDiff));
-                const newAngle = currentAngle + turnAmount;
-                
-                if (currentSpeed > 0.1) {
-                    this.vx = Math.cos(newAngle) * currentSpeed;
-                    this.vy = Math.sin(newAngle) * currentSpeed;
+                // 限制速度不超过最大值
+                const targetSpeed = Math.sqrt(this.targetVx * this.targetVx + this.targetVy * this.targetVy);
+                if (targetSpeed > this.maxSpeed) {
+                    this.targetVx = (this.targetVx / targetSpeed) * this.maxSpeed;
+                    this.targetVy = (this.targetVy / targetSpeed) * this.maxSpeed;
                 }
                 
-                // 摩擦力
-                this.vx *= this.friction;
-                this.vy *= this.friction;
+                // 速度缓和平滑 - 关键优化点
+                this.vx += (this.targetVx - this.vx) * 0.08;
+                this.vy += (this.targetVy - this.vy) * 0.08;
                 
-                // 边界处理 - 软边界
-                const margin = 8;
-                const softZone = 20;
+                // 应用阻力
+                this.vx *= this.dragCoeff;
+                this.vy *= this.dragCoeff;
                 
-                if (this.x < margin) {
-                    const force = Math.min(1, (margin - this.x) / softZone);
-                    this.vx += force * 0.2;
-                    // 限制角度避免竖直
-                    if (this.targetAngle > Math.PI/2 && this.targetAngle < Math.PI) {
-                        this.targetAngle = Math.PI * 0.75;
-                    } else if (this.targetAngle < -Math.PI/2 && this.targetAngle > -Math.PI) {
-                        this.targetAngle = -Math.PI * 0.75;
-                    }
-                } else if (this.x > 92) {
-                    const force = Math.min(1, (this.x - 92) / softZone);
-                    this.vx -= force * 0.2;
-                    if (this.targetAngle > 0 && this.targetAngle < Math.PI/2) {
-                        this.targetAngle = Math.PI * 0.25;
-                    } else if (this.targetAngle < 0 && this.targetAngle > -Math.PI/2) {
-                        this.targetAngle = -Math.PI * 0.25;
-                    }
-                }
+                // 边界检测和反弹
+                this.handleBoundaries();
                 
-                if (this.y < margin) {
-                    const force = Math.min(1, (margin - this.y) / softZone);
-                    this.vy += force * 0.2;
-                    // 向下转向
-                    if (Math.abs(this.targetAngle) < Math.PI/2) {
-                        this.targetAngle = this.targetAngle > 0 ? Math.PI * 0.25 : -Math.PI * 0.25;
-                    }
-                } else if (this.y > 88) {
-                    const force = Math.min(1, (this.y - 88) / softZone);
-                    this.vy -= force * 0.2;
-                    // 向上转向
-                    if (Math.abs(this.targetAngle) > Math.PI/2) {
-                        this.targetAngle = this.targetAngle > 0 ? Math.PI * 0.75 : -Math.PI * 0.75;
-                    }
-                }
+                // 位置更新
+                this.x += this.vx * 0.12;
+                this.y += this.vy * 0.12;
                 
-                // 硬限制
-                this.x = Math.max(3, Math.min(97, this.x));
-                this.y = Math.max(5, Math.min(92, this.y));
+                // 限制位置在范围内
+                this.x = Math.max(2, Math.min(98, this.x));
+                this.y = Math.max(5, Math.min(93, this.y));
                 
-                // 更新位置
-                this.x += this.vx * 0.15;
-                this.y += this.vy * 0.15;
-                
-                // 动画
-                this.animate(currentSpeed);
+                // 更新动画和视觉
+                this.updateAnimation();
                 this.updateTransform();
             }
             
-            chooseNewBehavior() {
-                const rand = Math.random();
+            findNearestFood() {
+                let nearest = null;
+                let minDist = Infinity;
+                // 随机化搜索范围
+                const searchRadius = 28 + Math.random() * 15;
                 
-                if (rand < 0.45) {
-                    // 巡航 - 最常用
-                    this.state = 'cruise';
-                    this.stateTimer = 80 + Math.random() * 120;
-                    this.targetSpeed = this.normalSpeed + (Math.random() - 0.5) * 0.4;
-                    // 小角度调整，保持水平趋势
-                    const currentDir = Math.cos(this.targetAngle) > 0 ? 1 : -1;
-                    this.targetAngle = currentDir * (Math.random() * Math.PI * 0.4);
-                } else if (rand < 0.7) {
-                    // 转向 - 明显改变方向但保持水平
-                    this.state = 'turn';
-                    this.stateTimer = 40 + Math.random() * 50;
-                    this.targetSpeed = this.normalSpeed * 0.8;
-                    // 翻转到另一侧，但限制角度
-                    const currentDir = Math.cos(this.targetAngle) > 0 ? 1 : -1;
-                    this.targetAngle = -currentDir * (Math.PI * 0.3 + Math.random() * 0.3);
-                } else if (rand < 0.85) {
-                    // 停顿
-                    this.state = 'pause';
-                    this.stateTimer = 40 + Math.random() * 80;
-                    this.targetSpeed = 0.1;
+                for (let i = 0; i < foods.length; i++) {
+                    const food = foods[i];
+                    // 检查食物是否已被其他鱼目标锁定
+                    const isFoodTaken = fishes.some(f => f.targetFood === food && f !== this);
+                    
+                    const dx = food.x - this.x;
+                    const dy = food.y - this.y;
+                    const dist = dx*dx + dy*dy;
+                    
+                    // 如果食物被占用，需要更近才会尝试竞争
+                    const effectiveRadius = isFoodTaken ? searchRadius * 0.6 : searchRadius;
+                    
+                    if (dist < minDist && dist < effectiveRadius * effectiveRadius) {
+                        minDist = dist;
+                        nearest = food;
+                    }
+                }
+                
+                if (nearest) {
+                    this.targetFood = nearest;
+                    this.targetFoodDist = Math.sqrt(minDist);
+                }
+            }
+            
+            // 随机争抢食物 - 即使不是最近的鱼也可能去争抢
+            tryRandomFoodHunt() {
+                if (foods.length === 0 || Math.random() > 0.15) return; // 15%概率
+                
+                // 随机选择一个食物
+                const randomFood = foods[Math.floor(Math.random() * foods.length)];
+                const dx = randomFood.x - this.x;
+                const dy = randomFood.y - this.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                // 只在一定范围内才会去
+                if (dist < 40 + Math.random() * 20) {
+                    this.targetFood = randomFood;
+                    this.targetFoodDist = dist;
+                    this.behavior = 'hunt';
+                    this.nextBehaviorTime = 180 + Math.random() * 100;
+                }
+            }
+            
+            updateAvoidance() {
+                this.avoidForce.x = 0;
+                this.avoidForce.y = 0;
+                
+                let count = 0;
+                const avoidRadius = 12 + Math.random() * 6;
+                const avoidRadiusSq = avoidRadius * avoidRadius;
+                
+                for (let i = 0; i < fishes.length; i++) {
+                    const other = fishes[i];
+                    if (other === this) continue;
+                    
+                    const dx = other.x - this.x;
+                    const dy = other.y - this.y;
+                    const distSq = dx*dx + dy*dy;
+                    
+                    if (distSq < avoidRadiusSq && distSq > 0.1) {
+                        const dist = Math.sqrt(distSq);
+                        const force = (avoidRadius - dist) / avoidRadius;
+                        const forceStrengthX = 0.12 + Math.random() * 0.08;
+                        const forceStrengthY = 0.1 + Math.random() * 0.06;
+                        this.avoidForce.x -= (dx / dist) * force * forceStrengthX;
+                        this.avoidForce.y -= (dy / dist) * force * forceStrengthY;
+                        count++;
+                    }
+                }
+            }
+            
+            handleBoundaries() {
+                const hardMargin = 1.5;
+                const softMargin = 12;
+                const turnZone = 20;
+                
+                // 当鱼进入转向区域时，立即改变行为方向而不是持续施加推力
+                let needsTurn = false;
+                let turnX = 0, turnY = 0;
+                
+                if (this.x < softMargin) {
+                    needsTurn = true;
+                    turnX = 1;
+                    // 改变目标速度方向，向右移动
+                    this.targetVx = Math.abs(this.targetVx) + (Math.random() - 0.5) * 0.3;
+                } else if (this.x > 100 - softMargin) {
+                    needsTurn = true;
+                    turnX = -1;
+                    // 改变目标速度方向，向左移动
+                    this.targetVx = -Math.abs(this.targetVx) - (Math.random() - 0.5) * 0.3;
+                }
+                
+                if (this.y < softMargin) {
+                    needsTurn = true;
+                    turnY = 1;
+                    // 改变目标速度方向，向下移动
+                    this.targetVy = Math.abs(this.targetVy) + (Math.random() - 0.5) * 0.2;
+                } else if (this.y > 95 - softMargin) {
+                    needsTurn = true;
+                    turnY = -1;
+                    // 改变目标速度方向，向上移动
+                    this.targetVy = -Math.abs(this.targetVy) - (Math.random() - 0.5) * 0.2;
+                }
+                
+                // 触发转向行为
+                if (needsTurn && (this.behavior !== 'flee' && this.behavior !== 'hunt')) {
+                    this.behavior = 'flee';
+                    this.nextBehaviorTime = 30 + Math.random() * 40;
+                }
+                
+                // 硬限制 - 一旦超出范围立即回弹
+                if (this.x < hardMargin) {
+                    this.x = hardMargin;
+                    this.vx = Math.abs(this.vx) * 0.6;
+                } else if (this.x > 100 - hardMargin) {
+                    this.x = 100 - hardMargin;
+                    this.vx = -Math.abs(this.vx) * 0.6;
+                }
+                
+                if (this.y < hardMargin) {
+                    this.y = hardMargin;
+                    this.vy = Math.abs(this.vy) * 0.6;
+                } else if (this.y > 95 - hardMargin) {
+                    this.y = 95 - hardMargin;
+                    this.vy = -Math.abs(this.vy) * 0.6;
+                }
+            }
+            
+            chooseBehavior() {
+                // 随机化决策
+                if (this.targetFood && this.targetFoodDist < 28 + Math.random() * 8) {
+                    this.behavior = 'hunt';
+                    this.nextBehaviorTime = 150 + Math.random() * 120;
                 } else {
-                    // 冲刺 - 快速短距离
-                    this.state = 'dart';
-                    this.stateTimer = 25 + Math.random() * 25;
-                    this.targetSpeed = this.maxSpeed * (0.7 + Math.random() * 0.3);
-                    // 冲刺角度也限制
-                    const currentDir = Math.cos(this.targetAngle) > 0 ? 1 : -1;
-                    this.targetAngle = currentDir * (Math.random() * Math.PI * 0.5);
+                    const rand = Math.random();
+                    if (rand < 0.55 + Math.random() * 0.1) {
+                        this.behavior = 'wander';
+                        this.nextBehaviorTime = 60 + Math.random() * 150;
+                    } else if (rand < 0.85 + Math.random() * 0.1) {
+                        this.behavior = 'rest';
+                        this.nextBehaviorTime = 30 + Math.random() * 100;
+                    } else {
+                        this.behavior = 'flee';
+                        this.nextBehaviorTime = 20 + Math.random() * 60;
+                    }
                 }
             }
             
-            cruise() {
-                // 偶尔微调
-                if (Math.random() < 0.03) {
-                    this.targetAngle += (Math.random() - 0.5) * 0.2;
-                    // 限制角度范围
-                    this.targetAngle = Math.max(-Math.PI*0.6, Math.min(Math.PI*0.6, this.targetAngle));
+            wanderBehavior() {
+                // 缓慢改变方向 - 更随机化
+                const changeFreq = 15 + Math.random() * 25;
+                if (this.behaviorTimer % changeFreq === 0) {
+                    const angleVariation = (Math.random() - 0.5) * (0.3 + Math.random() * 0.3);
+                    const currentAngle = Math.atan2(this.vy, this.vx);
+                    const newAngle = currentAngle + angleVariation;
+                    
+                    const speed = Math.sqrt(this.targetVx * this.targetVx + this.targetVy * this.targetVy);
+                    const newSpeed = Math.max(
+                        0.3 + Math.random() * 0.2, 
+                        Math.min(this.normalSpeed + Math.random() * 0.3, speed + (Math.random() - 0.5) * 0.4)
+                    );
+                    
+                    this.targetVx = Math.cos(newAngle) * newSpeed;
+                    this.targetVy = Math.sin(newAngle) * newSpeed;
                 }
             }
             
-            turn() {
-                // 转向中，角度变化在update中处理
-            }
-            
-            pause() {
-                // 轻微漂浮
-                this.targetAngle += Math.sin(Date.now() * 0.001) * 0.02;
-            }
-            
-            dart() {
-                if (this.stateTimer < 10) {
-                    this.targetSpeed *= 0.85;
-                }
-            }
-            
-            chaseFood() {
-                if (!this.targetFood || !document.body.contains(this.targetFood.element)) {
-                    this.targetFood = null;
-                    this.state = 'cruise';
+            huntBehavior() {
+                if (!this.targetFood) {
+                    this.behavior = 'wander';
                     return;
                 }
                 
@@ -704,84 +819,140 @@
                 const dy = this.targetFood.y - this.y;
                 const dist = Math.sqrt(dx*dx + dy*dy);
                 
-                if (dist < 5) {
+                // 吃掉食物的检测范围随机化
+                const eatDistance = 2.5 + Math.random() * 1;
+                
+                if (dist < eatDistance) {
                     // 吃掉
                     this.targetFood.element.remove();
                     foods = foods.filter(f => f !== this.targetFood);
                     this.targetFood = null;
-                    this.hunger = 0;
-                    this.size = Math.min(this.size * 1.02, 1.5);
-                    this.state = 'pause';
-                    this.stateTimer = 30;
+                    this.size = Math.min(this.size * (1.008 + Math.random() * 0.004), 1.35);
                     createBubble(this.x, this.y);
+                    this.behavior = 'rest';
+                    this.nextBehaviorTime = 25 + Math.random() * 50;
                 } else {
-                    // 追向食物
-                    const angle = Math.atan2(dy, dx);
-                    this.targetAngle = angle;
-                    this.targetSpeed = this.maxSpeed * 0.9;
-                    
-                    // 限制垂直追逐角度
-                    if (Math.abs(this.targetAngle) > Math.PI * 0.6) {
-                        this.targetAngle = Math.sign(this.targetAngle) * Math.PI * 0.6;
-                    }
+                    // 追逐
+                    const targetAngle = Math.atan2(dy, dx);
+                    const huntSpeed = this.maxSpeed * (0.75 + Math.random() * 0.2);
+                    this.targetVx = Math.cos(targetAngle) * huntSpeed;
+                    this.targetVy = Math.sin(targetAngle) * huntSpeed * (0.6 + Math.random() * 0.2);
                 }
             }
             
-            animate(speed) {
-                const baseSpeed = 0.12;
-                const speedFactor = Math.min(speed * 0.12, 0.25);
-                this.tailPhase += baseSpeed + speedFactor;
+            restBehavior() {
+                // 缓慢减速 - 加入随机的微调
+                const decelFactor = 0.88 + Math.random() * 0.06;
+                this.targetVx *= decelFactor;
+                this.targetVy *= decelFactor;
+            }
+            
+            fleeBehavior() {
+                // 快速移动 - 第一帧设定方向，之后维持
+                if (this.behaviorTimer === 0) {
+                    const angle = (Math.random() - 0.5) * Math.PI * (0.8 + Math.random() * 0.4);
+                    const fleeSpeed = this.maxSpeed * (0.75 + Math.random() * 0.3);
+                    this.targetVx = Math.cos(angle) * fleeSpeed;
+                    this.targetVy = Math.sin(angle) * fleeSpeed * (0.5 + Math.random() * 0.3);
+                }
+            }
+            
+            updateAnimation() {
+                const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
                 
-                const tailAngle = Math.sin(this.tailPhase) * (12 + speed * 6);
+                // 尾巴摆动 - 随机化参数
+                this.tailPhase += (0.1 + Math.random() * 0.04) + speed * (0.08 + Math.random() * 0.04);
+                const tailAngle = Math.sin(this.tailPhase) * (8 + speed * (5 + Math.random() * 2));
                 this.tailElement.style.transform = `rotate(${tailAngle}deg)`;
                 
-                this.bodyPhase += 0.025;
-                const breath = 1 + Math.sin(this.bodyPhase) * 0.02;
+                // 身体呼吸 - 随机幅度
+                this.bodyPhase += 0.015 + Math.random() * 0.008;
+                const breath = 1 + Math.sin(this.bodyPhase) * (0.015 + Math.random() * 0.01);
                 this.bodyElement.style.transform = `scale(${breath})`;
+                
+                // 背鳍
+                const dorsalAngle = Math.sin(this.tailPhase * (0.45 + Math.random() * 0.1)) * (5 + Math.random() * 2);
+                this.dorsalElement.style.transform = `rotate(${dorsalAngle}deg)`;
+                
+                // 胸鳍
+                const pectoralAngle = Math.sin(this.bodyPhase + speed) * (12 + speed * 4 + Math.random() * 5);
+                this.pectoralLeftElement.style.transform = `rotate(${pectoralAngle}deg)`;
+                this.pectoralRightElement.style.transform = `rotate(${-pectoralAngle}deg)`;
+                
+                // 眼睛 - 自然眨眼系统
+                this.eyeBlinkTimer++;
+                
+                if (this.eyeBlinkTimer >= this.nextBlinkTime) {
+                    // 开始眨眼
+                    this.isBlinking = true;
+                    this.eyeBlinkDuration = 0;
+                    this.eyeBlinkTimer = 0;
+                    this.nextBlinkTime = 80 + Math.random() * 200; // 下一次眨眼间隔
+                }
+                
+                let eyeScale = 1;
+                
+                if (this.isBlinking) {
+                    this.eyeBlinkDuration++;
+                    // 眨眼持续时间 10-15 帧
+                    const blinkDuration = 10 + Math.random() * 5;
+                    
+                    if (this.eyeBlinkDuration < blinkDuration / 2) {
+                        // 闭眼
+                        eyeScale = 1 - (this.eyeBlinkDuration / (blinkDuration / 2));
+                    } else if (this.eyeBlinkDuration < blinkDuration) {
+                        // 睁眼
+                        eyeScale = (this.eyeBlinkDuration - blinkDuration / 2) / (blinkDuration / 2);
+                    } else {
+                        // 眨眼完成
+                        this.isBlinking = false;
+                        eyeScale = 1;
+                    }
+                }
+                
+                // 应用眼睛缩放
+                this.eyeWhite.setAttribute('ry', 6 * eyeScale);
+                this.eyeBlack.setAttribute('r', 3 * eyeScale);
             }
             
             updateTransform() {
-                // 计算实际运动角度
-                const velocityAngle = Math.atan2(this.vy, this.vx);
-                const degrees = velocityAngle * 180 / Math.PI;
+                // 计算朝向
+                const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                if (speed < 0.05) return; // 停止不动时不更新
                 
-                // 确定朝向
+                const angle = Math.atan2(this.vy, this.vx);
+                const degrees = angle * 180 / Math.PI;
+                
+                // 计算实际显示角度，限制在水平范围
+                const maxTilt = 50;
+                let displayAngle = Math.max(-maxTilt, Math.min(maxTilt, degrees));
+                
+                // 根据方向翻转
                 const facingRight = this.vx >= 0;
-                
                 this.element.style.left = this.x + '%';
                 this.element.style.top = this.y + '%';
                 
-                // 限制旋转角度，避免竖直
-                let displayAngle = degrees;
                 if (facingRight) {
-                    displayAngle = Math.max(-60, Math.min(60, displayAngle));
-                    this.element.style.transform = `
-                        translate(-50%, -50%) 
-                        scale(${this.size}) 
-                        rotate(${displayAngle}deg)
-                    `;
+                    this.element.style.transform = `translate(-50%, -50%) scale(${this.size}) rotate(${displayAngle}deg)`;
                 } else {
-                    displayAngle = Math.max(-60, Math.min(60, displayAngle));
-                    this.element.style.transform = `
-                        translate(-50%, -50%) 
-                        scale(${-this.size}, ${this.size}) 
-                        rotate(${-displayAngle}deg)
-                    `;
+                    this.element.style.transform = `translate(-50%, -50%) scale(${-this.size}, ${this.size}) rotate(${-displayAngle}deg)`;
                 }
             }
             
             scatter() {
                 this.targetFood = null;
-                this.state = 'dart';
-                this.stateTimer = 50;
-                this.targetSpeed = this.maxSpeed;
-                this.targetAngle += Math.PI + (Math.random() - 0.5) * 0.5;
-                // 限制惊吓后的角度
-                if (Math.abs(this.targetAngle) > Math.PI * 0.6) {
-                    this.targetAngle = Math.sign(this.targetAngle) * Math.PI * 0.5;
-                }
+                this.behavior = 'flee';
+                this.nextBehaviorTime = 40 + Math.random() * 60;
+                const scatterForce = this.maxSpeed * (1.5 + Math.random() * 0.8);
+                this.targetVx = (Math.random() - 0.5) * scatterForce * (1.5 + Math.random() * 0.5);
+                this.targetVy = (Math.random() - 0.5) * scatterForce * (0.8 + Math.random() * 0.4);
             }
         }
+        
+        let draggedFish = null;
+        let isDragging = false;
+        let lastDragX = 0;
+        let lastDragY = 0;
         
         // 鼠标特效
         tank.addEventListener('mousemove', (e) => {
@@ -798,16 +969,137 @@
                 createParticle(mouseX, mouseY);
                 lastMouseTime = now;
             }
+            
+            // 拖拽鱼 - 改进版本，更跟手
+            if (isDragging && draggedFish) {
+                const waterRect = waterBody.getBoundingClientRect();
+                const x = (e.clientX - waterRect.left) / waterRect.width * 100;
+                const y = (e.clientY - waterRect.top) / waterRect.height * 100;
+                
+                // 平滑移动到目标位置
+                draggedFish.x = Math.max(2, Math.min(98, x));
+                draggedFish.y = Math.max(5, Math.min(93, y));
+                
+                // 计算拖拽速度用于惯性
+                const vx = (draggedFish.x - lastDragX) * 100;
+                const vy = (draggedFish.y - lastDragY) * 100;
+                
+                // 直接设置速度，让鱼跟随鼠标
+                draggedFish.vx = vx * 0.3;
+                draggedFish.vy = vy * 0.3;
+                draggedFish.targetVx = vx * 0.2;
+                draggedFish.targetVy = vy * 0.2;
+                
+                lastDragX = draggedFish.x;
+                lastDragY = draggedFish.y;
+            }
         });
         
         tank.addEventListener('mouseleave', () => {
             isMouseInTank = false;
             cursorGlow.style.opacity = '0';
+            isDragging = false;
+            draggedFish = null;
         });
         
         tank.addEventListener('mouseenter', () => {
             cursorGlow.style.opacity = '1';
         });
+        
+        // 左键投喂
+        tank.addEventListener('click', (e) => {
+            if (e.button !== 0) return; // 只响应左键
+            
+            const rect = waterBody.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width * 100;
+            const y = (e.clientY - rect.top) / rect.height * 100;
+            
+            // 在点击位置投喂食物
+            const food = document.createElement('div');
+            food.className = 'food-pellet';
+            
+            food.style.left = x + '%';
+            food.style.top = Math.max(5, y - 5) + '%';
+            foodLayer.appendChild(food);
+            
+            const foodObj = {
+                x: x,
+                y: Math.max(5, y - 5),
+                element: food,
+                vy: 0.15 + Math.random() * 0.1
+            };
+            foods.push(foodObj);
+            
+            // 食物下沉动画
+            const sink = () => {
+                if (!document.body.contains(food)) return;
+                
+                foodObj.y += foodObj.vy;
+                food.style.top = foodObj.y + '%';
+                
+                // 轻微摆动
+                foodObj.x += Math.sin(foodObj.y * 0.08) * 0.08;
+                food.style.left = foodObj.x + '%';
+                
+                if (foodObj.y < 90) {
+                    requestAnimationFrame(sink);
+                } else {
+                    // 到底部消失
+                    food.style.opacity = '0.2';
+                    setTimeout(() => {
+                        if (document.body.contains(food)) {
+                            food.remove();
+                            foods = foods.filter(f => f !== foodObj);
+                        }
+                    }, 2000);
+                }
+            };
+            requestAnimationFrame(sink);
+            
+            // 涟漪效果
+            const ripple = document.createElement('div');
+            ripple.className = 'water-ripple';
+            ripple.style.left = x + '%';
+            ripple.style.top = y + '%';
+            waterBody.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 2000);
+        });
+        
+        // 右键拖拽鱼
+        tank.addEventListener('mousedown', (e) => {
+            if (e.button !== 2) return; // 只响应右键
+            e.preventDefault();
+            
+            const rect = waterBody.getBoundingClientRect();
+            const clickX = (e.clientX - rect.left) / rect.width * 100;
+            const clickY = (e.clientY - rect.top) / rect.height * 100;
+            
+            // 查找点击范围内的鱼
+            for (let i = fishes.length - 1; i >= 0; i--) {
+                const fish = fishes[i];
+                const dx = Math.abs(fish.x - clickX);
+                const dy = Math.abs(fish.y - clickY);
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                
+                if (distance < 8) {
+                    draggedFish = fish;
+                    isDragging = true;
+                    draggedFish.element.style.filter = 'drop-shadow(0 8px 16px rgba(0,0,0,0.12)) brightness(1.2)';
+                    break;
+                }
+            }
+        });
+        
+        tank.addEventListener('mouseup', (e) => {
+            if (isDragging && draggedFish) {
+                draggedFish.element.style.filter = 'drop-shadow(0 8px 16px rgba(0,0,0,0.12))';
+                draggedFish = null;
+                isDragging = false;
+            }
+        });
+        
+        // 禁用右键菜单
+        tank.addEventListener('contextmenu', (e) => e.preventDefault());
         
         function createParticle(x, y) {
             const particle = document.createElement('div');
@@ -818,37 +1110,28 @@
             setTimeout(() => particle.remove(), 1000);
         }
         
-        tank.addEventListener('click', (e) => {
-            const rect = waterBody.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            const ripple = document.createElement('div');
-            ripple.className = 'water-ripple';
-            ripple.style.left = x + 'px';
-            ripple.style.top = y + 'px';
-            waterBody.appendChild(ripple);
-            setTimeout(() => ripple.remove(), 2000);
-        });
-        
-        // 投喂功能
+        // 投喂功能 - 按钮控制
         function feedFish() {
-            for (let i = 0; i < 5; i++) {
+            const feedCount = 4 + Math.floor(Math.random() * 4);
+            const spreadWidth = 50 + Math.random() * 30;
+            
+            for (let i = 0; i < feedCount; i++) {
                 setTimeout(() => {
                     const food = document.createElement('div');
                     food.className = 'food-pellet';
                     
                     // 随机位置从顶部落下
-                    const startX = 15 + Math.random() * 70;
+                    const centerX = 50;
+                    const startX = Math.max(10, Math.min(90, centerX + (Math.random() - 0.5) * spreadWidth));
                     food.style.left = startX + '%';
-                    food.style.top = '5%';
+                    food.style.top = (6 + Math.random() * 4) + '%';
                     foodLayer.appendChild(food);
                     
                     const foodObj = {
                         x: startX,
-                        y: 5,
+                        y: 6 + Math.random() * 4,
                         element: food,
-                        vy: 0.2 + Math.random() * 0.15
+                        vy: 0.15 + Math.random() * 0.15
                     };
                     foods.push(foodObj);
                     
@@ -860,68 +1143,77 @@
                         food.style.top = foodObj.y + '%';
                         
                         // 轻微摆动
-                        foodObj.x += Math.sin(foodObj.y * 0.1) * 0.1;
+                        foodObj.x += Math.sin(foodObj.y * (0.07 + Math.random() * 0.03)) * (0.06 + Math.random() * 0.04);
                         food.style.left = foodObj.x + '%';
                         
-                        if (foodObj.y < 90) {
+                        if (foodObj.y < 89 + Math.random() * 3) {
                             requestAnimationFrame(sink);
                         } else {
                             // 到底部消失
-                            food.style.opacity = '0.3';
+                            food.style.opacity = (0.15 + Math.random() * 0.1).toString();
                             setTimeout(() => {
                                 if (document.body.contains(food)) {
                                     food.remove();
                                     foods = foods.filter(f => f !== foodObj);
                                 }
-                            }, 2000);
+                            }, 1500 + Math.random() * 1000);
                         }
                     };
                     requestAnimationFrame(sink);
-                }, i * 100);
+                }, i * (50 + Math.random() * 80));
             }
         }
         
         function createBubble(x, y) {
             const bubble = document.createElement('div');
             bubble.className = 'bubble';
-            const size = 6 + Math.random() * 10;
+            const size = 5 + Math.random() * 12;
             bubble.style.width = size + 'px';
             bubble.style.height = size + 'px';
-            bubble.style.left = (x || (10 + Math.random() * 80)) + '%';
-            bubble.style.bottom = y ? (100 - y) + '%' : (5 + Math.random() * 15) + '%';
-            bubble.style.animationDuration = (5 + Math.random() * 4) + 's';
+            bubble.style.left = (x || (8 + Math.random() * 84)) + '%';
+            bubble.style.bottom = y ? (100 - y + Math.random() * 2) + '%' : (3 + Math.random() * 20) + '%';
+            bubble.style.animationDuration = (4.5 + Math.random() * 5) + 's';
+            bubble.style.animationDelay = (Math.random() * 0.5) + 's';
             bubbleLayer.appendChild(bubble);
             
-            setTimeout(() => bubble.remove(), 9000);
+            setTimeout(() => {
+                if (document.body.contains(bubble)) {
+                    bubble.remove();
+                }
+            }, 9500 + Math.random() * 1000);
         }
         
         function addFish() {
-            if (fishes.length < 12) {
+            const maxFishCount = 10 + Math.floor(Math.random() * 5);
+            if (fishes.length < maxFishCount) {
                 fishes.push(new Fish());
             }
         }
         
         function scatterFish() {
             fishes.forEach(fish => fish.scatter());
-            for(let i=0; i<3; i++) {
+            
+            const rippleCount = 2 + Math.floor(Math.random() * 3);
+            for(let i = 0; i < rippleCount; i++) {
                 setTimeout(() => {
                     const ripple = document.createElement('div');
                     ripple.className = 'water-ripple';
-                    ripple.style.left = (20 + Math.random() * 60) + '%';
+                    ripple.style.left = (15 + Math.random() * 70) + '%';
                     ripple.style.top = (20 + Math.random() * 60) + '%';
                     waterBody.appendChild(ripple);
                     setTimeout(() => ripple.remove(), 2000);
-                }, i*100);
+                }, i * (60 + Math.random() * 80));
             }
         }
         
         // 初始化
         function init() {
-            for(let i=0; i<6; i++) {
-                setTimeout(() => fishes.push(new Fish()), i*400);
+            const initialFishCount = 6 + Math.floor(Math.random() * 4);
+            for(let i = 0; i < initialFishCount; i++) {
+                setTimeout(() => fishes.push(new Fish()), i * (250 + Math.random() * 250));
             }
             
-            setInterval(() => createBubble(), 3000);
+            setInterval(() => createBubble(), 2000 + Math.random() * 1500);
             
             function animate() {
                 fishes.forEach(fish => fish.update());
