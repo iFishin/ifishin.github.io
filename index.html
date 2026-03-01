@@ -345,8 +345,11 @@
             left: 50%;
             transform: translateX(-50%);
             display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
             gap: 12px;
             z-index: 30;
+            width: min(92vw, 720px);
         }
         
         .control-btn {
@@ -368,6 +371,11 @@
             background: rgba(255, 255, 255, 0.8);
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .control-btn.mode {
+            background: rgba(245, 246, 238, 0.8);
+            border-color: rgba(95, 110, 95, 0.25);
         }
         
         /* 主题切换 */
@@ -423,85 +431,135 @@
             background: #e8f0e5;
         }
         
-        /* ========== 黑猫 ========== */
+        /* ========== 水墨猫与凳子（重构） ========== */
         .cat-scene {
             position: fixed;
-            right: 5%;
-            bottom: 8%;
+            right: 4.5%;
+            bottom: 5.5%;
             z-index: 8;
             pointer-events: none;
         }
         
         .cat-container {
             position: relative;
-            width: 280px;
-            height: 200px;
+            width: 330px;
+            height: 235px;
             pointer-events: auto;
             cursor: pointer;
         }
-        
-        /* 猫尾巴动画 */
-        .cat-tail {
-            transform-origin: 220px 140px;
-            animation: catTailWag 5s ease-in-out infinite;
+
+        .ink-stool {
+            transform-origin: 228px 198px;
+            animation: stoolSway 8s ease-in-out infinite;
         }
-        
-        @keyframes catTailWag {
-            0%, 100% { transform: rotate(-8deg); }
-            25% { transform: rotate(5deg); }
-            50% { transform: rotate(-3deg); }
-            75% { transform: rotate(8deg); }
+
+        @keyframes stoolSway {
+            0%, 100% { transform: rotate(-0.6deg); }
+            50% { transform: rotate(0.6deg); }
         }
-        
-        /* 猫眨眼 */
-        .cat-eye {
-            transform-origin: center;
-            animation: catBlink 6s ease-in-out infinite;
+
+        .ink-cat {
+            transform-origin: 225px 150px;
+            animation: catIdle 6.8s ease-in-out infinite;
         }
-        
-        @keyframes catBlink {
-            0%, 48%, 52%, 100% { transform: scaleY(1); }
-            50% { transform: scaleY(0.08); }
+
+        @keyframes catIdle {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            40% { transform: translateY(-1px) rotate(-0.6deg); }
+            68% { transform: translateY(0.5px) rotate(0.4deg); }
         }
-        
-        /* 猫耳朵 */
-        .cat-ear {
-            transform-origin: bottom center;
-            animation: earTwitch 7s ease-in-out infinite;
-        }
-        
-        @keyframes earTwitch {
-            0%, 92%, 100% { transform: rotate(0deg); }
-            94% { transform: rotate(-3deg); }
-            96% { transform: rotate(2deg); }
-            98% { transform: rotate(0deg); }
-        }
-        
-        /* 猫身体呼吸 */
-        .cat-body-group {
-            transform-origin: 140px 130px;
-            animation: catBreathe 4s ease-in-out infinite;
+
+        .ink-cat-body {
+            transform-origin: 230px 157px;
+            animation: catBreathe 4.8s ease-in-out infinite;
         }
         
         @keyframes catBreathe {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.015); }
+            50% { transform: scale(1.014); }
+        }
+
+        .ink-cat-head {
+            transform-origin: 166px 112px;
+            animation: catHeadTilt 6.2s ease-in-out infinite;
+        }
+
+        @keyframes catHeadTilt {
+            0%, 100% { transform: rotate(0deg); }
+            45% { transform: rotate(-1.2deg) translateX(-1px); }
+            72% { transform: rotate(0.8deg); }
+        }
+
+        .ink-cat-ear-left {
+            transform-origin: 146px 84px;
+            animation: earTwitchLeft 9s ease-in-out infinite;
+        }
+
+        .ink-cat-ear-right {
+            transform-origin: 177px 84px;
+            animation: earTwitchRight 8.6s ease-in-out infinite;
+        }
+
+        @keyframes earTwitchLeft {
+            0%, 93%, 100% { transform: rotate(0deg); }
+            95% { transform: rotate(-5deg); }
+            97% { transform: rotate(2deg); }
+        }
+
+        @keyframes earTwitchRight {
+            0%, 91%, 100% { transform: rotate(0deg); }
+            93% { transform: rotate(3deg); }
+            96% { transform: rotate(-1.5deg); }
+        }
+
+        .ink-cat-tail {
+            transform-origin: 274px 158px;
+            animation: catTailWag 5.4s ease-in-out infinite;
         }
         
-        /* 猫点击反应 */
-        .cat-paw {
-            transform-origin: 80px 150px;
-            transition: transform 0.3s ease-out;
+        @keyframes catTailWag {
+            0%, 100% { transform: rotate(-7deg); }
+            24% { transform: rotate(7deg); }
+            52% { transform: rotate(-2deg); }
+            78% { transform: rotate(9deg); }
+        }
+
+        .ink-cat-eye {
+            transform-origin: center;
+            animation: catBlink 6.4s ease-in-out infinite;
         }
         
-        .cat-container.active .cat-paw {
-            animation: pawReach 0.5s ease-out;
+        @keyframes catBlink {
+            0%, 49%, 53%, 100% { transform: scaleY(1); }
+            51% { transform: scaleY(0.09); }
         }
-        
-        @keyframes pawReach {
+
+        .ink-cat-paw-front {
+            transform-origin: 184px 190px;
+        }
+
+        .cat-container.active .ink-cat-head {
+            animation: catPeek 0.55s ease-out;
+        }
+
+        .cat-container.active .ink-cat-paw-front {
+            animation: pawTap 0.6s ease-out;
+        }
+
+        .cat-container.active .ink-cat-tail {
+            animation-duration: 2.1s;
+        }
+
+        @keyframes catPeek {
+            0% { transform: rotate(0deg) translateX(0); }
+            45% { transform: rotate(-4deg) translateX(-3px); }
+            100% { transform: rotate(0deg) translateX(0); }
+        }
+
+        @keyframes pawTap {
             0% { transform: rotate(0deg); }
-            30% { transform: rotate(-20deg); }
-            60% { transform: rotate(-15deg); }
+            36% { transform: rotate(-18deg) translate(-3px, -1px); }
+            70% { transform: rotate(-9deg); }
             100% { transform: rotate(0deg); }
         }
         
@@ -595,8 +653,8 @@
             }
             
             .cat-container {
-                width: 200px;
-                height: 140px;
+                width: 220px;
+                height: 160px;
             }
             
             .poem-container {
@@ -645,10 +703,11 @@
                 left: 50%;
                 transform: translateX(-50%);
                 gap: 10px;
+                width: 94vw;
             }
             
             .control-btn {
-                padding: 8px 18px;
+                padding: 8px 14px;
                 font-size: 12px;
             }
             
@@ -798,77 +857,69 @@
             <button class="control-btn" onclick="addFish()">添鱼</button>
             <button class="control-btn" onclick="feedFish()">投喂</button>
             <button class="control-btn" onclick="scatterFish()">惊扰</button>
+            <button class="control-btn mode" id="swimModeBtn" onclick="cycleSwimMode()">节奏：灵动</button>
         </div>
     </div>
     
-    <!-- 黑猫 - 侧向盯着鱼缸 -->
+    <!-- 水墨猫 -->
     <div class="cat-scene" id="catScene">
         <div class="cat-container" id="catContainer">
             <div class="meow-bubble">喵~</div>
-            <svg viewBox="0 0 280 200" width="280" height="200">
-                <!-- 猫尾巴 -->
-                <path class="cat-tail" d="M220,130 Q250,110 255,80 Q260,50 245,35 Q235,30 230,45 Q225,65 235,85 Q242,105 220,130" 
-                      fill="#1a1a1a" opacity="0.95"/>
-                
-                <!-- 后腿 -->
-                <ellipse cx="200" cy="155" rx="22" ry="28" fill="#1a1a1a"/>
-                <ellipse cx="200" cy="175" rx="18" ry="8" fill="#0a0a0a"/>
-                
-                <!-- 身体组 -->
-                <g class="cat-body-group">
-                    <!-- 身体主体 -->
-                    <ellipse cx="140" cy="140" rx="65" ry="40" fill="#1a1a1a"/>
-                    
-                    <!-- 前腿（蹲坐姿势） -->
-                    <ellipse cx="95" cy="165" rx="18" ry="25" fill="#1a1a1a"/>
-                    <ellipse cx="125" cy="168" rx="16" ry="22" fill="#1a1a1a"/>
-                    
-                    <!-- 爪子 -->
-                    <ellipse class="cat-paw" cx="82" cy="185" rx="14" ry="10" fill="#0a0a0a"/>
-                    <ellipse cx="112" cy="188" rx="12" ry="9" fill="#0a0a0a"/>
+            <svg viewBox="0 0 330 235" width="330" height="235">
+                <defs>
+                    <linearGradient id="inkCatWash" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="rgba(25,25,25,0.94)" />
+                        <stop offset="100%" stop-color="rgba(10,10,10,0.98)" />
+                    </linearGradient>
+                    <linearGradient id="stoolWash" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="rgba(122,102,78,0.8)" />
+                        <stop offset="100%" stop-color="rgba(83,67,48,0.84)" />
+                    </linearGradient>
+                </defs>
+
+                <g class="ink-stool" opacity="0.78">
+                    <ellipse cx="228" cy="198" rx="72" ry="16.5" fill="url(#stoolWash)"/>
+                    <rect x="173" y="198" width="13" height="35" rx="6" fill="rgba(88,70,50,0.78)"/>
+                    <rect x="214" y="200" width="13" height="33" rx="6" fill="rgba(88,70,50,0.78)"/>
+                    <rect x="255" y="198" width="13" height="35" rx="6" fill="rgba(88,70,50,0.78)"/>
+                    <ellipse cx="228" cy="198" rx="64" ry="11.5" fill="rgba(255,255,255,0.08)"/>
                 </g>
-                
-                <!-- 猫头组 - 侧向看鱼缸 -->
-                <g class="cat-head-group">
-                    <!-- 左耳（后侧） -->
-                    <path class="cat-ear" d="M55,65 L45,35 L75,50 Z" fill="#1a1a1a"/>
-                    <path d="M58,60 L52,42 L68,52 Z" fill="#3a2a2a" opacity="0.6"/>
-                    
-                    <!-- 头部轮廓 -->
-                    <ellipse cx="85" cy="85" rx="45" ry="38" fill="#1a1a1a"/>
-                    
-                    <!-- 右耳（前侧，更突出） -->
-                    <path class="cat-ear" d="M105,55 L118,22 L130,58 Z" fill="#1a1a1a"/>
-                    <path d="M112,52 L118,32 L124,54 Z" fill="#3a2a2a" opacity="0.6"/>
-                    
-                    <!-- 眼睛（侧视，盯着左边鱼缸方向） -->
-                    <g class="cat-eye">
-                        <!-- 左眼（较远） -->
-                        <ellipse cx="65" cy="78" rx="10" ry="12" fill="#f5d547"/>
-                        <ellipse cx="68" cy="78" rx="4" ry="8" fill="#000"/>
-                        <circle cx="70" cy="75" r="2.5" fill="#fff" opacity="0.8"/>
+
+                <g class="ink-cat">
+                    <path class="ink-cat-tail" d="M270,159 Q310,132 318,92 Q323,59 305,44 Q296,36 287,48 Q281,67 288,93 Q298,124 270,159"
+                        fill="url(#inkCatWash)" opacity="0.96"/>
+
+                    <g class="ink-cat-body">
+                        <path d="M176,176 Q163,151 176,128 Q194,99 243,108 Q285,116 289,155 Q292,179 269,191 Q220,203 176,176 Z"
+                            fill="url(#inkCatWash)"/>
+                        <path d="M224,131 Q252,138 267,159" stroke="rgba(210,210,210,0.14)" stroke-width="2" fill="none"/>
+                        <ellipse class="ink-cat-paw-front" cx="184" cy="190" rx="14" ry="8.8" fill="rgba(8,8,8,0.98)"/>
+                        <ellipse cx="214" cy="192" rx="12" ry="7.8" fill="rgba(8,8,8,0.95)"/>
+                        <ellipse cx="268" cy="191" rx="14.2" ry="8.2" fill="rgba(8,8,8,0.95)"/>
                     </g>
-                    <g class="cat-eye">
-                        <!-- 右眼（较近，更大更亮） -->
-                        <ellipse cx="95" cy="80" rx="12" ry="14" fill="#f5d547"/>
-                        <ellipse cx="99" cy="80" rx="5" ry="9" fill="#000"/>
-                        <circle cx="102" cy="76" r="3" fill="#fff" opacity="0.9"/>
+
+                    <g class="ink-cat-head">
+                        <path class="ink-cat-ear-left" d="M145,83 L132,53 L158,71 Z" fill="rgba(16,16,16,0.9)"/>
+                        <path class="ink-cat-ear-right" d="M176,81 L188,53 L198,87 Z" fill="rgba(18,18,18,0.96)"/>
+                        <ellipse cx="163" cy="111" rx="42" ry="34" fill="url(#inkCatWash)"/>
+                        <path d="M134,113 Q124,125 131,140" stroke="rgba(225,225,225,0.12)" stroke-width="1.9" fill="none"/>
+
+                        <g class="ink-cat-eye">
+                            <ellipse cx="148" cy="106" rx="11.3" ry="11.8" fill="#d7cc86" opacity="0.92"/>
+                            <ellipse class="cat-pupil" cx="148.5" cy="106" rx="3.7" ry="8.5" fill="#0b0b0b"/>
+                        </g>
+                        <g class="ink-cat-eye">
+                            <ellipse cx="174" cy="108" rx="8" ry="9.1" fill="#d7cc86" opacity="0.82"/>
+                            <ellipse class="cat-pupil" cx="174.4" cy="108" rx="2.5" ry="6.2" fill="#0b0b0b"/>
+                        </g>
+
+                        <path d="M133,120 Q118,126 111,134" stroke="rgba(218,218,218,0.42)" stroke-width="1.1" fill="none"/>
+                        <path d="M134,127 Q120,136 124,143" stroke="rgba(218,218,218,0.32)" stroke-width="1.1" fill="none"/>
+
+                        <line x1="124" y1="108" x2="86" y2="103" stroke="rgba(225,225,225,0.28)" stroke-width="0.85"/>
+                        <line x1="123" y1="116" x2="83" y2="116" stroke="rgba(225,225,225,0.24)" stroke-width="0.85"/>
+                        <line x1="124" y1="124" x2="90" y2="132" stroke="rgba(225,225,225,0.22)" stroke-width="0.85"/>
                     </g>
-                    
-                    <!-- 鼻子 -->
-                    <path d="M48,95 L44,100 L52,100 Z" fill="#d4a4a4"/>
-                    
-                    <!-- 嘴巴（侧面） -->
-                    <path d="M48,100 Q40,105 38,102" stroke="#888" stroke-width="1" fill="none"/>
-                    <path d="M48,100 Q42,108 45,112" stroke="#888" stroke-width="1" fill="none"/>
-                    
-                    <!-- 胡须 -->
-                    <line x1="35" y1="88" x2="8" y2="82" stroke="#666" stroke-width="0.8" opacity="0.5"/>
-                    <line x1="35" y1="95" x2="5" y2="95" stroke="#666" stroke-width="0.8" opacity="0.5"/>
-                    <line x1="35" y1="102" x2="8" y2="108" stroke="#666" stroke-width="0.8" opacity="0.5"/>
-                    
-                    <!-- 脸部轮廓线（增加立体感） -->
-                    <path d="M48,65 Q35,75 38,95" stroke="#2a2a2a" stroke-width="1" fill="none" opacity="0.5"/>
                 </g>
             </svg>
         </div>
@@ -938,62 +989,78 @@
         
         // ========== 黑猫互动 ==========
         const catContainer = document.getElementById('catContainer');
-        const catEyes = document.querySelectorAll('.cat-eye ellipse:nth-child(2)');
+        const catEyes = document.querySelectorAll('.cat-pupil');
+        const meowBubble = catContainer.querySelector('.meow-bubble');
+        const catPhrases = ['看见你了', '这条不错', '别跑呀', '喵在守鱼', '给我也来点', '今日观鱼'];
+        const catSoundProfiles = [
+            { start: 410, mid: 560, end: 300, duration: 0.27, gain: 0.09 },
+            { start: 360, mid: 480, end: 250, duration: 0.22, gain: 0.08 },
+            { start: 460, mid: 690, end: 340, duration: 0.3, gain: 0.07 }
+        ];
+        let catActiveTimer = null;
         
         // 猫眼睛跟随鱼
         function updateCatEyes() {
             if (window.innerWidth <= 768 || fishes.length === 0) return;
             
-            // 找到最接近鱼缸左侧的鱼（猫盯着的方向）
+            // 猫在右侧，优先盯着靠右(靠近它)的鱼
             let targetFish = null;
-            let minX = Infinity;
+            let maxX = -Infinity;
             
             fishes.forEach(fish => {
-                if (fish.x < minX) {
-                    minX = fish.x;
+                if (fish.x > maxX) {
+                    maxX = fish.x;
                     targetFish = fish;
                 }
             });
             
             if (targetFish) {
-                // 根据鱼的垂直位置调整眼睛
-                const eyeOffset = targetFish.y > 50 ? 1.5 : targetFish.y < 30 ? -1.5 : 0;
+                const eyeOffsetY = targetFish.y > 56 ? 1.1 : targetFish.y < 30 ? -1.1 : 0;
+                const eyeOffsetX = Math.max(-2.0, Math.min(-0.3, -1.9 + (100 - targetFish.x) * 0.04));
                 
                 catEyes.forEach(eye => {
-                    eye.style.transform = `translateY(${eyeOffset}px)`;
+                    eye.style.transform = `translate(${eyeOffsetX}px, ${eyeOffsetY}px)`;
                 });
             }
+        }
+
+        function showRandomCatPhrase() {
+            meowBubble.textContent = catPhrases[Math.floor(Math.random() * catPhrases.length)];
         }
         
         // 点击猫
         catContainer.addEventListener('click', () => {
+            showRandomCatPhrase();
             catContainer.classList.add('active');
-            playMeowSound();
+            playMeowSound(Math.floor(Math.random() * catSoundProfiles.length));
             
-            setTimeout(() => {
+            if (catActiveTimer) clearTimeout(catActiveTimer);
+            catActiveTimer = setTimeout(() => {
                 catContainer.classList.remove('active');
-            }, 1500);
+            }, 1300);
         });
         
         // 喵声音效
-        function playMeowSound() {
+        function playMeowSound(profileIndex = 0) {
             try {
                 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const profile = catSoundProfiles[profileIndex % catSoundProfiles.length];
                 const oscillator = audioContext.createOscillator();
                 const gainNode = audioContext.createGain();
                 
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
                 
-                oscillator.frequency.setValueAtTime(380, audioContext.currentTime);
-                oscillator.frequency.exponentialRampToValueAtTime(580, audioContext.currentTime + 0.08);
-                oscillator.frequency.exponentialRampToValueAtTime(280, audioContext.currentTime + 0.25);
+                oscillator.type = Math.random() < 0.5 ? 'triangle' : 'sine';
+                oscillator.frequency.setValueAtTime(profile.start, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(profile.mid, audioContext.currentTime + profile.duration * 0.32);
+                oscillator.frequency.exponentialRampToValueAtTime(profile.end, audioContext.currentTime + profile.duration);
                 
-                gainNode.gain.setValueAtTime(0.08, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.25);
+                gainNode.gain.setValueAtTime(profile.gain, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + profile.duration);
                 
                 oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.25);
+                oscillator.stop(audioContext.currentTime + profile.duration);
             } catch (e) {}
         }
         
@@ -1008,6 +1075,7 @@
         let fishes = [];
         let foods = [];
         let mouseX = 0, mouseY = 0;
+        let mouseXPct = 50, mouseYPct = 50;
         let isMouseInTank = false;
         let lastMouseTime = 0;
         
@@ -1019,6 +1087,34 @@
             { body: '#8b5cf6', tail: '#4c1d95', name: '紫' },
             { body: '#f59e0b', tail: '#78350f', name: '金' }
         ];
+
+        const SWIM_PROFILES = [
+            { key: 'zen', label: '禅意', speed: 1.08, eventRate: 0.78, schooling: 1.1, huntBias: 0.72, cursorInterest: 0.72, burst: 0.9 },
+            { key: 'agile', label: '灵动', speed: 1.28, eventRate: 1.0, schooling: 1.0, huntBias: 1.0, cursorInterest: 1.0, burst: 1.15 },
+            { key: 'playful', label: '调皮', speed: 1.45, eventRate: 1.42, schooling: 0.9, huntBias: 0.86, cursorInterest: 1.35, burst: 1.35 }
+        ];
+        let swimProfileIndex = 1;
+        let currentSwimProfile = SWIM_PROFILES[swimProfileIndex];
+
+        function updateSwimModeBtn() {
+            const btn = document.getElementById('swimModeBtn');
+            if (btn) btn.textContent = `节奏：${currentSwimProfile.label}`;
+        }
+
+        function applySwimProfileToFish(fish) {
+            fish.maxSpeed = fish.baseMaxSpeed * currentSwimProfile.speed;
+            fish.normalSpeed = fish.baseNormalSpeed * (0.95 + currentSwimProfile.speed * 0.25);
+            fish.cruiseSpeed = fish.normalSpeed * (0.88 + Math.random() * 0.32);
+            fish.burstCooldown = Math.max(36, fish.burstCooldown / currentSwimProfile.eventRate);
+            fish.nextEventIn = Math.max(40, fish.nextEventIn / currentSwimProfile.eventRate);
+        }
+
+        function cycleSwimMode() {
+            swimProfileIndex = (swimProfileIndex + 1) % SWIM_PROFILES.length;
+            currentSwimProfile = SWIM_PROFILES[swimProfileIndex];
+            updateSwimModeBtn();
+            fishes.forEach(fish => applySwimProfileToFish(fish));
+        }
         
         class Fish {
             constructor(x, y) {
@@ -1028,8 +1124,10 @@
                 this.vy = (Math.random() - 0.5) * (0.2 + Math.random() * 0.2);
                 this.targetVx = this.vx;
                 this.targetVy = this.vy;
-                this.maxSpeed = 2 + Math.random() * 0.6;
-                this.normalSpeed = 0.6 + Math.random() * 0.3;
+                this.baseMaxSpeed = 2.25 + Math.random() * 0.95;
+                this.baseNormalSpeed = 0.72 + Math.random() * 0.42;
+                this.maxSpeed = this.baseMaxSpeed * currentSwimProfile.speed;
+                this.normalSpeed = this.baseNormalSpeed * (0.95 + currentSwimProfile.speed * 0.25);
                 this.dragCoeff = 0.94 + Math.random() * 0.03;
                 this.size = 0.7 + Math.random() * 0.3;
                 this.baseSize = this.size;
@@ -1045,10 +1143,39 @@
                 this.avoidForce = { x: 0, y: 0 };
                 this.tailPhase = Math.random() * Math.PI * 2;
                 this.bodyPhase = Math.random() * Math.PI * 2;
+                this.speedPulsePhase = Math.random() * Math.PI * 2;
+                this.tailFrequency = 0.09 + Math.random() * 0.035;
+                this.tailAmplitudeBase = 5 + Math.random() * 2.4;
+                this.preferredDepth = 22 + Math.random() * 58;
+                this.depthWanderTimer = 120 + Math.random() * 220;
+                this.wanderTurnInterval = 16 + Math.random() * 20;
+                this.cruiseSpeed = this.normalSpeed * (0.9 + Math.random() * 0.35);
+                this.turnMemory = Math.atan2(this.vy, this.vx);
+                this.burstCooldown = 120 + Math.random() * 180;
+                this.schoolForce = { x: 0, y: 0 };
+                this.personality = {
+                    curiosity: 0.35 + Math.random() * 0.65,
+                    playfulness: 0.3 + Math.random() * 0.7,
+                    sociability: 0.35 + Math.random() * 0.65,
+                    boldness: 0.25 + Math.random() * 0.75,
+                    appetite: 0.18 + Math.random() * 0.95,
+                    competitiveness: 0.15 + Math.random() * 0.9
+                };
+                this.hunger = 0.35 + Math.random() * 0.65;
+                this.foodCooldown = 0;
+                this.eventType = null;
+                this.eventTimer = 0;
+                this.eventDuration = 0;
+                this.eventData = null;
+                this.nextEventIn = (100 + Math.random() * 260) / currentSwimProfile.eventRate;
+                this.peerNudgeCooldown = 50 + Math.random() * 110;
                 this.eyeBlinkTimer = 0;
                 this.eyeBlinkDuration = 0;
+                this.blinkDurationFrames = 8 + Math.random() * 4;
                 this.nextBlinkTime = 55 + Math.random() * 150;
                 this.isBlinking = false;
+                this.pupilPhase = Math.random() * Math.PI * 2;
+                this.mouthPhase = Math.random() * Math.PI * 2;
                 this.element = this.createSVGElement();
             }
             
@@ -1134,17 +1261,19 @@
                 const eyeGroup = document.createElementNS(svgNS, 'g');
                 this.eyeGroup = eyeGroup;
                 
-                const eyeWhite = document.createElementNS(svgNS, 'circle');
+                const eyeWhite = document.createElementNS(svgNS, 'ellipse');
                 eyeWhite.setAttribute('cx', '92');
                 eyeWhite.setAttribute('cy', '20');
-                eyeWhite.setAttribute('r', '6');
+                eyeWhite.setAttribute('rx', '6');
+                eyeWhite.setAttribute('ry', '6');
                 eyeWhite.setAttribute('fill', 'white');
                 this.eyeWhite = eyeWhite;
                 
-                const eyeBlack = document.createElementNS(svgNS, 'circle');
+                const eyeBlack = document.createElementNS(svgNS, 'ellipse');
                 eyeBlack.setAttribute('cx', '94');
                 eyeBlack.setAttribute('cy', '20');
-                eyeBlack.setAttribute('r', '3');
+                eyeBlack.setAttribute('rx', '3');
+                eyeBlack.setAttribute('ry', '3');
                 eyeBlack.setAttribute('fill', '#0f172a');
                 this.eyeBlack = eyeBlack;
                 
@@ -1153,6 +1282,7 @@
                 eyeShine.setAttribute('cy', '19');
                 eyeShine.setAttribute('r', '1.5');
                 eyeShine.setAttribute('fill', 'white');
+                this.eyeShine = eyeShine;
                 
                 eyeGroup.appendChild(eyeWhite);
                 eyeGroup.appendChild(eyeBlack);
@@ -1175,6 +1305,19 @@
             
             update() {
                 this.behaviorTimer++;
+                this.depthWanderTimer--;
+                this.burstCooldown--;
+                this.nextEventIn--;
+                this.peerNudgeCooldown--;
+                this.speedPulsePhase += 0.015;
+                this.hunger = Math.min(1, this.hunger + 0.0008 + this.personality.appetite * 0.0006);
+                this.foodCooldown = Math.max(0, this.foodCooldown - 0.08);
+
+                if (this.depthWanderTimer <= 0) {
+                    this.preferredDepth = 16 + Math.random() * 70;
+                    this.depthWanderTimer = 160 + Math.random() * 260;
+                }
+
                 if (this.behaviorTimer >= this.nextBehaviorTime) {
                     this.chooseBehavior();
                     this.behaviorTimer = 0;
@@ -1191,6 +1334,17 @@
                 if (this.targetFood && !document.body.contains(this.targetFood.element)) {
                     this.targetFood = null;
                 }
+                if (this.targetFood) {
+                    const dxFood = this.targetFood.x - this.x;
+                    const dyFood = this.targetFood.y - this.y;
+                    const distFood = Math.sqrt(dxFood * dxFood + dyFood * dyFood);
+                    if (!this.shouldChaseFood(distFood, true)) {
+                        this.targetFood = null;
+                        if (this.behavior === 'hunt') this.behavior = 'wander';
+                    } else {
+                        this.targetFoodDist = distFood;
+                    }
+                }
                 
                 if (this.behavior === 'wander' && Math.random() < 0.03) {
                     this.targetVy += (Math.random() - 0.5) * 0.4;
@@ -1199,6 +1353,10 @@
                 if (Math.random() < 0.007) {
                     this.targetVx += (Math.random() - 0.5) * 1;
                     this.targetVy += (Math.random() - 0.5) * 1;
+                }
+
+                if (this.behavior !== 'hunt' && this.behavior !== 'flee') {
+                    this.applyDepthPreference();
                 }
                 
                 switch(this.behavior) {
@@ -1215,6 +1373,8 @@
                         this.restBehavior();
                         break;
                 }
+
+                this.updateRandomEvent();
                 
                 if (this.behaviorTimer % 5 === 0) {
                     this.updateAvoidance();
@@ -1222,17 +1382,42 @@
                     this.avoidForce.x *= 0.9;
                     this.avoidForce.y *= 0.9;
                 }
+
+                if (this.behaviorTimer % 6 === 0) {
+                    this.updateSchooling();
+                } else {
+                    this.schoolForce.x *= 0.86;
+                    this.schoolForce.y *= 0.86;
+                }
+
+                if (this.behaviorTimer % 18 === 0) {
+                    this.maybePlayWithNeighbor();
+                }
                 
                 this.targetVx += this.avoidForce.x;
                 this.targetVy += this.avoidForce.y;
+                this.targetVx += this.schoolForce.x;
+                this.targetVy += this.schoolForce.y;
+
+                if (isMouseInTank && !this.targetFood && this.behavior === 'wander') {
+                    const cursorDx = mouseXPct - this.x;
+                    const cursorDy = mouseYPct - this.y;
+                    const cursorDist = Math.sqrt(cursorDx * cursorDx + cursorDy * cursorDy);
+                    if (cursorDist < 24 && cursorDist > 0.2) {
+                        const cursorPull = (24 - cursorDist) / 24 * 0.03 * currentSwimProfile.cursorInterest;
+                        this.targetVx += (cursorDx / cursorDist) * cursorPull;
+                        this.targetVy += (cursorDy / cursorDist) * cursorPull * 0.55;
+                    }
+                }
                 
                 let vyBoost = 1;
                 if (this.targetVy > 0.2) vyBoost = 1.2;
                 
                 let targetSpeed = Math.sqrt(this.targetVx * this.targetVx + this.targetVy * this.targetVy);
-                if (targetSpeed > this.maxSpeed * vyBoost) {
-                    this.targetVx = (this.targetVx / targetSpeed) * this.maxSpeed * vyBoost;
-                    this.targetVy = (this.targetVy / targetSpeed) * this.maxSpeed * vyBoost;
+                const speedCap = this.maxSpeed * vyBoost;
+                if (targetSpeed > speedCap) {
+                    this.targetVx = (this.targetVx / targetSpeed) * speedCap;
+                    this.targetVy = (this.targetVy / targetSpeed) * speedCap;
                 }
                 
                 this.vx += (this.targetVx - this.vx) * 0.08;
@@ -1243,14 +1428,286 @@
                 
                 this.handleBoundaries();
                 
-                this.x += this.vx * 0.1;
-                this.y += this.vy * 0.1;
+                const movementStep = 0.108 * currentSwimProfile.speed;
+                this.x += this.vx * movementStep;
+                this.y += this.vy * movementStep;
                 
                 this.x = Math.max(3, Math.min(97, this.x));
                 this.y = Math.max(8, Math.min(92, this.y));
                 
                 this.updateAnimation();
                 this.updateTransform();
+            }
+
+            updateRandomEvent() {
+                if (this.targetFood || this.behavior === 'hunt' || this.behavior === 'flee') {
+                    if (this.eventType) this.finishEvent(0.9);
+                    return;
+                }
+
+                if (!this.eventType) {
+                    this.tryStartRandomEvent();
+                    return;
+                }
+
+                this.eventTimer++;
+                const t = this.eventTimer / Math.max(1, this.eventDuration);
+
+                switch (this.eventType) {
+                    case 'dart':
+                        this.handleDartEvent(t);
+                        break;
+                    case 'orbit':
+                        this.handleOrbitEvent(t);
+                        break;
+                    case 'surfaceSip':
+                        this.handleSurfaceSipEvent(t);
+                        break;
+                    case 'chaseFriend':
+                        this.handleChaseFriendEvent(t);
+                        break;
+                    case 'inspectCursor':
+                        this.handleInspectCursorEvent(t);
+                        break;
+                    case 'bottomPeck':
+                        this.handleBottomPeckEvent(t);
+                        break;
+                    case 'zigzag':
+                        this.handleZigzagEvent(t);
+                        break;
+                }
+
+                if (this.eventTimer >= this.eventDuration) {
+                    this.finishEvent();
+                }
+            }
+
+            tryStartRandomEvent() {
+                if (this.nextEventIn > 0) return;
+
+                const baseChance = (0.2 + this.personality.playfulness * 0.36) * currentSwimProfile.eventRate;
+                if (Math.random() > baseChance) {
+                    this.nextEventIn = (90 + Math.random() * 220) / currentSwimProfile.eventRate;
+                    return;
+                }
+
+                const events = ['dart', 'orbit', 'zigzag', 'bottomPeck'];
+                if (this.personality.sociability > 0.45) events.push('chaseFriend');
+                if (this.personality.curiosity > 0.35 && isMouseInTank) events.push('inspectCursor');
+                if (this.personality.boldness > 0.4) events.push('surfaceSip');
+
+                const choice = events[Math.floor(Math.random() * events.length)];
+                this.startEvent(choice);
+            }
+
+            startEvent(type) {
+                this.eventType = type;
+                this.eventTimer = 0;
+                this.eventData = {};
+                this.behavior = 'wander';
+
+                if (type === 'dart') {
+                    this.eventDuration = 18 + Math.floor(Math.random() * 20);
+                    this.eventData.angle = Math.atan2(this.vy, this.vx || 0.0001) + (Math.random() - 0.5) * 0.9;
+                } else if (type === 'orbit') {
+                    this.eventDuration = 85 + Math.floor(Math.random() * 90);
+                    this.eventData.centerX = this.x + (Math.random() - 0.5) * 10;
+                    this.eventData.centerY = this.y + (Math.random() - 0.5) * 8;
+                    this.eventData.radius = 3.5 + Math.random() * 5.5;
+                    this.eventData.dir = Math.random() < 0.5 ? -1 : 1;
+                } else if (type === 'surfaceSip') {
+                    this.eventDuration = 90 + Math.floor(Math.random() * 80);
+                    this.eventData.sipped = false;
+                    this.eventData.sideDrift = (Math.random() - 0.5) * 0.5;
+                } else if (type === 'chaseFriend') {
+                    this.eventDuration = 70 + Math.floor(Math.random() * 80);
+                    this.eventData.targetFish = this.findNearbyFish(36);
+                    if (!this.eventData.targetFish) {
+                        this.finishEvent(0.9);
+                        return;
+                    }
+                    this.eventData.offset = 3 + Math.random() * 4;
+                } else if (type === 'inspectCursor') {
+                    this.eventDuration = 60 + Math.floor(Math.random() * 70);
+                    this.eventData.orbitDir = Math.random() < 0.5 ? -1 : 1;
+                    this.eventData.orbitSize = 2 + Math.random() * 3.5;
+                } else if (type === 'bottomPeck') {
+                    this.eventDuration = 70 + Math.floor(Math.random() * 90);
+                    this.eventData.pecked = false;
+                } else if (type === 'zigzag') {
+                    this.eventDuration = 65 + Math.floor(Math.random() * 75);
+                    this.eventData.heading = Math.atan2(this.vy, this.vx || 0.0001);
+                    this.eventData.phase = Math.random() * Math.PI * 2;
+                }
+            }
+
+            finishEvent(cooldownScale = 1) {
+                this.eventType = null;
+                this.eventData = null;
+                this.eventTimer = 0;
+                this.eventDuration = 0;
+                const minCooldown = 85 + Math.random() * 220;
+                this.nextEventIn = minCooldown / Math.max(0.4, cooldownScale) / (0.8 + this.personality.playfulness * 0.6) / currentSwimProfile.eventRate;
+            }
+
+            handleDartEvent(t) {
+                const ease = Math.max(0.2, 1 - t);
+                const burst = this.maxSpeed * (0.75 + this.personality.boldness * 0.45) * ease;
+                this.targetVx = Math.cos(this.eventData.angle) * burst;
+                this.targetVy = Math.sin(this.eventData.angle) * burst * 0.75;
+            }
+
+            handleOrbitEvent(t) {
+                const cx = this.eventData.centerX;
+                const cy = this.eventData.centerY;
+                const dx = cx - this.x;
+                const dy = cy - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy) || 0.0001;
+                const radial = (dist - this.eventData.radius) * 0.08;
+                const tangential = this.eventData.dir * (0.26 + this.personality.playfulness * 0.22);
+                this.targetVx += (dx / dist) * radial + (-dy / dist) * tangential;
+                this.targetVy += (dy / dist) * radial + (dx / dist) * tangential * 0.72;
+                this.targetVy += Math.sin(t * Math.PI * 2) * 0.02;
+            }
+
+            handleSurfaceSipEvent(t) {
+                if (this.y > 15) {
+                    this.targetVy -= 0.2 + this.personality.boldness * 0.18;
+                } else {
+                    this.targetVy += 0.03;
+                    this.targetVx += this.eventData.sideDrift;
+                    if (!this.eventData.sipped) {
+                        this.eventData.sipped = true;
+                        createBubble(this.x, Math.max(10, this.y - 1));
+                        const ripple = document.createElement('div');
+                        ripple.className = 'water-ripple';
+                        ripple.style.left = this.x + '%';
+                        ripple.style.top = Math.max(6, this.y - 2) + '%';
+                        waterBody.appendChild(ripple);
+                        setTimeout(() => ripple.remove(), 1800);
+                    }
+                }
+
+                if (t > 0.6) {
+                    this.targetVy += (this.preferredDepth - this.y) * 0.02;
+                }
+            }
+
+            handleChaseFriendEvent() {
+                const buddy = this.eventData.targetFish;
+                if (!buddy || buddy === this) {
+                    this.finishEvent(0.9);
+                    return;
+                }
+                const heading = Math.atan2(buddy.vy, buddy.vx || 0.0001);
+                const tx = buddy.x - Math.cos(heading) * this.eventData.offset;
+                const ty = buddy.y - Math.sin(heading) * this.eventData.offset * 0.6;
+                const dx = tx - this.x;
+                const dy = ty - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy) || 0.0001;
+                const speed = Math.min(this.maxSpeed * 0.8, 0.35 + dist * 0.08);
+                this.targetVx = (dx / dist) * speed;
+                this.targetVy = (dy / dist) * speed * 0.75;
+            }
+
+            handleInspectCursorEvent(t) {
+                if (!isMouseInTank) {
+                    this.finishEvent(0.85);
+                    return;
+                }
+                const angle = t * Math.PI * 2 * this.eventData.orbitDir;
+                const tx = mouseXPct + Math.cos(angle) * this.eventData.orbitSize;
+                const ty = mouseYPct + Math.sin(angle) * this.eventData.orbitSize * 0.7;
+                const dx = tx - this.x;
+                const dy = ty - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy) || 0.0001;
+                const speed = Math.min(this.maxSpeed * 0.75, 0.28 + dist * 0.07);
+                this.targetVx = (dx / dist) * speed;
+                this.targetVy = (dy / dist) * speed * 0.72;
+            }
+
+            handleBottomPeckEvent(t) {
+                const targetBottom = 85;
+                if (this.y < targetBottom) {
+                    this.targetVy += 0.16;
+                } else {
+                    this.targetVy -= 0.05;
+                    this.targetVx += Math.sin(this.tailPhase * 1.8) * 0.06;
+                    if (!this.eventData.pecked && t > 0.45) {
+                        this.eventData.pecked = true;
+                        createBubble(this.x, this.y);
+                    }
+                }
+            }
+
+            handleZigzagEvent() {
+                this.eventData.phase += 0.2 + this.personality.playfulness * 0.09;
+                const base = this.eventData.heading;
+                const zig = Math.sin(this.eventData.phase) * (0.55 + this.personality.playfulness * 0.35);
+                const angle = base + zig;
+                const speed = this.normalSpeed * (1.05 + this.personality.playfulness * 0.5);
+                this.targetVx = Math.cos(angle) * speed;
+                this.targetVy = Math.sin(angle) * speed * 0.72;
+            }
+
+            findNearbyFish(radius) {
+                let nearest = null;
+                let minDist = radius * radius;
+                for (let i = 0; i < fishes.length; i++) {
+                    const other = fishes[i];
+                    if (other === this) continue;
+                    const dx = other.x - this.x;
+                    const dy = other.y - this.y;
+                    const distSq = dx * dx + dy * dy;
+                    if (distSq < minDist) {
+                        minDist = distSq;
+                        nearest = other;
+                    }
+                }
+                return nearest;
+            }
+
+            maybePlayWithNeighbor() {
+                if (this.peerNudgeCooldown > 0 || this.behavior === 'flee' || this.targetFood) return;
+                const mate = this.findNearbyFish(8);
+                if (!mate) return;
+                if (Math.random() > (0.18 + this.personality.playfulness * 0.35) * currentSwimProfile.eventRate) return;
+
+                const dx = this.x - mate.x;
+                const dy = this.y - mate.y;
+                const dist = Math.sqrt(dx * dx + dy * dy) || 0.0001;
+                const nudge = 0.16 + this.personality.playfulness * 0.18;
+                this.targetVx += (dx / dist) * nudge;
+                this.targetVy += (dy / dist) * nudge * 0.8;
+                this.targetVx += (Math.random() - 0.5) * 0.22;
+                this.targetVy += (Math.random() - 0.5) * 0.15;
+                this.peerNudgeCooldown = (120 + Math.random() * 180) / currentSwimProfile.eventRate;
+            }
+
+            applyDepthPreference() {
+                const depthDiff = this.preferredDepth - this.y;
+                const pull = Math.max(-0.18, Math.min(0.18, depthDiff * 0.01));
+                this.targetVy += pull * 0.4;
+            }
+
+            getFoodDrive() {
+                const appetite = this.personality.appetite;
+                const curiosityBoost = this.personality.curiosity * 0.22;
+                const cooldownPenalty = this.foodCooldown * 0.03;
+                const drive = this.hunger * (0.58 + appetite * 0.62) + curiosityBoost - cooldownPenalty;
+                return Math.max(0, drive * currentSwimProfile.huntBias);
+            }
+
+            shouldChaseFood(distance, forcedNotice = false) {
+                if (this.behavior === 'flee') return false;
+                const drive = this.getFoodDrive();
+                const nearBoost = Math.max(0, (38 - distance) / 38) * 0.38;
+                const competitiveness = this.personality.competitiveness * 0.24;
+                const desirability = drive * 0.58 + nearBoost + competitiveness;
+                if (forcedNotice) return desirability > 0.2;
+                if (drive < 0.28) return false;
+                const chance = Math.max(0.06, Math.min(0.96, desirability));
+                return Math.random() < chance;
             }
             
             findNearestFood() {
@@ -1265,8 +1722,10 @@
                     const dx = food.x - this.x;
                     const dy = food.y - this.y;
                     const dist = dx*dx + dy*dy;
+                    const distReal = Math.sqrt(dist);
                     
                     const effectiveRadius = isFoodTaken ? searchRadius * 0.5 : searchRadius;
+                    if (!this.shouldChaseFood(distReal, false)) continue;
                     
                     if (dist < minDist && dist < effectiveRadius * effectiveRadius) {
                         minDist = dist;
@@ -1287,6 +1746,7 @@
                 const dx = randomFood.x - this.x;
                 const dy = randomFood.y - this.y;
                 const dist = Math.sqrt(dx*dx + dy*dy);
+                if (!this.shouldChaseFood(dist, false)) return;
                 
                 if (dist < 35 + Math.random() * 15) {
                     this.targetFood = randomFood;
@@ -1320,6 +1780,48 @@
                         this.avoidForce.y -= (dy / dist) * force * forceStrengthY;
                     }
                 }
+            }
+
+            updateSchooling() {
+                this.schoolForce.x = 0;
+                this.schoolForce.y = 0;
+                if (fishes.length < 2 || this.behavior === 'flee') return;
+
+                const schoolRadius = 24;
+                const schoolRadiusSq = schoolRadius * schoolRadius;
+                let neighbors = 0;
+                let alignX = 0;
+                let alignY = 0;
+                let cohesionX = 0;
+                let cohesionY = 0;
+
+                for (let i = 0; i < fishes.length; i++) {
+                    const other = fishes[i];
+                    if (other === this) continue;
+
+                    const dx = other.x - this.x;
+                    const dy = other.y - this.y;
+                    const distSq = dx * dx + dy * dy;
+                    if (distSq > schoolRadiusSq || distSq < 0.2) continue;
+
+                    neighbors++;
+                    alignX += other.vx;
+                    alignY += other.vy;
+                    cohesionX += other.x;
+                    cohesionY += other.y;
+                }
+
+                if (neighbors === 0) return;
+
+                alignX /= neighbors;
+                alignY /= neighbors;
+                cohesionX = (cohesionX / neighbors) - this.x;
+                cohesionY = (cohesionY / neighbors) - this.y;
+
+                this.schoolForce.x = alignX * 0.02 + cohesionX * 0.004;
+                this.schoolForce.y = alignY * 0.018 + cohesionY * 0.003;
+                this.schoolForce.x *= currentSwimProfile.schooling;
+                this.schoolForce.y *= currentSwimProfile.schooling;
             }
             
             handleBoundaries() {
@@ -1386,20 +1888,24 @@
             }
             
             wanderBehavior() {
-                const changeFreq = 12 + Math.random() * 20;
-                if (this.behaviorTimer % changeFreq === 0) {
-                    const angleVariation = (Math.random() - 0.5) * (0.25 + Math.random() * 0.25);
-                    const currentAngle = Math.atan2(this.vy, this.vx);
+                const interval = Math.floor(this.wanderTurnInterval);
+                if (interval > 0 && this.behaviorTimer % interval === 0) {
+                    const angleVariation = (Math.random() - 0.5) * 0.32;
+                    const currentAngle = Math.atan2(this.vy, this.vx || 0.0001);
                     const newAngle = currentAngle + angleVariation;
-                    
-                    const speed = Math.sqrt(this.targetVx * this.targetVx + this.targetVy * this.targetVy);
-                    const newSpeed = Math.max(
-                        0.25 + Math.random() * 0.15, 
-                        Math.min(this.normalSpeed + Math.random() * 0.25, speed + (Math.random() - 0.5) * 0.32)
-                    );
-                    
+                    const cruiseFactor = 0.86 + Math.sin(this.speedPulsePhase) * 0.2;
+                    const newSpeed = Math.max(0.22, this.cruiseSpeed * cruiseFactor);
+
                     this.targetVx = Math.cos(newAngle) * newSpeed;
-                    this.targetVy = Math.sin(newAngle) * newSpeed;
+                    this.targetVy = Math.sin(newAngle) * newSpeed * 0.72;
+                }
+
+                if (this.burstCooldown <= 0 && Math.random() < 0.008) {
+                    const heading = Math.atan2(this.targetVy, this.targetVx || 0.0001);
+                    const burstSpeed = this.maxSpeed * currentSwimProfile.burst * (0.48 + Math.random() * 0.16);
+                    this.targetVx = Math.cos(heading) * burstSpeed;
+                    this.targetVy = Math.sin(heading) * burstSpeed * 0.78;
+                    this.burstCooldown = (150 + Math.random() * 230) / currentSwimProfile.eventRate;
                 }
             }
             
@@ -1414,41 +1920,94 @@
                 const eatDistance = 2 + Math.random() * 0.8;
                 
                 if (dist < eatDistance) {
-                    this.targetFood.element.remove();
-                    foods = foods.filter(f => f !== this.targetFood);
+                    const eatenCount = this.consumeNearbyFoods(this.targetFood);
                     this.targetFood = null;
-                    
-                    this.eatCount = (this.eatCount || 0) + 1;
-                    
-                    if (this.eatCount < 5) {
-                        this.size = Math.min(this.size * (1.03 + Math.random() * 0.008), this.baseSize * 1.12);
-                        this.growthStage = 0;
-                    } else if (this.eatCount < 12) {
-                        this.size = Math.min(this.size * (1.018 + Math.random() * 0.008), this.baseSize * 1.28);
-                        this.growthStage = 1;
-                    } else {
-                        if (this.growthStage < 2) {
-                            this.colorIndex = (this.colorIndex + 1) % fishColors.length;
-                            this.color = fishColors[this.colorIndex];
-                            this.updateColor();
-                            this.element.style.filter = 'drop-shadow(0 0 12px #fbbf24) brightness(1.1)';
-                            setTimeout(() => {
-                                this.element.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.08))';
-                            }, 600);
+
+                    if (eatenCount > 0) {
+                        createBubble(this.x, this.y);
+
+                        if (foods.length > 0 && this.getFoodDrive() > 0.35) {
+                            this.findNearestFood();
                         }
-                        this.size = Math.min(this.size * (1.006 + Math.random() * 0.008), this.baseSize * 1.4);
-                        this.growthStage = 2;
+
+                        if (this.targetFood) {
+                            this.behavior = 'hunt';
+                            this.nextBehaviorTime = 80 + Math.random() * 90;
+                        } else {
+                            this.behavior = 'rest';
+                            this.nextBehaviorTime = 18 + Math.random() * 30;
+                        }
+                    } else {
+                        this.behavior = 'wander';
                     }
-                    
-                    createBubble(this.x, this.y);
-                    this.behavior = 'rest';
-                    this.nextBehaviorTime = 20 + Math.random() * 40;
                 } else {
                     const targetAngle = Math.atan2(dy, dx);
                     const huntSpeed = this.maxSpeed * (0.68 + Math.random() * 0.16);
                     this.targetVx = Math.cos(targetAngle) * huntSpeed;
                     this.targetVy = Math.sin(targetAngle) * huntSpeed * (0.5 + Math.random() * 0.16);
                 }
+            }
+
+            consumeNearbyFoods(primaryFood) {
+                if (!primaryFood) return 0;
+
+                const biteRadius = 2.5 + this.personality.appetite * 2.4;
+                const biteLimit = 1 + Math.floor(this.personality.competitiveness * 2 + Math.random() * 2);
+                const cx = primaryFood.x;
+                const cy = primaryFood.y;
+
+                const candidates = foods
+                    .map(food => {
+                        const dx = food.x - cx;
+                        const dy = food.y - cy;
+                        return { food, dist: Math.sqrt(dx * dx + dy * dy) };
+                    })
+                    .filter(item => item.dist <= biteRadius)
+                    .sort((a, b) => a.dist - b.dist)
+                    .slice(0, biteLimit);
+
+                let eaten = 0;
+                for (let i = 0; i < candidates.length; i++) {
+                    if (this.consumeSingleFood(candidates[i].food)) {
+                        eaten++;
+                    }
+                }
+
+                return eaten;
+            }
+
+            consumeSingleFood(foodObj) {
+                if (!foodObj || !document.body.contains(foodObj.element)) return false;
+
+                foodObj.element.remove();
+                foods = foods.filter(f => f !== foodObj);
+
+                this.hunger = Math.max(0.03, this.hunger - (0.22 + this.personality.appetite * 0.16));
+                this.foodCooldown = 12 + Math.random() * 12;
+
+                this.eatCount = (this.eatCount || 0) + 1;
+
+                if (this.eatCount < 5) {
+                    this.size = Math.min(this.size * (1.03 + Math.random() * 0.008), this.baseSize * 1.12);
+                    this.growthStage = 0;
+                } else if (this.eatCount < 12) {
+                    this.size = Math.min(this.size * (1.018 + Math.random() * 0.008), this.baseSize * 1.28);
+                    this.growthStage = 1;
+                } else {
+                    if (this.growthStage < 2) {
+                        this.colorIndex = (this.colorIndex + 1) % fishColors.length;
+                        this.color = fishColors[this.colorIndex];
+                        this.updateColor();
+                        this.element.style.filter = 'drop-shadow(0 0 12px #fbbf24) brightness(1.1)';
+                        setTimeout(() => {
+                            this.element.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.08))';
+                        }, 600);
+                    }
+                    this.size = Math.min(this.size * (1.006 + Math.random() * 0.008), this.baseSize * 1.4);
+                    this.growthStage = 2;
+                }
+
+                return true;
             }
             
             updateColor() {
@@ -1484,20 +2043,43 @@
             updateAnimation() {
                 const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
                 
-                this.tailPhase += (0.08 + Math.random() * 0.03) + speed * (0.06 + Math.random() * 0.03);
-                const tailAngle = Math.sin(this.tailPhase) * (6 + speed * (4 + Math.random() * 1.5));
+                this.tailPhase += this.tailFrequency + speed * 0.08;
+                const tailAngle = Math.sin(this.tailPhase) * (this.tailAmplitudeBase + speed * 6.5);
                 this.tailElement.style.transform = `rotate(${tailAngle}deg)`;
                 
-                this.bodyPhase += 0.012 + Math.random() * 0.006;
-                const breath = 1 + Math.sin(this.bodyPhase) * (0.012 + Math.random() * 0.008);
+                this.bodyPhase += 0.015 + speed * 0.009;
+                const breath = 1 + Math.sin(this.bodyPhase) * 0.017;
                 this.bodyElement.style.transform = `scale(${breath})`;
                 
-                const dorsalAngle = Math.sin(this.tailPhase * (0.4 + Math.random() * 0.08)) * (4 + Math.random() * 1.5);
+                const dorsalAngle = Math.sin(this.tailPhase * 0.46) * (3.6 + speed * 3);
                 this.dorsalElement.style.transform = `rotate(${dorsalAngle}deg)`;
                 
-                const pectoralAngle = Math.sin(this.bodyPhase + speed) * (10 + speed * 3 + Math.random() * 4);
+                const pectoralAngle = Math.sin(this.bodyPhase * 1.35 + speed * 0.2) * (9 + speed * 5);
                 this.pectoralLeftElement.style.transform = `rotate(${pectoralAngle}deg)`;
                 this.pectoralRightElement.style.transform = `rotate(${-pectoralAngle}deg)`;
+
+                this.pupilPhase += 0.08 + speed * 0.03;
+                let gazeX = Math.max(-1.4, Math.min(1.4, this.vx * 1.1));
+                let gazeY = Math.max(-1.1, Math.min(1.1, this.vy * 0.9));
+                if (this.eventType === 'inspectCursor' && isMouseInTank) {
+                    const dx = mouseXPct - this.x;
+                    const dy = mouseYPct - this.y;
+                    gazeX = Math.max(-1.8, Math.min(1.8, dx * 0.09));
+                    gazeY = Math.max(-1.4, Math.min(1.4, dy * 0.08));
+                } else {
+                    gazeX += Math.sin(this.pupilPhase) * 0.25;
+                    gazeY += Math.cos(this.pupilPhase * 0.7) * 0.18;
+                }
+                this.eyeBlack.setAttribute('cx', (94 + gazeX).toFixed(2));
+                this.eyeBlack.setAttribute('cy', (20 + gazeY).toFixed(2));
+                this.eyeShine.setAttribute('cx', (95 + gazeX * 0.5).toFixed(2));
+                this.eyeShine.setAttribute('cy', (19 + gazeY * 0.3).toFixed(2));
+
+                this.mouthPhase += 0.04 + speed * 0.02;
+                const mouthOpen = 0.5 + Math.sin(this.mouthPhase) * 0.6 + (this.eventType === 'surfaceSip' ? 0.5 : 0);
+                const mouthTop = (30 - mouthOpen).toFixed(2);
+                const mouthBottom = (30 + mouthOpen).toFixed(2);
+                this.mouthElement.setAttribute('d', `M 105,${mouthBottom} Q 108,30 105,${mouthTop}`);
                 
                 this.eyeBlinkTimer++;
                 
@@ -1505,6 +2087,7 @@
                     this.isBlinking = true;
                     this.eyeBlinkDuration = 0;
                     this.eyeBlinkTimer = 0;
+                    this.blinkDurationFrames = 7 + Math.random() * 4;
                     this.nextBlinkTime = 60 + Math.random() * 160;
                 }
                 
@@ -1512,7 +2095,7 @@
                 
                 if (this.isBlinking) {
                     this.eyeBlinkDuration++;
-                    const blinkDuration = 8 + Math.random() * 3;
+                    const blinkDuration = this.blinkDurationFrames;
                     
                     if (this.eyeBlinkDuration < blinkDuration / 2) {
                         eyeScale = 1 - (this.eyeBlinkDuration / (blinkDuration / 2));
@@ -1524,16 +2107,21 @@
                     }
                 }
                 
-                this.eyeWhite.setAttribute('ry', 6 * eyeScale);
-                this.eyeBlack.setAttribute('r', 3 * eyeScale);
+                this.eyeWhite.setAttribute('ry', (6 * eyeScale).toFixed(2));
+                this.eyeBlack.setAttribute('ry', (3 * eyeScale).toFixed(2));
             }
             
             updateTransform() {
                 const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-                if (speed < 0.04) return;
-                
-                const angle = Math.atan2(this.vy, this.vx);
-                const degrees = angle * 180 / Math.PI;
+                if (speed > 0.015) {
+                    const angle = Math.atan2(this.vy, this.vx || 0.0001);
+                    let delta = angle - this.turnMemory;
+                    while (delta > Math.PI) delta -= Math.PI * 2;
+                    while (delta < -Math.PI) delta += Math.PI * 2;
+                    this.turnMemory += delta * 0.16;
+                }
+
+                const degrees = this.turnMemory * 180 / Math.PI;
                 
                 const maxTilt = 40;
                 let displayAngle = Math.max(-maxTilt, Math.min(maxTilt, degrees));
@@ -1552,6 +2140,7 @@
             scatter() {
                 this.targetFood = null;
                 this.behavior = 'flee';
+                this.finishEvent(0.95);
                 this.nextBehaviorTime = 30 + Math.random() * 50;
                 const scatterForce = this.maxSpeed * (1.3 + Math.random() * 0.7);
                 this.targetVx = (Math.random() - 0.5) * scatterForce * (1.3 + Math.random() * 0.4);
@@ -1569,6 +2158,8 @@
             const rect = waterBody.getBoundingClientRect();
             mouseX = e.clientX - rect.left;
             mouseY = e.clientY - rect.top;
+            mouseXPct = Math.max(0, Math.min(100, (mouseX / rect.width) * 100));
+            mouseYPct = Math.max(0, Math.min(100, (mouseY / rect.height) * 100));
             isMouseInTank = true;
             
             cursorGlow.style.left = mouseX + 'px';
@@ -1634,6 +2225,7 @@
                 vy: 0.11 + Math.random() * 0.08
             };
             foods.push(foodObj);
+            nudgeFishToFood(foodObj, 44);
             
             const sink = () => {
                 if (!document.body.contains(food)) return;
@@ -1708,6 +2300,28 @@
             waterBody.appendChild(particle);
             setTimeout(() => particle.remove(), 1000);
         }
+
+        function nudgeFishToFood(foodObj, radius = 42) {
+            fishes.forEach(fish => {
+                const dx = foodObj.x - fish.x;
+                const dy = foodObj.y - fish.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist > radius || dist < 0.01) return;
+                if (!fish.shouldChaseFood(dist, true)) return;
+
+                if (!fish.targetFood || dist < fish.targetFoodDist) {
+                    fish.targetFood = foodObj;
+                    fish.targetFoodDist = dist;
+                }
+
+                if (fish.behavior !== 'flee') {
+                    if (fish.eventType) fish.finishEvent(0.85);
+                    fish.behavior = 'hunt';
+                    fish.behaviorTimer = 0;
+                    fish.nextBehaviorTime = 80 + Math.random() * 70;
+                }
+            });
+        }
         
         // 投喂功能
         function feedFish() {
@@ -1732,6 +2346,7 @@
                         vy: 0.11 + Math.random() * 0.11
                     };
                     foods.push(foodObj);
+                    nudgeFishToFood(foodObj, 46);
                     
                     const sink = () => {
                         if (!document.body.contains(food)) return;
@@ -1803,6 +2418,7 @@
         
         // 初始化
         function init() {
+            updateSwimModeBtn();
             const initialFishCount = 5 + Math.floor(Math.random() * 3);
             for(let i = 0; i < initialFishCount; i++) {
                 setTimeout(() => fishes.push(new Fish()), i * (200 + Math.random() * 200));
