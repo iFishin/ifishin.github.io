@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
     <title>观鱼</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -99,16 +100,64 @@
         /* 标题 */
         .title {
             position: absolute;
-            top: 40px;
+            top: 35px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 2rem;
-            color: rgba(60, 80, 60, 0.7);
-            letter-spacing: 0.5em;
+            font-size: 2.2rem;
+            color: rgba(60, 80, 60, 0.75);
+            letter-spacing: 0.3em;
             font-weight: 300;
             z-index: 5;
             pointer-events: none;
             text-shadow: 0 2px 20px rgba(255,255,255,0.5);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        
+        /* 标题图标 */
+        .title-icon {
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.15) 0%, 
+                rgba(255, 255, 255, 0.08) 100%);
+            backdrop-filter: blur(20px) saturate(130%);
+            -webkit-backdrop-filter: blur(20px) saturate(130%);
+            border-radius: 16px;
+            box-shadow: 
+                0 8px 24px rgba(0, 0, 0, 0.08),
+                inset 0 1px 1px rgba(255, 255, 255, 0.5),
+                inset 0 -1px 1px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            pointer-events: auto;
+        }
+        
+        .title-icon:hover {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.25) 0%, 
+                rgba(255, 255, 255, 0.15) 100%);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 12px 32px rgba(0, 0, 0, 0.12),
+                inset 0 1px 1px rgba(255, 255, 255, 0.6),
+                inset 0 -1px 1px rgba(0, 0, 0, 0.05);
+        }
+        
+        .title-icon img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+            transition: transform 0.3s ease;
+        }
+        
+        .title-icon:hover img {
+            transform: scale(1.1);
         }
         
         /* 诗句展示 */
@@ -796,7 +845,12 @@
     </svg>
     
     <!-- 标题 -->
-    <div class="title">观鱼</div>
+    <div class="title">
+        <div class="title-icon" title="观鱼">
+            <img src="/assets/favicon.png" alt="观鱼">
+        </div>
+        <span>观鱼</span>
+    </div>
     
     <!-- 诗句展示 -->
     <div class="poem-container" id="poemContainer">
