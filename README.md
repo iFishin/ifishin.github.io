@@ -2,13 +2,6 @@
 
 [![观鱼](assets/badge.svg)](https://ifishin.github.io)
 
-<iframe src="https://ifishin.github.io/card.html"
-        width="480" height="240"
-        frameborder="0"
-        style="border-radius: 12px; overflow: hidden;"
-        title="观鱼 - 水墨风格在线鱼缸">
-</iframe>
-
 水墨风格的交互式在线鱼缸。看鱼、喂鱼、逗猫，享受一份宁静。
 
 ## 使用方式
