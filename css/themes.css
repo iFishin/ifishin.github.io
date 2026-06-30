@@ -1,0 +1,122 @@
+/* 主题样式 */
+body.theme-sky {
+    background: linear-gradient(180deg, #e0f0f5 0%, #d5e8f0 50%, #c8e0eb 100%);
+}
+
+body.theme-sky .title,
+body.theme-sky .poem-line {
+    color: rgba(50, 80, 100, 0.65);
+}
+
+body.theme-sky .poem-author {
+    color: rgba(50, 80, 100, 0.5);
+}
+
+body.theme-sky .control-btn {
+    background: rgba(255, 255, 255, 0.6);
+    color: #3a5a6a;
+}
+
+body.theme-night {
+    background: linear-gradient(180deg, #1a2025 0%, #151a1f 50%, #101418 100%);
+}
+
+body.theme-night .title,
+body.theme-night .poem-line {
+    color: rgba(180, 190, 180, 0.6);
+}
+
+body.theme-night .poem-author {
+    color: rgba(180, 190, 180, 0.4);
+}
+
+body.theme-night .glass-base {
+    background: linear-gradient(135deg, 
+        rgba(40, 50, 55, 0.4) 0%, 
+        rgba(30, 40, 45, 0.2) 50%,
+        rgba(35, 45, 50, 0.25) 100%);
+    border: 1px solid rgba(80, 90, 100, 0.3);
+}
+
+body.theme-night .control-btn {
+    background: rgba(40, 50, 55, 0.6);
+    color: #b0c0b0;
+    border-color: rgba(80, 90, 100, 0.3);
+}
+
+/* 尊重系统动效偏好 */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    .ink-wash { animation: none !important; }
+    .fish { transition: none !important; }
+    .bubble { display: none !important; }
+}
+
+/* 移动端适配 */
+@media (max-width: 1024px) {
+    .glass-tank {
+        width: 70vw;
+        height: 55vh;
+    }
+    .cat-scene {
+        right: 2%;
+    }
+    .cat-container {
+        width: 220px;
+        height: 160px;
+    }
+    .poem-container {
+        right: 180px;
+    }
+    .theme-btn {
+        right: 180px;
+    }
+    .theme-menu {
+        right: 180px;
+    }
+}
+
+@media (max-width: 768px) {
+    html, body {
+        height: 100%;
+    }
+    body {
+        height: 100vh;
+        padding: 0;
+    }
+    .glass-tank {
+        width: 90vw;
+        height: 60vh;
+    }
+    .title {
+        top: 20px;
+        font-size: 1.4rem;
+        letter-spacing: 0.3em;
+    }
+    .poem-container,
+    .theme-btn,
+    .theme-menu {
+        display: none;
+    }
+    .controls {
+        position: fixed;
+        bottom: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        gap: 10px;
+        width: 94vw;
+    }
+    .control-btn {
+        padding: 8px 14px;
+        font-size: 12px;
+    }
+    .cat-scene,
+    .willow-left,
+    .willow-right {
+        display: none;
+    }
+}

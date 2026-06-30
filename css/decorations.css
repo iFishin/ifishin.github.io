@@ -1,0 +1,448 @@
+/* 左侧柳树 */
+.willow-left {
+    position: fixed;
+    left: -20px;
+    top: 0;
+    height: 100vh;
+    width: 180px;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.willow-right {
+    position: fixed;
+    right: -20px;
+    top: 0;
+    height: 100vh;
+    width: 180px;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0.7;
+    transform: scaleX(-1);
+}
+
+.willow-branch {
+    transform-origin: top center;
+    animation: willowSway 4s ease-in-out infinite;
+}
+
+.willow-branch:nth-child(2) { animation-delay: -0.5s; }
+.willow-branch:nth-child(3) { animation-delay: -1s; }
+.willow-branch:nth-child(4) { animation-delay: -1.5s; }
+.willow-branch:nth-child(5) { animation-delay: -2s; }
+
+@keyframes willowSway {
+    0%, 100% { transform: rotate(-2deg); }
+    50% { transform: rotate(2deg); }
+}
+
+/* 标题 */
+.title {
+    position: absolute;
+    top: 35px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2.2rem;
+    color: rgba(60, 80, 60, 0.75);
+    letter-spacing: 0.3em;
+    font-weight: 300;
+    z-index: 5;
+    pointer-events: none;
+    text-shadow: 0 2px 20px rgba(255,255,255,0.5);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.title-icon {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.15) 0%, 
+        rgba(255, 255, 255, 0.08) 100%);
+    backdrop-filter: blur(20px) saturate(130%);
+    -webkit-backdrop-filter: blur(20px) saturate(130%);
+    border-radius: 16px;
+    box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.08),
+        inset 0 1px 1px rgba(255, 255, 255, 0.5),
+        inset 0 -1px 1px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.title-icon:hover {
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.25) 0%, 
+        rgba(255, 255, 255, 0.15) 100%);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 
+        0 12px 32px rgba(0, 0, 0, 0.12),
+        inset 0 1px 1px rgba(255, 255, 255, 0.6),
+        inset 0 -1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.title-icon img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    transition: transform 0.3s ease;
+}
+
+.title-icon:hover img {
+    transform: scale(1.1);
+}
+
+/* 诗句展示 */
+.poem-container {
+    position: absolute;
+    top: 100px;
+    right: 220px;
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    z-index: 5;
+    pointer-events: none;
+    opacity: 0.6;
+    transition: opacity 0.5s;
+}
+
+.poem-line {
+    font-size: 0.9rem;
+    color: rgba(60, 80, 60, 0.65);
+    letter-spacing: 0.25em;
+    line-height: 2.2;
+    font-weight: 300;
+}
+
+.poem-author {
+    font-size: 0.7rem;
+    color: rgba(60, 80, 60, 0.5);
+    margin-top: 0.8em;
+    letter-spacing: 0.15em;
+}
+
+/* ========== 水墨猫与凳子（重构） ========== */
+.cat-scene {
+    position: fixed;
+    right: 4.5%;
+    bottom: 5.5%;
+    z-index: 8;
+    pointer-events: none;
+}
+
+.cat-container {
+    position: relative;
+    width: 330px;
+    height: 235px;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.ink-stool {
+    transform-origin: 228px 198px;
+    animation: stoolSway 8s ease-in-out infinite;
+}
+
+@keyframes stoolSway {
+    0%, 100% { transform: rotate(-0.6deg); }
+    50% { transform: rotate(0.6deg); }
+}
+
+.ink-cat {
+    transform-origin: 225px 150px;
+    animation: catIdle 6.8s ease-in-out infinite;
+}
+
+@keyframes catIdle {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    40% { transform: translateY(-1px) rotate(-0.6deg); }
+    68% { transform: translateY(0.5px) rotate(0.4deg); }
+}
+
+.ink-cat-body {
+    transform-origin: 230px 157px;
+    animation: catBreathe 4.8s ease-in-out infinite;
+}
+
+@keyframes catBreathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.014); }
+}
+
+.ink-cat-head {
+    transform-origin: 166px 112px;
+    animation: catHeadTilt 6.2s ease-in-out infinite;
+}
+
+@keyframes catHeadTilt {
+    0%, 100% { transform: rotate(0deg); }
+    45% { transform: rotate(-1.2deg) translateX(-1px); }
+    72% { transform: rotate(0.8deg); }
+}
+
+.ink-cat-ear-left {
+    transform-origin: 146px 84px;
+    animation: earTwitchLeft 9s ease-in-out infinite;
+}
+
+.ink-cat-ear-right {
+    transform-origin: 177px 84px;
+    animation: earTwitchRight 8.6s ease-in-out infinite;
+}
+
+@keyframes earTwitchLeft {
+    0%, 93%, 100% { transform: rotate(0deg); }
+    95% { transform: rotate(-5deg); }
+    97% { transform: rotate(2deg); }
+}
+
+@keyframes earTwitchRight {
+    0%, 91%, 100% { transform: rotate(0deg); }
+    93% { transform: rotate(3deg); }
+    96% { transform: rotate(-1.5deg); }
+}
+
+.ink-cat-tail {
+    transform-origin: 274px 158px;
+    animation: catTailWag 5.4s ease-in-out infinite;
+}
+
+@keyframes catTailWag {
+    0%, 100% { transform: rotate(-7deg); }
+    24% { transform: rotate(7deg); }
+    52% { transform: rotate(-2deg); }
+    78% { transform: rotate(9deg); }
+}
+
+.ink-cat-eye {
+    transform-origin: center;
+    animation: catBlink 6.4s ease-in-out infinite;
+}
+
+@keyframes catBlink {
+    0%, 49%, 53%, 100% { transform: scaleY(1); }
+    51% { transform: scaleY(0.09); }
+}
+
+.ink-cat-paw-front {
+    transform-origin: 184px 190px;
+}
+
+.cat-container.active .ink-cat-head {
+    animation: catPeek 0.55s ease-out;
+}
+
+.cat-container.active .ink-cat-paw-front {
+    animation: pawTap 0.6s ease-out;
+}
+
+.cat-container.active .ink-cat-tail {
+    animation-duration: 2.1s;
+}
+
+@keyframes catPeek {
+    0% { transform: rotate(0deg) translateX(0); }
+    45% { transform: rotate(-4deg) translateX(-3px); }
+    100% { transform: rotate(0deg) translateX(0); }
+}
+
+@keyframes pawTap {
+    0% { transform: rotate(0deg); }
+    36% { transform: rotate(-18deg) translate(-3px, -1px); }
+    70% { transform: rotate(-9deg); }
+    100% { transform: rotate(0deg); }
+}
+
+/* 喵气泡 */
+.meow-bubble {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 8px 16px;
+    border-radius: 16px;
+    font-size: 14px;
+    color: #4a5a4a;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s;
+    pointer-events: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.meow-bubble::before {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 20px;
+    border-width: 8px 8px 0;
+    border-style: solid;
+    border-color: rgba(255, 255, 255, 0.9) transparent transparent;
+}
+
+.cat-container.active .meow-bubble {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ========== 新增猫行为动画 (Phase 4) ========== */
+
+/* 拍缸 */
+@keyframes pawSwipe {
+    0% { transform: rotate(0deg) translate(0, 0); }
+    20% { transform: rotate(-25deg) translate(-15px, -5px); }
+    40% { transform: rotate(-15deg) translate(-12px, -2px); }
+    60% { transform: rotate(-28deg) translate(-18px, -6px); }
+    100% { transform: rotate(0deg) translate(0, 0); }
+}
+.cat-container.swiping .ink-cat-paw-front {
+    animation: pawSwipe 1.0s ease-out forwards;
+}
+
+/* 打哈欠 */
+@keyframes catYawn {
+    0% { transform: scaleY(1); }
+    20% { transform: scaleY(1.15) translateY(-3px); }
+    50% { transform: scaleY(1.25) translateY(-5px); }
+    80% { transform: scaleY(1.15) translateY(-3px); }
+    100% { transform: scaleY(1) translateY(0); }
+}
+@keyframes catSquint {
+    0%, 100% { transform: scaleY(1); }
+    20%, 80% { transform: scaleY(0.3); }
+}
+.cat-container.yawning .ink-cat-head {
+    animation: catYawn 3.2s ease-in-out forwards;
+}
+.cat-container.yawning .ink-cat-eye {
+    animation: catSquint 3.2s ease-in-out forwards;
+}
+
+/* 理毛 */
+@keyframes catGroom {
+    0% { transform: rotate(0deg) translate(0, 0); }
+    15% { transform: rotate(-12deg) translate(-5px, -8px); }
+    40% { transform: rotate(-18deg) translate(-8px, -12px); }
+    70% { transform: rotate(-15deg) translate(-6px, -10px); }
+    100% { transform: rotate(0deg) translate(0, 0); }
+}
+.cat-container.grooming .ink-cat-head {
+    animation: catGroom 4.5s ease-in-out forwards;
+}
+
+/* 犯困 */
+@keyframes catDrowsy {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(3px) rotate(-2deg); }
+    50% { transform: translateY(5px) rotate(-3deg); }
+    75% { transform: translateY(3px) rotate(-1deg); }
+}
+@keyframes catEyelidClose {
+    0% { transform: scaleY(1); }
+    100% { transform: scaleY(0.05); }
+}
+@keyframes catSlowBlink {
+    0%, 85%, 100% { transform: scaleY(1); }
+    88% { transform: scaleY(0.09); }
+    94% { transform: scaleY(1); }
+}
+.cat-container.drowsy .ink-cat-head {
+    animation: catDrowsy 4s ease-in-out infinite;
+}
+.cat-container.drowsy .ink-cat-eye {
+    animation: catSlowBlink 3s ease-in-out infinite;
+}
+.cat-container.asleep .ink-cat-head {
+    animation: catDrowsy 4s ease-in-out infinite;
+    transform: translateY(8px) rotate(-4deg);
+}
+.cat-container.asleep .ink-cat-eye {
+    animation: catEyelidClose 1s ease-out forwards;
+}
+
+/* ========== 胡须颤动 ========== */
+@keyframes whiskerTwitch {
+    0%, 100% { transform: rotate(0deg); }
+    15% { transform: rotate(3deg); }
+    30% { transform: rotate(-2deg); }
+    50% { transform: rotate(4deg); }
+    70% { transform: rotate(-1deg); }
+    85% { transform: rotate(2deg); }
+}
+.whisker-group-left {
+    transform-origin: 138px 118px;
+    animation: whiskerTwitch 3.2s ease-in-out infinite;
+}
+.whisker-group-right {
+    transform-origin: 185px 118px;
+    animation: whiskerTwitch 3.2s ease-in-out infinite;
+    animation-delay: -1.2s;
+}
+.cat-container.active .whisker-group-left {
+    animation-duration: 1.2s;
+}
+.cat-container.active .whisker-group-right {
+    animation-duration: 1.2s;
+}
+
+/* ========== 尾巴尖颤动 (叠加在原有尾巴动画之上) ========== */
+@keyframes tailTipFlick {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(2px, -1px); }
+    50% { transform: translate(-1px, 1px); }
+    75% { transform: translate(1px, -1px); }
+}
+.ink-cat-tail {
+    position: relative;
+}
+.cat-container.excited .ink-cat-tail {
+    animation-duration: 1.2s;
+}
+.cat-container.startled .ink-cat-head {
+    animation: catStartle 0.6s ease-out forwards;
+}
+
+/* ========== 惊吓反应 ========== */
+@keyframes catStartle {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    20% { transform: translate(5px, -3px) rotate(-3deg); }
+    50% { transform: translate(-2px, 1px) rotate(2deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* ========== 好奇前倾 ========== */
+@keyframes catCurious {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    30% { transform: translate(-6px, -2px) rotate(-3deg); }
+    60% { transform: translate(-4px, -1px) rotate(-2deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
+}
+.cat-container.curious .ink-cat-head {
+    animation: catCurious 2s ease-out forwards;
+}
+.cat-container.curious .ink-cat-body {
+    animation: bodyLean 2s ease-out forwards;
+}
+
+/* ========== 身体前倾 ========== */
+@keyframes bodyLean {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.01) translateX(-3px); }
+    100% { transform: scale(1); }
+}
+
+/* ========== 困倦转头 ========== */
+.cat-container.asleep .whisker-group-left,
+.cat-container.asleep .whisker-group-right {
+    animation-duration: 8s;
+}
+.cat-container.asleep .ink-cat-tail {
+    animation: none;
+    transform: rotate(-15deg);
+}

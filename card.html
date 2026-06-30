@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>观鱼 · 水墨鱼缸</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Serif SC', 'SimSun', 'STSong', serif;
+    background: linear-gradient(135deg, #e8f0e5 0%, #d4e3ce 100%);
+    overflow: hidden;
+    width: 480px;
+    height: 240px;
+    position: relative;
+  }
+
+  /* 宣纸纹理 */
+  .paper {
+    position: absolute;
+    inset: 0;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  /* 水墨晕染 */
+  .ink {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+  }
+  .ink-1 { width: 180px; height: 180px; background: rgba(100,120,100,0.06); top: -40px; left: -40px; }
+  .ink-2 { width: 140px; height: 140px; background: rgba(80,100,120,0.05); bottom: -30px; right: 80px; }
+
+  a {
+    display: block;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    z-index: 5;
+    cursor: pointer;
+  }
+
+  /* 迷你鱼缸 */
+  .mini-tank {
+    position: absolute;
+    left: 24px;
+    top: 28px;
+    width: 200px;
+    height: 184px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.08) 100%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.3);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+
+  .water {
+    position: absolute;
+    inset: 6px;
+    border-radius: 12px;
+    background: linear-gradient(to bottom, rgba(147,197,253,0.06) 0%, rgba(6,182,212,0.04) 100%);
+    overflow: hidden;
+  }
+
+  .water-surface {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 20px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.12), transparent);
+    border-radius: 12px 12px 0 0;
+    pointer-events: none;
+  }
+
+  .sand {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 20px;
+    background: linear-gradient(to top, rgba(180,160,130,0.12), transparent);
+    border-radius: 0 0 12px 12px;
+    pointer-events: none;
+  }
+
+  /* 水草 */
+  .seaweed {
+    position: absolute;
+    bottom: 0;
+    transform-origin: bottom center;
+    animation: sway 4s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .sw1 { left: 12%; width: 28px; height: 50px; animation-delay: 0s; opacity: 0.25; }
+  .sw2 { left: 72%; width: 22px; height: 40px; animation-delay: -1.5s; opacity: 0.2; }
+
+  @keyframes sway {
+    0%, 100% { transform: rotate(-3deg); }
+    50% { transform: rotate(3deg); }
+  }
+
+  /* 鱼 canvas */
+  #fishCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  /* 涟漪 */
+  .ripple {
+    position: absolute;
+    border: 1px solid rgba(80,100,80,0.15);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: rippleExpand 2s ease-out forwards;
+  }
+  @keyframes rippleExpand {
+    0% { width: 0; height: 0; opacity: 0.4; border-width: 1px; }
+    100% { width: 80px; height: 80px; opacity: 0; border-width: 0; margin-left: -40px; margin-top: -40px; }
+  }
+
+  /* 气泡 */
+  .bubble {
+    position: absolute;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.7), rgba(255,255,255,0.1));
+    border-radius: 50%;
+    border: 0.5px solid rgba(255,255,255,0.25);
+    pointer-events: none;
+    animation: rise linear forwards;
+  }
+  @keyframes rise {
+    0% { transform: translateY(0) translateX(0); opacity: 0; }
+    10% { opacity: 0.5; }
+    100% { transform: translateY(-130px) translateX(8px); opacity: 0; }
+  }
+
+  /* 右侧信息区 */
+  .info {
+    position: absolute;
+    right: 28px;
+    top: 50%;
+    transform: translateY(-50%);
+    text-align: right;
+  }
+
+  .title-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .seal {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, rgba(180,60,50,0.12), rgba(180,60,50,0.06));
+    border: 1px solid rgba(180,60,50,0.3);
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: rgba(180,60,50,0.7);
+    letter-spacing: 1px;
+    transform: rotate(3deg);
+    transition: transform 0.3s;
+  }
+  a:hover .seal { transform: rotate(0deg) scale(1.1); }
+
+  .title-text {
+    font-size: 20px;
+    color: rgba(60,80,60,0.8);
+    letter-spacing: 6px;
+    font-weight: 300;
+    transition: color 0.3s;
+  }
+  a:hover .title-text { color: rgba(60,80,60,1); }
+
+  .tagline {
+    font-size: 12px;
+    color: rgba(60,80,60,0.55);
+    letter-spacing: 3px;
+    margin-top: 4px;
+    font-weight: 300;
+  }
+
+  /* 柳叶装饰 */
+  .leaf {
+    position: absolute;
+    width: 18px;
+    height: 5px;
+    background: rgba(90,120,90,0.15);
+    border-radius: 50%;
+    pointer-events: none;
+    transform-origin: right center;
+    animation: leafFall 8s ease-in-out infinite;
+  }
+  .leaf-1 { top: 10px; right: 80px; animation-delay: -2s; opacity: 0; }
+  .leaf-2 { top: 25px; right: 100px; animation-delay: -6s; opacity: 0; }
+  @keyframes leafFall {
+    0% { transform: rotate(10deg) translate(0, 0); opacity: 0; }
+    10% { opacity: 0.3; }
+    50% { transform: rotate(-5deg) translate(-30px, 40px); opacity: 0.15; }
+    100% { transform: rotate(-15deg) translate(-60px, 80px); opacity: 0; }
+  }
+
+  /* 响应式 */
+  @media (max-width: 500px) {
+    body { width: 100vw; height: 180px; }
+    .mini-tank { left: 12px; top: 16px; width: 140px; height: 148px; }
+    .info { right: 14px; }
+    .title-text { font-size: 16px; letter-spacing: 4px; }
+    .tagline { font-size: 10px; }
+    .seal { width: 26px; height: 26px; font-size: 10px; }
+    .sw1 { width: 20px; height: 36px; }
+    .sw2 { width: 16px; height: 28px; }
+  }
+</style>
+</head>
+<body>
+<div class="paper"></div>
+<div class="ink ink-1"></div>
+<div class="ink ink-2"></div>
+
+<div class="leaf leaf-1"></div>
+<div class="leaf leaf-2"></div>
+
+<a href="https://ifishin.github.io" target="_blank" rel="noopener">
+  <div class="mini-tank">
+    <div class="water">
+      <div class="water-surface"></div>
+      <svg class="seaweed sw1" viewBox="0 0 100 200">
+        <path d="M50,200 Q30,140 50,80 T48,5" stroke="rgba(80,110,80,0.3)" stroke-width="2" fill="none"/>
+      </svg>
+      <svg class="seaweed sw2" viewBox="0 0 100 200">
+        <path d="M50,200 Q28,145 50,85 T52,15" stroke="rgba(80,110,80,0.25)" stroke-width="1.5" fill="none"/>
+      </svg>
+      <div class="sand"></div>
+      <canvas id="fishCanvas"></canvas>
+    </div>
+  </div>
+
+  <div class="info">
+    <div class="title-icon">
+      <span class="title-text">观 鱼</span>
+      <span class="seal">观鱼</span>
+    </div>
+    <div class="tagline">水墨风格在线鱼缸</div>
+  </div>
+</a>
+
+<script>
+(function() {
+  const canvas = document.getElementById('fishCanvas');
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  const ctx = canvas.getContext('2d');
+  let w = canvas.width, h = canvas.height;
+
+  // 两条水墨鱼
+  class MiniFish {
+    constructor(colorType) {
+      this.x = 30 + Math.random() * (w - 60);
+      this.y = 30 + Math.random() * (h - 60);
+      this.vx = (Math.random() - 0.5) * 0.8;
+      this.vy = (Math.random() - 0.5) * 0.4;
+      this.size = 8 + Math.random() * 5;
+      this.tailPhase = Math.random() * Math.PI * 2;
+      // 指定颜色：'orange' 或 'green'
+      if (colorType === 'orange') {
+        this.ink = {
+          body: 'rgba(233,87,50,0.82)',
+          tail: 'rgba(233,87,50,0.22)',
+          fin: 'rgba(233,87,50,0.28)',
+          gillLine: 'rgba(200,70,40,0.15)'
+        };
+      } else {
+        this.ink = {
+          body: 'rgba(107,158,107,0.78)',
+          tail: 'rgba(107,158,107,0.22)',
+          fin: 'rgba(107,158,107,0.28)',
+          gillLine: 'rgba(90,140,90,0.15)'
+        };
+      }
+      this.targetX = this.x;
+      this.targetY = this.y;
+    }
+
+    update() {
+      this.tailPhase += 0.08;
+
+      // 随机转向
+      if (Math.random() < 0.01) {
+        this.targetX = 30 + Math.random() * (w - 60);
+        this.targetY = 30 + Math.random() * (h - 60);
+      }
+
+      // 游向目标
+      const dx = this.targetX - this.x;
+      const dy = this.targetY - this.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist > 1) {
+        this.vx += (dx / dist * 0.3 - this.vx) * 0.02;
+        this.vy += (dy / dist * 0.2 - this.vy) * 0.02;
+      }
+
+      // 限制速度
+      const speed = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
+      const maxSpeed = 1.0;
+      if (speed > maxSpeed) {
+        this.vx = this.vx / speed * maxSpeed;
+        this.vy = this.vy / speed * maxSpeed;
+      }
+
+      this.x += this.vx;
+      this.y += this.vy;
+
+      // 边界
+      if (this.x < 10) { this.x = 10; this.vx = Math.abs(this.vx); }
+      if (this.x > w - 10) { this.x = w - 10; this.vx = -Math.abs(this.vx); }
+      if (this.y < 10) { this.y = 10; this.vy = Math.abs(this.vy); }
+      if (this.y > h - 10) { this.y = h - 10; this.vy = -Math.abs(this.vy); }
+    }
+
+    draw(ctx) {
+      const facingRight = this.vx >= 0;
+      const angle = Math.atan2(this.vy, this.vx || 0.0001);
+
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate(angle);
+
+      if (!facingRight) {
+        ctx.scale(-1, 1);
+      }
+
+      const s = this.size;
+
+      // 尾鳍外层 - 精确匹配 SVG 贝塞尔路径
+      ctx.beginPath();
+      ctx.moveTo(-0.917 * s, 0.167 * s);
+      ctx.bezierCurveTo(-1.5 * s, -0.333 * s, -1.917 * s, -0.25 * s, -2.083 * s, -0.083 * s);
+      ctx.bezierCurveTo(-2.167 * s, 0.167 * s, -1.917 * s, 0.25 * s, -1.667 * s, 0.25 * s);
+      ctx.bezierCurveTo(-1.917 * s, 0.333 * s, -2.167 * s, 0.417 * s, -2.083 * s, 0.583 * s);
+      ctx.bezierCurveTo(-1.917 * s, 0.75 * s, -1.5 * s, 0.667 * s, -0.917 * s, 0.167 * s);
+      ctx.closePath();
+      ctx.fillStyle = this.ink.tail;
+      ctx.fill();
+
+      // 尾鳍内层（更淡）
+      ctx.beginPath();
+      ctx.moveTo(-0.917 * s, 0.167 * s);
+      ctx.bezierCurveTo(-1.333 * s, -0.25 * s, -1.75 * s, -0.167 * s, -1.917 * s, 0);
+      ctx.bezierCurveTo(-2.0 * s, 0.167 * s, -1.75 * s, 0.25 * s, -1.583 * s, 0.25 * s);
+      ctx.bezierCurveTo(-1.75 * s, 0.333 * s, -2.0 * s, 0.417 * s, -1.917 * s, 0.583 * s);
+      ctx.bezierCurveTo(-1.75 * s, 0.667 * s, -1.333 * s, 0.583 * s, -0.917 * s, 0.167 * s);
+      ctx.closePath();
+      ctx.globalAlpha = 0.45;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // 背鳍
+      ctx.beginPath();
+      ctx.moveTo(-0.5 * s, -0.583 * s);
+      ctx.bezierCurveTo(-0.167 * s, -1.0 * s, 0.333 * s, -1.0 * s, 0.5 * s, -0.667 * s);
+      ctx.bezierCurveTo(0.333 * s, -0.583 * s, 0, -0.5 * s, -0.5 * s, -0.583 * s);
+      ctx.closePath();
+      ctx.fillStyle = this.ink.fin;
+      ctx.fill();
+
+      // 腹鳍
+      ctx.beginPath();
+      ctx.moveTo(-0.167 * s, 0.583 * s);
+      ctx.bezierCurveTo(0, 0.917 * s, 0.167 * s, 1.0 * s, 0.333 * s, 0.75 * s);
+      ctx.bezierCurveTo(0.167 * s, 0.667 * s, 0, 0.583 * s, -0.167 * s, 0.583 * s);
+      ctx.closePath();
+      ctx.fillStyle = this.ink.fin;
+      ctx.fill();
+
+      // 身体
+      ctx.beginPath();
+      ctx.ellipse(0, 0, s, 0.542 * s, 0, 0, Math.PI * 2);
+      ctx.fillStyle = this.ink.body;
+      ctx.fill();
+
+      // 鳃线
+      ctx.beginPath();
+      ctx.moveTo(0.083 * s, -0.417 * s);
+      ctx.bezierCurveTo(0.167 * s, -0.25 * s, 0.167 * s, 0.25 * s, 0.083 * s, 0.417 * s);
+      ctx.strokeStyle = this.ink.gillLine;
+      ctx.lineWidth = 0.6;
+      ctx.stroke();
+
+      // 眼睛
+      ctx.beginPath();
+      ctx.arc(0.667 * s, -0.167 * s, 0.208 * s, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.75)';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(0.708 * s, -0.167 * s, 0.1 * s, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(20,25,30,0.85)';
+      ctx.fill();
+
+      ctx.restore();
+    }
+  }
+
+  const fishes = [new MiniFish('orange'), new MiniFish('green')];
+  let bubbles = [];
+  let bubbleTimer = 0;
+  let rippleTimer = 0;
+
+  // 鼠标交互
+  let mouseInside = false;
+  let mouseX = 0, mouseY = 0;
+  canvas.addEventListener('mouseenter', () => { mouseInside = true; });
+  canvas.addEventListener('mouseleave', () => { mouseInside = false; });
+  canvas.addEventListener('mousemove', (e) => {
+    const r = canvas.getBoundingClientRect();
+    mouseX = e.clientX - r.left;
+    mouseY = e.clientY - r.top;
+  });
+
+  function createBubble() {
+    const x = 20 + Math.random() * (w - 40);
+    const y = h - 20 - Math.random() * 10;
+    const size = 2 + Math.random() * 4;
+    bubbles.push({ x, y, size, life: 0, maxLife: 80 + Math.random() * 60 });
+  }
+
+  function createRipple(x, y) {
+    const el = document.createElement('div');
+    el.className = 'ripple';
+    const tank = document.querySelector('.water');
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    tank.appendChild(el);
+    setTimeout(() => el.remove(), 2000);
+  }
+
+  function animate() {
+    // 更新鱼
+    fishes.forEach(f => f.update());
+
+    // 鼠标吸引
+    if (mouseInside) {
+      fishes.forEach(f => {
+        const dx = mouseX - f.x;
+        const dy = mouseY - f.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 80 && dist > 5) {
+          f.vx += dx / dist * 0.05;
+          f.vy += dy / dist * 0.04;
+        }
+      });
+    }
+
+    // 气泡
+    bubbleTimer++;
+    if (bubbleTimer > 60 + Math.random() * 60) {
+      createBubble();
+      bubbleTimer = 0;
+    }
+    bubbles = bubbles.filter(b => {
+      b.life++;
+      b.y -= 0.3 + b.size * 0.05;
+      b.x += Math.sin(b.life * 0.05) * 0.15;
+      return b.life < b.maxLife && b.y > -10;
+    });
+
+    // 涟漪
+    rippleTimer++;
+    if (rippleTimer > 180 + Math.random() * 120) {
+      createRipple(20 + Math.random() * (w - 40), 5 + Math.random() * 10);
+      rippleTimer = 0;
+    }
+
+    // 绘制
+    ctx.clearRect(0, 0, w, h);
+
+    // 气泡
+    bubbles.forEach(b => {
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
+      const grad = ctx.createRadialGradient(b.x - b.size*0.3, b.y - b.size*0.3, 0, b.x, b.y, b.size);
+      grad.addColorStop(0, 'rgba(255,255,255,0.6)');
+      grad.addColorStop(1, 'rgba(255,255,255,0.1)');
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    });
+
+    // 鱼
+    fishes.forEach(f => f.draw(ctx));
+
+    requestAnimationFrame(animate);
+  }
+
+  // 窗口大小调整
+  window.addEventListener('resize', () => {
+    const r = canvas.parentElement.getBoundingClientRect();
+    canvas.width = r.width;
+    canvas.height = r.height;
+    w = canvas.width;
+    h = canvas.height;
+  });
+
+  animate();
+})();
+</script>
+</body>
+</html>
