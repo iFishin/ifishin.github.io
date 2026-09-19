@@ -216,11 +216,12 @@
     <div class="cat-scene" id="catScene">
         <div class="cat-container" id="catContainer" role="button" tabindex="0" aria-label="点击与猫互动">
             <div class="meow-bubble" aria-live="polite" aria-atomic="true">喵~</div>
-            <svg viewBox="0 0 330 235" width="330" height="235" role="img" aria-label="水墨风格的黑猫坐在凳子上">
+            <svg viewBox="0 0 330 235" role="img" aria-label="水墨风格的黑猫坐在凳子上">
                 <defs>
-                    <linearGradient id="inkCatWash" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="rgba(25,25,25,0.94)" />
-                        <stop offset="100%" stop-color="rgba(10,10,10,0.98)" />
+                    <linearGradient id="inkCatWash" x1="18%" y1="0%" x2="82%" y2="100%">
+                        <stop offset="0%" stop-color="rgba(60,60,64,0.96)" />
+                        <stop offset="55%" stop-color="rgba(22,22,26,0.97)" />
+                        <stop offset="100%" stop-color="rgba(6,6,9,0.99)" />
                     </linearGradient>
                     <linearGradient id="stoolWash" x1="0%" y1="0%" x2="0%" y2="100%">
                         <stop offset="0%" stop-color="rgba(122,102,78,0.8)" />
@@ -228,68 +229,102 @@
                     </linearGradient>
                 </defs>
 
-                <g class="ink-stool" opacity="0.78">
-                    <ellipse cx="228" cy="198" rx="72" ry="16.5" fill="url(#stoolWash)"/>
-                    <rect x="173" y="198" width="13" height="35" rx="6" fill="rgba(88,70,50,0.78)"/>
-                    <rect x="214" y="200" width="13" height="33" rx="6" fill="rgba(88,70,50,0.78)"/>
-                    <rect x="255" y="198" width="13" height="35" rx="6" fill="rgba(88,70,50,0.78)"/>
-                    <ellipse cx="228" cy="198" rx="64" ry="11.5" fill="rgba(255,255,255,0.08)"/>
+                <!-- 地面投影 -->
+                <ellipse cx="212" cy="230" rx="80" ry="7" fill="rgba(70,90,70,0.10)"/>
+
+                <g class="ink-stool" opacity="0.8">
+                    <rect x="164" y="196" width="11" height="33" rx="5" fill="rgba(88,70,50,0.78)"/>
+                    <rect x="206" y="198" width="11" height="31" rx="5" fill="rgba(88,70,50,0.78)"/>
+                    <rect x="248" y="196" width="11" height="33" rx="5" fill="rgba(88,70,50,0.78)"/>
+                    <!-- 座面厚度：只靠一个椭圆会像托盘 -->
+                    <rect x="142" y="195" width="140" height="10" rx="5" fill="rgba(96,78,56,0.85)"/>
+                    <ellipse cx="212" cy="197" rx="72" ry="14" fill="url(#stoolWash)"/>
+                    <ellipse cx="212" cy="194" rx="60" ry="8" fill="rgba(255,255,255,0.09)"/>
                 </g>
 
                 <g class="ink-cat">
-                    <path class="ink-cat-tail" d="M270,159 Q310,132 318,92 Q323,59 305,44 Q296,36 287,48 Q281,67 288,93 Q298,124 270,159"
+                    <!-- 尾巴：沿凳子右沿垂落再回卷，向尾尖收细 -->
+                    <path class="ink-cat-tail"
+                        d="M290,160 C309,168 320,188 316,204 C314,216 306,224 302,222 C305,208 301,192 285,175 Z"
                         fill="url(#inkCatWash)" opacity="0.96"/>
 
                     <g class="ink-cat-body">
-                        <path d="M176,176 Q163,151 176,128 Q194,99 243,108 Q285,116 289,155 Q292,179 269,191 Q220,203 176,176 Z"
-                            fill="url(#inkCatWash)"/>
-                        <path d="M224,131 Q252,138 267,159" stroke="rgba(210,210,210,0.14)" stroke-width="2" fill="none"/>
-                        <ellipse class="ink-cat-paw-front" cx="184" cy="190" rx="14" ry="8.8" fill="rgba(8,8,8,0.98)"/>
-                        <ellipse cx="214" cy="192" rx="12" ry="7.8" fill="rgba(8,8,8,0.95)"/>
-                        <ellipse cx="268" cy="191" rx="14.2" ry="8.2" fill="rgba(8,8,8,0.95)"/>
+                        <!-- 躯干 + 后腿（臀）：左肩延伸到 x=152，与头部大幅重叠，
+                             否则头会像一颗悬空的球 -->
+                        <path d="M146,106 C176,92 246,101 271,120 C295,138 304,167 295,185
+                                 C286,200 232,203 200,197 C172,192 146,150 146,106 Z"
+                              fill="url(#inkCatWash)"/>
+                        <!-- 后腿（臀）：一块略亮的体积 + 折痕，避免躯干是一整块死黑 -->
+                        <path d="M228,146 C254,140 276,156 280,179 C283,197 264,205 244,201
+                                 C226,197 218,176 228,146 Z"
+                              fill="rgba(50,50,57,0.42)"/>
+                        <path d="M228,146 C254,140 276,156 280,179" stroke="rgba(215,215,215,0.15)" stroke-width="1.8" fill="none"/>
+                        <!-- 背脊高光 -->
+                        <path d="M158,112 C196,98 246,104 268,122" stroke="rgba(220,220,220,0.17)" stroke-width="2.4" fill="none"/>
+                        <!-- 后腿折痕 -->
+                        <path d="M234,150 C247,163 251,180 246,195" stroke="rgba(200,200,200,0.13)" stroke-width="1.8" fill="none"/>
+                        <!-- 臀部体积 -->
+                        <path d="M276,140 C291,155 294,175 288,190" stroke="rgba(220,220,220,0.10)" stroke-width="2" fill="none"/>
+                        <!-- 胸口 -->
+                        <path d="M160,130 C168,150 172,172 174,192" stroke="rgba(200,200,200,0.10)" stroke-width="1.6" fill="none"/>
+                        <!-- 前腿：比躯干略亮，且两只拉开距离，否则黑压黑完全看不见 -->
+                        <path class="ink-cat-paw-front"
+                              d="M168,166 C164,178 163,187 163,193 C163,198 177,198 177,193 C177,185 178,174 180,164 Z"
+                              fill="rgba(46,46,54,0.97)"/>
+                        <path d="M192,168 C189,179 188,188 188,194 C188,199 202,199 202,194 C202,186 203,175 204,167 Z"
+                              fill="rgba(36,36,43,0.95)"/>
                     </g>
 
                     <g class="ink-cat-head">
-                        <path class="ink-cat-ear-left" d="M145,83 L132,53 L158,71 Z" fill="rgba(16,16,16,0.9)"/>
-                        <path class="ink-cat-ear-right" d="M176,81 L188,53 L198,87 Z" fill="rgba(18,18,18,0.96)"/>
-                        <ellipse cx="163" cy="111" rx="42" ry="34" fill="url(#inkCatWash)"/>
-                        <path d="M134,113 Q124,125 131,140" stroke="rgba(225,225,225,0.12)" stroke-width="1.9" fill="none"/>
+                        <!-- 耳朵：左右镜像的三角形，底宽≈高（近乎等边），只留轻微外弧；
+                             太窄太高会读成猞猁/兔耳 -->
+                        <path class="ink-cat-ear-left"  d="M116,60 Q108,40 116,22 Q130,34 146,44 Z" fill="rgba(14,14,16,0.94)"/>
+                        <path class="ink-cat-ear-right" d="M180,60 Q188,40 180,22 Q166,34 150,44 Z" fill="rgba(18,18,20,0.97)"/>
+                        <path d="M122,56 Q116,40 122,27 Q132,37 142,45 Z" fill="rgba(120,110,110,0.16)"/>
+                        <path d="M174,56 Q180,40 174,27 Q164,37 154,45 Z" fill="rgba(120,110,110,0.13)"/>
+
+                        <!-- 头：宽颧、收下巴的猫脸轮廓，用椭圆会读成一颗球 -->
+                        <path d="M148,42 C169,42 185,55 189,77 C192,94 178,109 159,112
+                                 C154,113 143,113 137,112 C118,109 104,94 107,77
+                                 C111,55 127,42 148,42 Z" fill="url(#inkCatWash)"/>
+                        <path d="M114,74 Q107,88 115,101" stroke="rgba(225,225,225,0.13)" stroke-width="1.9" fill="none"/>
 
                         <!-- 鼻子 -->
-                        <path d="M158,117 L162,117 L160,121 Z" fill="rgba(60,50,50,0.5)"/>
-
+                        <path d="M143,89 L153,89 L148,95 Z" fill="rgba(96,78,78,0.6)"/>
+                        <!-- 人中 -->
+                        <path d="M148,95 L148,98" stroke="rgba(96,78,78,0.4)" stroke-width="0.9" fill="none"/>
                         <!-- 嘴 -->
-                        <path d="M160,121 Q156,126 152,124" stroke="rgba(60,50,50,0.3)" stroke-width="0.8" fill="none"/>
-                        <path d="M160,121 Q164,126 168,124" stroke="rgba(60,50,50,0.3)" stroke-width="0.8" fill="none"/>
+                        <path d="M148,98 Q142,104 136,101" stroke="rgba(96,78,78,0.45)" stroke-width="1" fill="none"/>
+                        <path d="M148,98 Q154,104 160,101" stroke="rgba(96,78,78,0.45)" stroke-width="1" fill="none"/>
 
-                        <!-- 胡须 - 左侧 -->
+                        <!-- 胡须 - 左 -->
                         <g class="whisker-group-left">
-                            <line class="whisker" x1="138" y1="115" x2="92" y2="105" stroke="rgba(200,200,200,0.5)" stroke-width="0.7"/>
-                            <line class="whisker" x1="138" y1="118" x2="88" y2="116" stroke="rgba(200,200,200,0.45)" stroke-width="0.7"/>
-                            <line class="whisker" x1="138" y1="121" x2="92" y2="128" stroke="rgba(200,200,200,0.4)" stroke-width="0.7"/>
+                            <line class="whisker" x1="134" y1="94" x2="98" y2="86"  stroke="rgba(210,210,210,0.5)"  stroke-width="0.7"/>
+                            <line class="whisker" x1="134" y1="98" x2="94" y2="98"  stroke="rgba(210,210,210,0.45)" stroke-width="0.7"/>
+                            <line class="whisker" x1="134" y1="102" x2="99" y2="111" stroke="rgba(210,210,210,0.4)"  stroke-width="0.7"/>
                         </g>
 
-                        <!-- 胡须 - 右侧 -->
+                        <!-- 胡须 - 右 -->
                         <g class="whisker-group-right">
-                            <line class="whisker" x1="185" y1="115" x2="230" y2="105" stroke="rgba(200,200,200,0.5)" stroke-width="0.7"/>
-                            <line class="whisker" x1="185" y1="118" x2="235" y2="116" stroke="rgba(200,200,200,0.45)" stroke-width="0.7"/>
-                            <line class="whisker" x1="185" y1="121" x2="230" y2="128" stroke="rgba(200,200,200,0.4)" stroke-width="0.7"/>
+                            <line class="whisker" x1="162" y1="94" x2="198" y2="86"  stroke="rgba(210,210,210,0.5)"  stroke-width="0.7"/>
+                            <line class="whisker" x1="162" y1="98" x2="202" y2="98"  stroke="rgba(210,210,210,0.45)" stroke-width="0.7"/>
+                            <line class="whisker" x1="162" y1="102" x2="197" y2="111" stroke="rgba(210,210,210,0.4)"  stroke-width="0.7"/>
                         </g>
 
-                        <g class="ink-cat-eye">
-                            <ellipse cx="148" cy="106" rx="11.3" ry="11.8" fill="#d7cc86" opacity="0.92"/>
-                            <ellipse class="cat-pupil" cx="148.5" cy="106" rx="3.7" ry="8.5" fill="#0b0b0b"/>
-                            <ellipse cx="145" cy="103" rx="2.5" ry="2" fill="rgba(255,255,255,0.6)"/>
+                        <g class="ink-cat-eye ink-cat-eye-left">
+                            <ellipse cx="132" cy="76" rx="11.5" ry="12" fill="#d7cc86" opacity="0.93"/>
+                            <ellipse class="cat-pupil" cx="132.5" cy="76" rx="3.8" ry="8.6" fill="#0b0b0b"/>
+                            <ellipse cx="129" cy="72" rx="2.6" ry="2.1" fill="rgba(255,255,255,0.62)"/>
                         </g>
-                        <g class="ink-cat-eye">
-                            <ellipse cx="174" cy="108" rx="8" ry="9.1" fill="#d7cc86" opacity="0.82"/>
-                            <ellipse class="cat-pupil" cx="174.4" cy="108" rx="2.5" ry="6.2" fill="#0b0b0b"/>
-                            <ellipse cx="171" cy="105" rx="1.8" ry="1.5" fill="rgba(255,255,255,0.5)"/>
+                        <g class="ink-cat-eye ink-cat-eye-right">
+                            <ellipse cx="164" cy="77" rx="8.4" ry="9.4" fill="#d7cc86" opacity="0.84"/>
+                            <ellipse class="cat-pupil" cx="164.4" cy="77" rx="2.6" ry="6.3" fill="#0b0b0b"/>
+                            <ellipse cx="161" cy="74" rx="1.9" ry="1.6" fill="rgba(255,255,255,0.5)"/>
                         </g>
 
-                        <!-- 眉毛 -->
-                        <path d="M135,94 Q140,90 148,92" stroke="rgba(200,200,200,0.15)" stroke-width="1" fill="none"/>
-                        <path d="M175,95 Q180,91 188,93" stroke="rgba(200,200,200,0.12)" stroke-width="1" fill="none"/>
+                        <!-- 眉 -->
+                        <path d="M122,61 Q128,56 136,59" stroke="rgba(210,210,210,0.16)" stroke-width="1" fill="none"/>
+                        <path d="M158,63 Q165,58 173,61" stroke="rgba(210,210,210,0.13)" stroke-width="1" fill="none"/>
                     </g>
                 </g>
             </svg>

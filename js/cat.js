@@ -39,18 +39,23 @@ let catEyeCurrentX = 0, catEyeCurrentY = 0;
 
 function updateCatEyes() {
     if (window.innerWidth <= 768 || fishes.length === 0) return;
-    let targetFish = null, maxX = -Infinity;
-    fishes.forEach(fish => { if (fish.x > maxX) { maxX = fish.x; targetFish = fish; } });
-    if (targetFish) {
+
+    // 「张望」期间视线目标由 triggerLookAround 指定，其余时候盯住最右侧的鱼。
+    // 原来这里无条件覆盖 target，导致张望刚设好就被改掉，等于没有效果。
+    if (G.catBehaviorState !== 'looking') {
+        let targetFish = null, maxX = -Infinity;
+        fishes.forEach(fish => { if (fish.x > maxX) { maxX = fish.x; targetFish = fish; } });
+        if (!targetFish) return;
         catEyeTargetY = targetFish.y > 56 ? 1.1 : targetFish.y < 30 ? -1.1 : 0;
         catEyeTargetX = Math.max(-2.0, Math.min(-0.3, -1.9 + (100 - targetFish.x) * 0.04));
-        const lerp = G.catExciteLevel > 0.3 ? 0.25 : 0.15;
-        catEyeCurrentX += (catEyeTargetX - catEyeCurrentX) * lerp;
-        catEyeCurrentY += (catEyeTargetY - catEyeCurrentY) * lerp;
-        catEyes.forEach(eye => {
-            eye.style.transform = `translate(${catEyeCurrentX}px, ${catEyeCurrentY}px)`;
-        });
     }
+
+    const lerp = G.catExciteLevel > 0.3 ? 0.25 : 0.15;
+    catEyeCurrentX += (catEyeTargetX - catEyeCurrentX) * lerp;
+    catEyeCurrentY += (catEyeTargetY - catEyeCurrentY) * lerp;
+    catEyes.forEach(eye => {
+        eye.style.transform = `translate(${catEyeCurrentX}px, ${catEyeCurrentY}px)`;
+    });
 }
 
 function showRandomCatPhrase() { meowBubble.textContent = getContextPhrase(); }
@@ -99,6 +104,9 @@ function updateCat() {
         // 随机转头环顾（让猫看起来有自主意识）
         if (timeSinceInteraction > 5000 && Math.random() < 0.0008) { triggerLookAround(); return; }
 
+        // 伸懒腰
+        if (timeSinceInteraction > 12000 && Math.random() < 0.0012) { triggerStretch(); return; }
+
         // 好奇心 - 鱼在右侧时猫微微前倾
         if (nearRightFish >= 1 && G.catExciteLevel > 0.1) {
             catContainer.classList.add('curious');
@@ -114,6 +122,7 @@ function updateCat() {
         }
     }
 
+    updateCatTail();
     updateCatEyes();
 }
 
@@ -159,10 +168,22 @@ function triggerLookAround() {
     const lookDist = 1 + Math.random() * 2;
     catEyeTargetX = lookDir * lookDist;
     catEyeTargetY = (Math.random() - 0.5) * 1.5;
+    catContainer.classList.add('looking');
     setTimeout(() => {
         catEyeTargetX = 0; catEyeTargetY = 0;
+        catContainer.classList.remove('looking');
         G.catBehaviorState = 'idle';
-    }, 1500 + Math.random() * 1500);
+    }, 2200);
+}
+
+function triggerStretch() {
+    if (G.catBehaviorState !== 'idle' || G.catSleepStage > 0) return;
+    G.catBehaviorState = 'stretching';
+    catContainer.classList.add('stretching');
+    setTimeout(() => {
+        catContainer.classList.remove('stretching');
+        G.catBehaviorState = 'idle';
+    }, 2600);
 }
 
 catContainer.addEventListener('keydown', (e) => {
@@ -203,8 +224,74 @@ function playMeowSound(profileIndex = 0) {
     } catch (e) {}
 }
 
+// ========== 尾巴：真正的 S 形波动 ==========
+// 原来尾巴只有根部整体旋转，读起来像一根硬棍。这里沿中心线叠加一道行波，
+// 再按"位移后折线"的法线加厚，得到随尾尖摆动的 S 形，且不会在尾尖自交夹断。
+const tailEl = document.querySelector('.ink-cat-tail');
+const baseTailPath = tailEl ? tailEl.getAttribute('d') : null;
+const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+let tailPhase = 0;
+
+function buildTailPath(phase, ampScale) {
+    const STEPS = 12;
+    const p0 = [292, 168], p1 = [309, 176], p2 = [319, 197], p3 = [302, 221];
+
+    // 第一遍：中心线 = 基准三次贝塞尔 + 法线方向的行波
+    const centre = [];
+    for (let i = 0; i <= STEPS; i++) {
+        const t = i / STEPS, mt = 1 - t;
+        const x = mt*mt*mt*p0[0] + 3*mt*mt*t*p1[0] + 3*mt*t*t*p2[0] + t*t*t*p3[0];
+        const y = mt*mt*mt*p0[1] + 3*mt*mt*t*p1[1] + 3*mt*t*t*p2[1] + t*t*t*p3[1];
+        const dx = 3*mt*mt*(p1[0]-p0[0]) + 6*mt*t*(p2[0]-p1[0]) + 3*t*t*(p3[0]-p2[0]);
+        const dy = 3*mt*mt*(p1[1]-p0[1]) + 6*mt*t*(p2[1]-p1[1]) + 3*t*t*(p3[1]-p2[1]);
+        const len = Math.hypot(dx, dy) || 1;
+        const wave = Math.sin(t * 7.2 - phase) * (0.8 + 5.0 * t * t) * ampScale;
+        centre.push([x + (-dy / len) * wave, y + (dx / len) * wave]);
+    }
+
+    // 第二遍：用位移后折线的法线加厚，尾根粗、尾尖细
+    const outer = [], inner = [];
+    for (let i = 0; i <= STEPS; i++) {
+        const a = centre[Math.max(0, i - 1)];
+        const b = centre[Math.min(STEPS, i + 1)];
+        const dx = b[0] - a[0], dy = b[1] - a[1];
+        const len = Math.hypot(dx, dy) || 1;
+        const half = (14 - 8 * (i / STEPS)) / 2;
+        const nx = -dy / len * half, ny = dx / len * half;
+        outer.push([centre[i][0] + nx, centre[i][1] + ny]);
+        inner.push([centre[i][0] - nx, centre[i][1] - ny]);
+    }
+
+    const fmt = pts => pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' L');
+    return 'M' + fmt(outer) + ' L' + fmt(inner.slice().reverse()) + ' Z';
+}
+
+function updateCatTail() {
+    if (!tailEl) return;
+
+    // 尊重系统的"减弱动效"：回到作者绘制的静态尾巴
+    if (reduceMotionQuery.matches) {
+        if (baseTailPath && tailEl.getAttribute('d') !== baseTailPath) {
+            tailEl.setAttribute('d', baseTailPath);
+        }
+        return;
+    }
+
+    let speed = 0.045, amp = 1;
+    if (G.catSleepStage > 0) {
+        speed = 0.018; amp = 0.3;
+    } else if (G.catBehaviorState === 'swiping' || G.catExciteLevel > 0.4) {
+        speed = 0.085; amp = 1.6;
+    }
+
+    tailPhase += speed;
+    tailEl.setAttribute('d', buildTailPath(tailPhase, amp));
+}
+
 G.updateCatEyes = updateCatEyes;
 G.updateCat = updateCat;
 G.wakeCat = wakeCat;
 G.triggerStartle = triggerStartle;
 G.triggerCurious = triggerCurious;
+G.triggerStretch = triggerStretch;
+G.updateCatTail = updateCatTail;
