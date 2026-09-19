@@ -41,6 +41,41 @@ const fishColors = [
             fishes.forEach(fish => applySwimProfileToFish(fish));
         }
         
+        // ========== 鱼的种类 ==========
+        // 在此之前所有鱼共用同一套几何（椭圆身体 + 固定鳍位），只有颜色不同。
+        // 这里用 rx/ry 控制体型、tail 控制尾形，再叠加尺寸/游速/摆尾频率的差异。
+        const FISH_SPECIES = [
+            { key: 'dan',   name: '墨丹', rx: 30,   ry: 15.5, tail: 'fan',     tailScale: 1.00, finScale: 1.00, sizeScale: 1.00, speedScale: 1.00, tailRate: 1.00, palette: [0, 1, 3, 4] },
+            { key: 'jin',   name: '锦鲤', rx: 37,   ry: 15.0, tail: 'flowing', tailScale: 1.15, finScale: 0.90, sizeScale: 1.16, speedScale: 0.92, tailRate: 0.80, palette: [0, 6, 4], barbels: true, spots: true },
+            { key: 'jinji', name: '金鲫', rx: 27,   ry: 17.5, tail: 'veil',    tailScale: 1.25, finScale: 1.15, sizeScale: 1.08, speedScale: 0.86, tailRate: 0.90, palette: [0, 6, 5] },
+            { key: 'qing',  name: '青鳞', rx: 32,   ry: 13.0, tail: 'forked',  tailScale: 1.05, finScale: 0.95, sizeScale: 0.95, speedScale: 1.08, tailRate: 1.10, palette: [1, 7, 2] },
+            { key: 'yin',   name: '银梭', rx: 24,   ry: 11.0, tail: 'small',   tailScale: 0.90, finScale: 0.80, sizeScale: 0.74, speedScale: 1.34, tailRate: 1.30, palette: [2, 3, 5] }
+        ];
+
+        // 尾形：以尾柄为原点 (0,0)，向 -x 方向展开，便于按 bodyRx 平移挂接
+        const FISH_TAILS = {
+            fan: [
+                { d: 'M 0,0 C -11,-16 -24,-10 -24,0 C -24,10 -11,16 0,0 Z', opacity: 0.35 },
+                { d: 'M 0,0 C -8,-11 -18,-7 -18,0 C -18,7 -8,11 0,0 Z', opacity: 0.15 }
+            ],
+            flowing: [
+                { d: 'M 0,0 C -12,-17 -30,-20 -40,-13 C -33,-7 -35,-2 -40,4 C -34,11 -12,18 0,0 Z', opacity: 0.32 },
+                { d: 'M 0,0 C -10,-12 -24,-14 -32,-9 C -26,-5 -28,-1 -32,3 C -27,8 -10,12 0,0 Z', opacity: 0.14 }
+            ],
+            veil: [
+                { d: 'M 0,0 C -14,-13 -32,-15 -43,-8 C -37,-2 -39,5 -44,12 C -34,18 -14,16 0,0 Z', opacity: 0.30 },
+                { d: 'M 0,0 C -11,-10 -25,-11 -34,-6 C -29,-2 -30,3 -34,9 C -27,13 -11,12 0,0 Z', opacity: 0.14 }
+            ],
+            forked: [
+                { d: 'M 0,0 C -10,-10 -24,-17 -35,-16 C -28,-9 -19,-3 -11,0 C -19,3 -28,9 -35,16 C -24,17 -10,10 0,0 Z', opacity: 0.34 },
+                { d: 'M 0,0 C -8,-7 -18,-11 -26,-10 C -20,-5 -14,-2 -8,0 C -14,2 -20,5 -26,10 C -18,11 -8,7 0,0 Z', opacity: 0.14 }
+            ],
+            small: [
+                { d: 'M 0,0 C -8,-11 -19,-9 -20,-1 C -20,7 -9,11 0,0 Z', opacity: 0.36 },
+                { d: 'M 0,0 C -6,-7 -14,-6 -15,-1 C -15,4 -7,7 0,0 Z', opacity: 0.16 }
+            ]
+        };
+
         class Fish {
             constructor(x, y) {
                 this.x = x || (15 + Math.random() * 70);
@@ -49,16 +84,17 @@ const fishColors = [
                 this.vy = (Math.random() - 0.5) * (0.2 + Math.random() * 0.2);
                 this.targetVx = this.vx;
                 this.targetVy = this.vy;
-                this.baseMaxSpeed = 2.25 + Math.random() * 0.95;
-                this.baseNormalSpeed = 0.72 + Math.random() * 0.42;
+                this.species = FISH_SPECIES[Math.floor(Math.random() * FISH_SPECIES.length)];
+                this.baseMaxSpeed = (2.25 + Math.random() * 0.95) * this.species.speedScale;
+                this.baseNormalSpeed = (0.72 + Math.random() * 0.42) * this.species.speedScale;
                 // 游速统一由 refreshSpeedProfile 推导，避免节奏档位与老化互相覆盖
                 this.cruiseFactor = 0.88 + Math.random() * 0.32;
                 this.agingFactor = 1;
                 this.refreshSpeedProfile();
                 this.dragCoeff = 0.94 + Math.random() * 0.03;
-                this.size = 0.7 + Math.random() * 0.3;
+                this.size = (0.7 + Math.random() * 0.3) * this.species.sizeScale;
                 this.baseSize = this.size;
-                this.colorIndex = Math.floor(Math.random() * fishColors.length);
+                this.colorIndex = this.species.palette[Math.floor(Math.random() * this.species.palette.length)];
                 this.color = fishColors[this.colorIndex];
                 this.eatCount = 0;
                 this.growthStage = 0;
@@ -71,8 +107,8 @@ const fishColors = [
                 this.tailPhase = Math.random() * Math.PI * 2;
                 this.bodyPhase = Math.random() * Math.PI * 2;
                 this.speedPulsePhase = Math.random() * Math.PI * 2;
-                this.tailFrequency = 0.09 + Math.random() * 0.035;
-                this.tailAmplitudeBase = 5 + Math.random() * 2.4;
+                this.tailFrequency = (0.09 + Math.random() * 0.035) * this.species.tailRate;
+                this.tailAmplitudeBase = (5 + Math.random() * 2.4) * this.species.tailRate;
                 this.preferredDepth = 22 + Math.random() * 58;
                 this.depthWanderTimer = 120 + Math.random() * 220;
                 this.wanderTurnInterval = 16 + Math.random() * 20;
@@ -139,139 +175,112 @@ const fishColors = [
             }
             
             createSVGElement() {
+                const sp = this.species;
+                const Rx = sp.rx, Ry = sp.ry;
+                const noseX = 58 + Rx;
+                const pedX = 58 - Rx * 0.82;
+                this.noseX = noseX;
+
+                const svgNS = "http://www.w3.org/2000/svg";
+                const mk = (tag, attrs, parent) => {
+                    const el = document.createElementNS(svgNS, tag);
+                    for (const k in attrs) el.setAttribute(k, attrs[k]);
+                    if (parent) parent.appendChild(el);
+                    return el;
+                };
+
                 const div = document.createElement('div');
                 div.className = 'fish';
                 div.style.width = '80px';
                 div.style.height = '40px';
 
-                const svgNS = "http://www.w3.org/2000/svg";
-                const svg = document.createElementNS(svgNS, 'svg');
-                svg.setAttribute('viewBox', '0 0 120 60');
+                const svg = mk('svg', { viewBox: '0 0 120 60' });
                 svg.style.overflow = 'visible';
 
-                const defs = document.createElementNS(svgNS, 'defs');
-                const gradId = `grad-${this.color.name}-${Math.floor(Math.random()*1000)}`;
-                defs.innerHTML = `
-                    <linearGradient id="${gradId}" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:${this.color.tail}" />
-                        <stop offset="60%" style="stop-color:${this.color.body}" />
-                        <stop offset="100%" style="stop-color:${this.color.body}" />
-                    </linearGradient>
-                `;
-                svg.appendChild(defs);
+                const defs = mk('defs', {}, svg);
+                const gradId = `grad-${this.color.name}-${Math.floor(Math.random() * 1000)}`;
+                const grad = mk('linearGradient', { id: gradId, x1: '0%', y1: '0%', x2: '100%', y2: '100%' }, defs);
+                mk('stop', { offset: '0%', style: `stop-color:${this.color.tail}` }, grad);
+                mk('stop', { offset: '60%', style: `stop-color:${this.color.body}` }, grad);
+                mk('stop', { offset: '100%', style: `stop-color:${this.color.body}` }, grad);
+                this.bodyGrad = grad;
 
-                // 尾鳍 - 扇形淡彩，匹配 badge 风格
-                const tail = document.createElementNS(svgNS, 'path');
-                tail.setAttribute('d', 'M 26,30 C 15,14 2,20 2,30 C 2,40 15,46 26,30 Z');
-                tail.setAttribute('fill', this.color.tail);
-                tail.setAttribute('opacity', '0.35');
-                tail.style.transformOrigin = '26px 30px';
-                this.tailElement = tail;
-                svg.appendChild(tail);
+                // 身体：尖吻、最宽处略靠前、向尾柄收细。
+                // 原来是纯椭圆（rx32/ry18），只能靠颜色区分，看不出鱼形。
+                const bodyD = [
+                    `M ${noseX},30`,
+                    `C ${noseX - 2},${30 - Ry * 0.62} ${58 + Rx * 0.62},${30 - Ry} ${58 + Rx * 0.12},${30 - Ry}`,
+                    `C ${58 - Rx * 0.35},${30 - Ry} ${58 - Rx * 0.62},${30 - Ry * 0.55} ${pedX},${30 - Ry * 0.28}`,
+                    `L ${pedX},${30 + Ry * 0.28}`,
+                    `C ${58 - Rx * 0.62},${30 + Ry * 0.55} ${58 - Rx * 0.35},${30 + Ry} ${58 + Rx * 0.12},${30 + Ry}`,
+                    `C ${58 + Rx * 0.62},${30 + Ry} ${noseX - 2},${30 + Ry * 0.62} ${noseX},30 Z`
+                ].join(' ');
 
-                // 尾鳍内层（更淡）
-                const tailInner = document.createElementNS(svgNS, 'path');
-                tailInner.setAttribute('d', 'M 26,30 C 18,18 6,23 6,30 C 6,37 18,42 26,30 Z');
-                tailInner.setAttribute('fill', this.color.tail);
-                tailInner.setAttribute('opacity', '0.15');
-                tailInner.style.transformOrigin = '26px 30px';
-                svg.appendChild(tailInner);
+                // 尾鳍：外层 <g> 只做挂接与缩放，内层 <g> 承担 updateAnimation 的 CSS transform。
+                // SVG 的 transform 属性与 CSS transform 是同一个属性，混用会互相覆盖。
+                const tailOuter = mk('g', { transform: `translate(${pedX.toFixed(1)},30) scale(${sp.tailScale})` }, svg);
+                const tailInner = mk('g', { fill: this.color.tail }, tailOuter);
+                this.tailElement = tailInner;
+                tailInner.style.transformOrigin = '0px 0px';
+                FISH_TAILS[sp.tail].forEach(tp => mk('path', { d: tp.d, opacity: tp.opacity }, tailInner));
 
-                // 背鳍
-                const dorsal = document.createElementNS(svgNS, 'path');
-                dorsal.setAttribute('d', 'M 40,12 C 48,6 56,6 60,12 C 56,13 52,14 40,12 Z');
-                dorsal.setAttribute('fill', this.color.tail);
-                dorsal.setAttribute('opacity', '0.25');
-                dorsal.style.transformOrigin = '50px 12px';
-                this.dorsalElement = dorsal;
-                svg.appendChild(dorsal);
+                // 背鳍 / 腹鳍（先画，鳍根会被身体盖住）
+                const fs = sp.finScale;
+                this.dorsalElement = mk('path', {
+                    d: `M ${58 - Rx * 0.35},${30 - Ry * 0.92} C ${58 - Rx * 0.1},${30 - Ry - 9 * fs} ${58 + Rx * 0.34},${30 - Ry - 9 * fs} ${58 + Rx * 0.46},${30 - Ry * 0.8} C ${58 + Rx * 0.16},${30 - Ry * 0.86} ${58 - Rx * 0.14},${30 - Ry * 0.88} ${58 - Rx * 0.35},${30 - Ry * 0.92} Z`,
+                    fill: this.color.tail, opacity: 0.25
+                }, svg);
+                this.ventralElement = mk('path', {
+                    d: `M ${58 - Rx * 0.2},${30 + Ry * 0.9} C ${58 - Rx * 0.05},${30 + Ry + 5 * fs} ${58 + Rx * 0.16},${30 + Ry + 5 * fs} ${58 + Rx * 0.3},${30 + Ry * 0.78} C ${58 + Rx * 0.1},${30 + Ry * 0.86} ${58 - Rx * 0.04},${30 + Ry * 0.88} ${58 - Rx * 0.2},${30 + Ry * 0.9} Z`,
+                    fill: this.color.tail, opacity: 0.18
+                }, svg);
 
-                // 腹鳍
-                const ventral = document.createElementNS(svgNS, 'path');
-                ventral.setAttribute('d', 'M 44,48 C 48,54 52,54 56,50 C 52,49 48,48 44,48 Z');
-                ventral.setAttribute('fill', this.color.tail);
-                ventral.setAttribute('opacity', '0.18');
-                svg.appendChild(ventral);
-
-                // 胸鳍（左）
-                const pectoralLeft = document.createElementNS(svgNS, 'path');
-                pectoralLeft.setAttribute('d', 'M 44,40 C 38,44 36,50 42,48 C 46,46 48,44 44,40 Z');
-                pectoralLeft.setAttribute('fill', this.color.tail);
-                pectoralLeft.setAttribute('opacity', '0.2');
-                pectoralLeft.style.transformOrigin = '44px 40px';
-                this.pectoralLeftElement = pectoralLeft;
-                svg.appendChild(pectoralLeft);
-
-                // 胸鳍（右）
-                const pectoralRight = document.createElementNS(svgNS, 'path');
-                pectoralRight.setAttribute('d', 'M 44,20 C 38,16 36,10 42,12 C 46,14 48,16 44,20 Z');
-                pectoralRight.setAttribute('fill', this.color.tail);
-                pectoralRight.setAttribute('opacity', '0.2');
-                pectoralRight.style.transformOrigin = '44px 20px';
-                this.pectoralRightElement = pectoralRight;
-                svg.appendChild(pectoralRight);
+                // 胸鳍（上下各一，动画里反向摆动）
+                const pecD = sign => `M ${58 - Rx * 0.34},${30 + sign * Ry * 0.3} C ${58 - Rx * 0.6},${30 + sign * Ry * 0.66} ${58 - Rx * 0.86},${30 + sign * Ry * 0.62} ${58 - Rx * 0.78},${30 + sign * Ry * 0.26} C ${58 - Rx * 0.62},${30 + sign * Ry * 0.1} ${58 - Rx * 0.46},${30 + sign * Ry * 0.12} ${58 - Rx * 0.34},${30 + sign * Ry * 0.3} Z`;
+                const pecOriginX = `${(58 - Rx * 0.34).toFixed(1)}px`;
+                this.pectoralRightElement = mk('path', { d: pecD(-1), fill: this.color.tail, opacity: 0.2 }, svg);
+                this.pectoralRightElement.style.transformOrigin = `${pecOriginX} ${(30 - Ry * 0.3).toFixed(1)}px`;
+                this.pectoralLeftElement = mk('path', { d: pecD(1), fill: this.color.tail, opacity: 0.2 }, svg);
+                this.pectoralLeftElement.style.transformOrigin = `${pecOriginX} ${(30 + Ry * 0.3).toFixed(1)}px`;
 
                 // 身体
-                const body = document.createElementNS(svgNS, 'ellipse');
-                body.setAttribute('cx', '58');
-                body.setAttribute('cy', '30');
-                body.setAttribute('rx', '32');
-                body.setAttribute('ry', '18');
-                body.setAttribute('fill', `url(#${gradId})`);
-                body.setAttribute('opacity', '0.88');
-                this.bodyElement = body;
-                svg.appendChild(body);
+                this.bodyElement = mk('path', { d: bodyD, fill: `url(#${gradId})`, opacity: 0.88 }, svg);
+
+                // 锦鲤斑纹：裁在身体轮廓内，当作水墨留白
+                if (sp.spots) {
+                    const clipId = `${gradId}-clip`;
+                    const clip = mk('clipPath', { id: clipId }, defs);
+                    mk('path', { d: bodyD }, clip);
+                    const spotG = mk('g', { 'clip-path': `url(#${clipId})` }, svg);
+                    mk('ellipse', { cx: 58 + Rx * 0.3, cy: 30 - Ry * 0.34, rx: Rx * 0.3, ry: Ry * 0.44, fill: 'rgba(255,255,255,0.42)' }, spotG);
+                    mk('ellipse', { cx: 58 - Rx * 0.3, cy: 30 + Ry * 0.36, rx: Rx * 0.22, ry: Ry * 0.3, fill: 'rgba(255,255,255,0.28)' }, spotG);
+                }
 
                 // 鳃线
-                const gill = document.createElementNS(svgNS, 'path');
-                gill.setAttribute('d', 'M 76,22 C 78,26 78,34 76,38');
-                gill.setAttribute('stroke', 'rgba(200,200,200,0.15)');
-                gill.setAttribute('stroke-width', '0.8');
-                gill.setAttribute('fill', 'none');
-                svg.appendChild(gill);
+                mk('path', {
+                    d: `M ${noseX - 15},${30 - Ry * 0.55} C ${noseX - 13},${30 - Ry * 0.2} ${noseX - 13},${30 + Ry * 0.2} ${noseX - 15},${30 + Ry * 0.55}`,
+                    stroke: 'rgba(200,200,200,0.15)', 'stroke-width': 0.8, fill: 'none'
+                }, svg);
 
                 // 眼睛
-                const eyeGroup = document.createElementNS(svgNS, 'g');
-                this.eyeGroup = eyeGroup;
+                const eyeR = 6.5 * (Ry / 18);
+                this.eyeRadius = eyeR;
+                this.eyeX = noseX - 11;
+                this.eyeY = 30 - Ry * 0.33;
+                this.eyeGroup = mk('g', {}, svg);
+                this.eyeWhite = mk('ellipse', { cx: this.eyeX, cy: this.eyeY, rx: eyeR, ry: eyeR, fill: 'rgba(255,255,255,0.75)' }, this.eyeGroup);
+                this.eyeBlack = mk('ellipse', { cx: this.eyeX + 1, cy: this.eyeY, rx: eyeR * 0.46, ry: eyeR * 0.46, fill: 'rgba(20,25,30,0.85)' }, this.eyeGroup);
+                this.eyeShine = mk('circle', { cx: this.eyeX + 2, cy: this.eyeY - 1, r: Math.max(0.8, eyeR * 0.18), fill: 'white', opacity: 0.6 }, this.eyeGroup);
 
-                const eyeWhite = document.createElementNS(svgNS, 'ellipse');
-                eyeWhite.setAttribute('cx', '79');
-                eyeWhite.setAttribute('cy', '24');
-                eyeWhite.setAttribute('rx', '6.5');
-                eyeWhite.setAttribute('ry', '6.5');
-                eyeWhite.setAttribute('fill', 'rgba(255,255,255,0.75)');
-                this.eyeWhite = eyeWhite;
+                // 嘴：贴在吻端。原来写死 x=105，而身体到 x=90 就结束，等于一个悬空的墨点
+                this.mouthElement = mk('path', { d: '', stroke: 'rgba(20,25,30,0.35)', 'stroke-width': 1.2, fill: 'none' }, svg);
 
-                const eyeBlack = document.createElementNS(svgNS, 'ellipse');
-                eyeBlack.setAttribute('cx', '80');
-                eyeBlack.setAttribute('cy', '24');
-                eyeBlack.setAttribute('rx', '3');
-                eyeBlack.setAttribute('ry', '3');
-                eyeBlack.setAttribute('fill', 'rgba(20,25,30,0.85)');
-                this.eyeBlack = eyeBlack;
-
-                // 眼神光
-                const eyeShine = document.createElementNS(svgNS, 'circle');
-                eyeShine.setAttribute('cx', '81');
-                eyeShine.setAttribute('cy', '23');
-                eyeShine.setAttribute('r', '1.2');
-                eyeShine.setAttribute('fill', 'white');
-                eyeShine.setAttribute('opacity', '0.6');
-                this.eyeShine = eyeShine;
-
-                eyeGroup.appendChild(eyeWhite);
-                eyeGroup.appendChild(eyeBlack);
-                eyeGroup.appendChild(eyeShine);
-                svg.appendChild(eyeGroup);
-
-                // 嘴
-                const mouth = document.createElementNS(svgNS, 'path');
-                mouth.setAttribute('d', 'M 100,32 Q 103,30 100,28');
-                mouth.setAttribute('stroke', 'rgba(20,25,30,0.35)');
-                mouth.setAttribute('stroke-width', '1.2');
-                mouth.setAttribute('fill', 'none');
-                this.mouthElement = mouth;
-                svg.appendChild(mouth);
+                // 鲤鱼须
+                this.barbelElements = [];
+                if (sp.barbels) {
+                    this.barbelElements.push(mk('path', { d: `M ${noseX - 3},${31} Q ${noseX + 2},${35} ${noseX},${39}`, stroke: this.color.tail, 'stroke-width': 1, fill: 'none', opacity: 0.5 }, svg));
+                    this.barbelElements.push(mk('path', { d: `M ${noseX - 3},${29} Q ${noseX + 2},${25} ${noseX},${21}`, stroke: this.color.tail, 'stroke-width': 1, fill: 'none', opacity: 0.4 }, svg));
+                }
 
                 div.appendChild(svg);
                 if (fishLayer) fishLayer.appendChild(div);
@@ -1008,7 +1017,10 @@ const fishColors = [
                     this.growthStage = 1;
                 } else {
                     if (this.growthStage < 2) {
-                        this.colorIndex = (this.colorIndex + 1) % fishColors.length;
+                        // 在所属种类的配色里轮换，避免长着长着变成别的鱼的配色
+                        const pal = this.species.palette;
+                        const at = pal.indexOf(this.colorIndex);
+                        this.colorIndex = pal[(at + 1) % pal.length];
                         this.color = fishColors[this.colorIndex];
                         this.updateColor();
                         this.element.style.filter = 'drop-shadow(0 0 12px #fbbf24) brightness(1.1)';
@@ -1024,17 +1036,21 @@ const fishColors = [
             }
             
             updateColor() {
-                const svg = this.element.querySelector('svg');
-                const grad = svg.querySelector('linearGradient');
+                const grad = this.bodyGrad;
+                if (!grad) return;
                 grad.innerHTML = `
                     <stop offset="0%" style="stop-color:${this.color.tail}" />
                     <stop offset="60%" style="stop-color:${this.color.body}" />
                     <stop offset="100%" style="stop-color:${this.color.body}" />
                 `;
-                this.tailElement.setAttribute('fill', this.color.tail);
-                this.dorsalElement.setAttribute('fill', this.color.tail);
-                this.pectoralLeftElement.setAttribute('fill', this.color.tail);
-                this.pectoralRightElement.setAttribute('fill', this.color.tail);
+                // 尾巴是 <g>，fill 会继承给内部只设 opacity 的路径；
+                // 鲤鱼须是描边，要改的是 stroke
+                [this.tailElement, this.dorsalElement, this.ventralElement,
+                 this.pectoralLeftElement, this.pectoralRightElement,
+                 ...(this.barbelElements || [])].forEach(el => {
+                    if (!el) return;
+                    el.setAttribute(el.getAttribute('stroke') ? 'stroke' : 'fill', this.color.tail);
+                });
                 this.bodyElement.setAttribute('fill', `url(#${grad.id})`);
             }
             
@@ -1083,16 +1099,17 @@ const fishColors = [
                     gazeX += Math.sin(this.pupilPhase) * 0.25;
                     gazeY += Math.cos(this.pupilPhase * 0.7) * 0.18;
                 }
-                this.eyeBlack.setAttribute('cx', (80 + gazeX).toFixed(2));
-                this.eyeBlack.setAttribute('cy', (24 + gazeY).toFixed(2));
-                this.eyeShine.setAttribute('cx', (81 + gazeX * 0.5).toFixed(2));
-                this.eyeShine.setAttribute('cy', (23 + gazeY * 0.3).toFixed(2));
+                this.eyeBlack.setAttribute('cx', (this.eyeX + 1 + gazeX).toFixed(2));
+                this.eyeBlack.setAttribute('cy', (this.eyeY + gazeY).toFixed(2));
+                this.eyeShine.setAttribute('cx', (this.eyeX + 2 + gazeX * 0.5).toFixed(2));
+                this.eyeShine.setAttribute('cy', (this.eyeY - 1 + gazeY * 0.3).toFixed(2));
 
                 this.mouthPhase += 0.04 + speed * 0.02;
                 const mouthOpen = 0.5 + Math.sin(this.mouthPhase) * 0.6 + (this.eventType === 'surfaceSip' ? 0.5 : 0);
-                const mouthTop = (30 - mouthOpen).toFixed(2);
-                const mouthBottom = (30 + mouthOpen).toFixed(2);
-                this.mouthElement.setAttribute('d', `M 105,${mouthBottom} Q 108,30 105,${mouthTop}`);
+                // 嘴画在吻端（原来写死 x=105，身体只到 x=90，是一个悬空的墨点）
+                const nx = this.noseX;
+                this.mouthElement.setAttribute('d',
+                    `M ${(nx - 1).toFixed(1)},${(30 - mouthOpen).toFixed(2)} Q ${(nx + 2).toFixed(1)},30 ${(nx - 1).toFixed(1)},${(30 + mouthOpen).toFixed(2)}`);
                 
                 this.eyeBlinkTimer++;
                 
@@ -1120,8 +1137,9 @@ const fishColors = [
                     }
                 }
                 
-                this.eyeWhite.setAttribute('ry', (6.5 * eyeScale).toFixed(2));
-                this.eyeBlack.setAttribute('ry', (3 * eyeScale).toFixed(2));
+                const eR = this.eyeRadius;
+                this.eyeWhite.setAttribute('ry', (eR * eyeScale).toFixed(2));
+                this.eyeBlack.setAttribute('ry', (eR * 0.46 * eyeScale).toFixed(2));
             }
             
             updateTransform() {
