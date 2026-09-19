@@ -8,14 +8,22 @@
     <meta property="og:title" content="观鱼">
     <meta property="og:description" content="水墨风格在线鱼缸，看鱼、喂鱼、逗猫，享受一份宁静。">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="/assets/favicon.png">
+    <meta property="og:url" content="https://ifishin.github.io/">
+    <meta property="og:site_name" content="观鱼">
+    <meta property="og:image" content="https://ifishin.github.io/assets/og.jpg">
+    <meta property="og:image:width" content="600">
+    <meta property="og:image:height" content="497">
+    <meta property="og:image:alt" content="水墨风格的金鱼">
     <meta name="twitter:card" content="summary">
+    <meta name="twitter:image" content="https://ifishin.github.io/assets/og.jpg">
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
     <link rel="icon" type="image/png" href="/assets/favicon.png">
     <link rel="apple-touch-icon" href="/assets/favicon.png">
     <title>观鱼</title>
     <base target="_blank">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/tank.css">
     <link rel="stylesheet" href="css/decorations.css">
@@ -28,8 +36,8 @@
     <div class="paper-texture"></div>
     
     <!-- 水墨晕染背景 -->
-    <div class="ink-wash w-[400px] h-[400px] bg-stone-500 -top-16 -left-16" style="animation-delay: 0s;"></div>
-    <div class="ink-wash w-[350px] h-[350px] bg-slate-600 -bottom-12 -right-12" style="animation-delay: -8s;"></div>
+    <div class="ink-wash ink-wash-1" style="animation-delay: 0s;"></div>
+    <div class="ink-wash ink-wash-2" style="animation-delay: -8s;"></div>
     
     <!-- 左侧柳树 -->
     <svg class="willow-left" viewBox="0 0 180 800" preserveAspectRatio="xMinYMid slice">
@@ -136,18 +144,18 @@
             <div class="cursor-glow" id="cursorGlow"></div>
             
             <!-- 水草 -->
-            <svg class="seaweed left-[8%] w-20 h-36 text-emerald-700/25" viewBox="0 0 100 200" style="animation-delay: 0s;">
+            <svg class="seaweed seaweed-1" viewBox="0 0 100 200" style="animation-delay: 0s;">
                 <path d="M50,200 Q18,145 50,95 T48,5" stroke="currentColor" stroke-width="3" fill="none" opacity="0.6"/>
                 <path d="M50,200 Q82,155 50,105 T52,25" stroke="currentColor" stroke-width="2" fill="none" opacity="0.4"/>
             </svg>
-            <svg class="seaweed left-[22%] w-14 h-28 text-teal-700/20" viewBox="0 0 100 200" style="animation-delay: -2s;">
+            <svg class="seaweed seaweed-2" viewBox="0 0 100 200" style="animation-delay: -2s;">
                 <path d="M50,200 Q28,145 50,85 T52,15" stroke="currentColor" stroke-width="2" fill="none" opacity="0.5"/>
             </svg>
-            <svg class="seaweed right-[10%] w-24 h-44 text-emerald-800/30" viewBox="0 0 100 200" style="animation-delay: -4s;">
+            <svg class="seaweed seaweed-3" viewBox="0 0 100 200" style="animation-delay: -4s;">
                 <path d="M50,200 Q12,165 50,115 T48,5" stroke="currentColor" stroke-width="4" fill="none" opacity="0.6"/>
                 <path d="M50,200 Q88,145 50,95 T52,35" stroke="currentColor" stroke-width="2" fill="none" opacity="0.4"/>
             </svg>
-            <svg class="seaweed right-[28%] w-12 h-28 text-cyan-800/18" viewBox="0 0 100 200" style="animation-delay: -1s;">
+            <svg class="seaweed seaweed-4" viewBox="0 0 100 200" style="animation-delay: -1s;">
                 <path d="M50,200 Q32,155 50,105 T50,25" stroke="currentColor" stroke-width="2" fill="none" opacity="0.4"/>
             </svg>
             

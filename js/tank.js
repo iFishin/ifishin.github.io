@@ -38,7 +38,7 @@ const embedCopies = document.querySelectorAll('.embed-copy');
 
 // 填充代码
 const baseUrl = location.protocol + '//' + location.host;
-const htmlSnippet = '<a href="' + baseUrl + '/card.html" target="_blank" rel="noopener">\n  <img src="' + baseUrl + '/card-preview.png"\n       alt="观鱼 - 水墨风格在线鱼缸"\n       width="480" height="240"\n       style="border-radius:12px;">\n</a>\n\n<!-- 或者用 iframe 嵌入动态卡片 -->\n<!-- <iframe src="' + baseUrl + '/card.html" width="480" height="240" frameborder="0" style="border-radius:12px;overflow:hidden;" title="观鱼 - 水墨风格在线鱼缸"></iframe> -->';
+const htmlSnippet = '<iframe src="' + baseUrl + '/card.html"\n        width="480" height="240"\n        frameborder="0"\n        style="border-radius:12px; overflow:hidden;"\n        title="观鱼 - 水墨风格在线鱼缸"></iframe>';
 const mdSnippet = '[![观鱼 - 水墨风格在线鱼缸](' + baseUrl + '/assets/badge.svg)](' + baseUrl + ')';
 
 if (embedBtn) {

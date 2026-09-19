@@ -136,6 +136,11 @@
     animation: seaweedSway 5s ease-in-out infinite;
 }
 
+.seaweed-1 { left: 8%;   width: 80px; height: 144px; color: rgba(4, 120, 87, 0.25); }
+.seaweed-2 { left: 22%;  width: 56px; height: 112px; color: rgba(15, 118, 110, 0.2); }
+.seaweed-3 { right: 10%; width: 96px; height: 176px; color: rgba(6, 95, 70, 0.3); }
+.seaweed-4 { right: 28%; width: 48px; height: 112px; color: rgba(21, 94, 117, 0.22); }
+
 @keyframes seaweedSway {
     0%, 100% { transform: rotate(-3deg); }
     50% { transform: rotate(3deg); }
@@ -185,13 +190,14 @@
     white-space: nowrap;
 }
 
-/* 鱼跃出水 */
+/* 鱼跃出水 —— 用 --sx/--sy/--flip 承接鱼自身的缩放与朝向，
+   否则动画期间会退回 scale(1)，起跳和入水时出现尺寸跳变 */
 @keyframes fishLeap {
-    0%   { transform: translate(-50%, -50%); }
-    20%  { transform: translate(-50%, calc(-50% - 60px)) rotate(-20deg); }
-    40%  { transform: translate(-50%, calc(-50% - 70px)) rotate(-5deg); }
-    60%  { transform: translate(-50%, calc(-50% - 40px)) rotate(8deg); }
-    100% { transform: translate(-50%, -50%); }
+    0%   { transform: translate(-50%, -50%) scale(var(--sx, 1), var(--sy, 1)); }
+    20%  { transform: translate(-50%, calc(-50% - 60px)) scale(var(--sx, 1), var(--sy, 1)) rotate(calc(-20deg * var(--flip, 1))); }
+    40%  { transform: translate(-50%, calc(-50% - 70px)) scale(var(--sx, 1), var(--sy, 1)) rotate(calc(-5deg * var(--flip, 1))); }
+    60%  { transform: translate(-50%, calc(-50% - 40px)) scale(var(--sx, 1), var(--sy, 1)) rotate(calc(8deg * var(--flip, 1))); }
+    100% { transform: translate(-50%, -50%) scale(var(--sx, 1), var(--sy, 1)); }
 }
 .fish.leaping {
     animation: fishLeap 1.0s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;

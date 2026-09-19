@@ -4,8 +4,6 @@ var G = window.__GUANYU;
 // Global shared state (accessible to all modules)
 var fishes = [];
 var foods = [];
-G.fishes = fishes;
-G.foods = foods;
 const fishColors = [
             { body: '#e95732', tail: '#d1482a', name: '赤' },
             { body: '#6b9e6b', tail: '#4a8a4a', name: '碧' },
@@ -31,9 +29,7 @@ const fishColors = [
         }
 
         function applySwimProfileToFish(fish) {
-            fish.maxSpeed = fish.baseMaxSpeed * currentSwimProfile.speed;
-            fish.normalSpeed = fish.baseNormalSpeed * (0.95 + currentSwimProfile.speed * 0.25);
-            fish.cruiseSpeed = fish.normalSpeed * (0.88 + Math.random() * 0.32);
+            fish.refreshSpeedProfile();
             fish.burstCooldown = Math.max(36, fish.burstCooldown / currentSwimProfile.eventRate);
             fish.nextEventIn = Math.max(40, fish.nextEventIn / currentSwimProfile.eventRate);
         }
@@ -55,8 +51,10 @@ const fishColors = [
                 this.targetVy = this.vy;
                 this.baseMaxSpeed = 2.25 + Math.random() * 0.95;
                 this.baseNormalSpeed = 0.72 + Math.random() * 0.42;
-                this.maxSpeed = this.baseMaxSpeed * currentSwimProfile.speed;
-                this.normalSpeed = this.baseNormalSpeed * (0.95 + currentSwimProfile.speed * 0.25);
+                // 游速统一由 refreshSpeedProfile 推导，避免节奏档位与老化互相覆盖
+                this.cruiseFactor = 0.88 + Math.random() * 0.32;
+                this.agingFactor = 1;
+                this.refreshSpeedProfile();
                 this.dragCoeff = 0.94 + Math.random() * 0.03;
                 this.size = 0.7 + Math.random() * 0.3;
                 this.baseSize = this.size;
@@ -78,7 +76,6 @@ const fishColors = [
                 this.preferredDepth = 22 + Math.random() * 58;
                 this.depthWanderTimer = 120 + Math.random() * 220;
                 this.wanderTurnInterval = 16 + Math.random() * 20;
-                this.cruiseSpeed = this.normalSpeed * (0.9 + Math.random() * 0.35);
                 this.turnMemory = Math.atan2(this.vy, this.vx);
                 this.burstCooldown = 120 + Math.random() * 180;
                 this.schoolForce = { x: 0, y: 0 };
@@ -105,7 +102,40 @@ const fishColors = [
                 this.isBlinking = false;
                 this.pupilPhase = Math.random() * Math.PI * 2;
                 this.mouthPhase = Math.random() * Math.PI * 2;
+
+                // 年龄 / 老化
+                this.age = 0;
+                this.ageRate = 0.000012 + Math.random() * 0.000012;
+                this.isElderly = false;
+                this.courtshipCooldown = 600 + Math.random() * 1800;
+
+                // 领地：只有竞争性强的鱼才有领地意识
+                const competitiveness = this.personality.competitiveness;
+                this.territory = {
+                    aggression: competitiveness > 0.72 ? (competitiveness - 0.5) * 1.4 : 0,
+                    radius: 18 + Math.random() * 10,
+                    centerX: 18 + Math.random() * 64,
+                    centerY: 25 + Math.random() * 50
+                };
+
+                // 领导 / 跟随
+                this.isLeader = this.personality.boldness > 0.72;
+                this.followTarget = null;
+                this.followRetargetCooldown = 200 + Math.random() * 400;
+                this.leaderFollowStrength = 0.35 + this.personality.sociability * 0.5;
+
+                // 恐惧传播 / 跃出水面
+                this.fearPropagationRadius = 14 + Math.random() * 9;
+                this.leapCooldown = 600 + Math.random() * 1800;
+
                 this.element = this.createSVGElement();
+            }
+
+            refreshSpeedProfile() {
+                const aging = this.agingFactor;
+                this.maxSpeed = this.baseMaxSpeed * currentSwimProfile.speed * aging;
+                this.normalSpeed = this.baseNormalSpeed * (0.95 + currentSwimProfile.speed * 0.25) * aging;
+                this.cruiseSpeed = this.normalSpeed * this.cruiseFactor;
             }
             
             createSVGElement() {
@@ -254,12 +284,17 @@ const fishColors = [
                 this.burstCooldown--;
                 this.nextEventIn--;
                 this.peerNudgeCooldown--;
+                if (this.leapCooldown > 0) this.leapCooldown--;
                 this.speedPulsePhase += 0.015;
                 this.hunger = Math.min(1, this.hunger + 0.0008 + this.personality.appetite * 0.0006);
                 this.foodCooldown = Math.max(0, this.foodCooldown - 0.08);
 
+                this.updateAging();
+
                 if (this.depthWanderTimer <= 0) {
-                    this.preferredDepth = 16 + Math.random() * 70;
+                    this.preferredDepth = this.isElderly
+                        ? 55 + Math.random() * 35
+                        : 16 + Math.random() * 70;
                     this.depthWanderTimer = 160 + Math.random() * 260;
                 }
 
@@ -320,7 +355,11 @@ const fishColors = [
                 }
 
                 this.updateRandomEvent();
-                
+
+                this.tryStartCourtship();
+                this.updateTerritorial();
+                this.updateLeaderFollowing();
+
                 if (this.behaviorTimer % 5 === 0) {
                     this.updateAvoidance();
                 } else {
@@ -494,6 +533,11 @@ const fishColors = [
                     this.eventDuration = 90 + Math.floor(Math.random() * 30);
                     this.eventData.splashed = false;
                     this.element.classList.add('leaping');
+                    // 把当前尺寸与朝向交给 CSS 动画，否则动画期间会退回 scale(1)
+                    const facingRight = this.vx >= 0;
+                    this.element.style.setProperty('--sx', facingRight ? this.size : -this.size);
+                    this.element.style.setProperty('--sy', this.size);
+                    this.element.style.setProperty('--flip', facingRight ? 1 : -1);
                 } else if (type === 'courtship') {
                     this.eventDuration = 120 + Math.floor(Math.random() * 60);
                     this.eventData.phase = Math.random() * Math.PI * 2;
@@ -501,6 +545,10 @@ const fishColors = [
             }
 
             finishEvent(cooldownScale = 1) {
+                if (this.eventType === 'leap') {
+                    this.leapCooldown = 900 + Math.random() * 1400;
+                    if (this.element) this.element.classList.remove('leaping');
+                }
                 this.eventType = null;
                 this.eventData = null;
                 this.eventTimer = 0;
@@ -786,9 +834,11 @@ const fishColors = [
             handleBoundaries() {
                 const hardMargin = 2;
                 const softMargin = 10;
-                
+                // 跃出水面时不受顶部边界反弹与惊扰切换，否则跳跃会被立刻打断
+                const leaping = this.eventType === 'leap';
+
                 let needsTurn = false;
-                
+
                 if (this.x < softMargin) {
                     needsTurn = true;
                     this.targetVx = Math.abs(this.targetVx) + (Math.random() - 0.5) * 0.2;
@@ -796,20 +846,22 @@ const fishColors = [
                     needsTurn = true;
                     this.targetVx = -Math.abs(this.targetVx) - (Math.random() - 0.5) * 0.2;
                 }
-                
-                if (this.y < softMargin) {
-                    needsTurn = true;
-                    this.targetVy = Math.abs(this.targetVy) + (Math.random() - 0.5) * 0.15;
-                } else if (this.y > 95 - softMargin) {
-                    needsTurn = true;
-                    this.targetVy = -Math.abs(this.targetVy) - (Math.random() - 0.5) * 0.15;
+
+                if (!leaping) {
+                    if (this.y < softMargin) {
+                        needsTurn = true;
+                        this.targetVy = Math.abs(this.targetVy) + (Math.random() - 0.5) * 0.15;
+                    } else if (this.y > 95 - softMargin) {
+                        needsTurn = true;
+                        this.targetVy = -Math.abs(this.targetVy) - (Math.random() - 0.5) * 0.15;
+                    }
                 }
-                
-                if (needsTurn && (this.behavior !== 'flee' && this.behavior !== 'hunt')) {
+
+                if (needsTurn && !leaping && (this.behavior !== 'flee' && this.behavior !== 'hunt')) {
                     this.behavior = 'flee';
                     this.nextBehaviorTime = 25 + Math.random() * 30;
                 }
-                
+
                 if (this.x < hardMargin) {
                     this.x = hardMargin;
                     this.vx = Math.abs(this.vx) * 0.5;
@@ -817,7 +869,9 @@ const fishColors = [
                     this.x = 100 - hardMargin;
                     this.vx = -Math.abs(this.vx) * 0.5;
                 }
-                
+
+                if (leaping) return;
+
                 if (this.y < hardMargin) {
                     this.y = hardMargin;
                     this.vy = Math.abs(this.vy) * 0.5;
@@ -1111,34 +1165,51 @@ const fishColors = [
 
 // 年龄增长
 Fish.prototype.updateAging = function() {
-    this.age += this.ageRate;
-    if (this.age > 1) this.age = 1;
-    if (this.age > 0.6) {
-        const agingFactor = 1 - (this.age - 0.6) / 0.4 * 0.35;
-        this.maxSpeed = this.originalMaxSpeed * agingFactor;
+    if (this.age >= 1) return;
+    this.age = Math.min(1, this.age + this.ageRate);
+
+    // 半岁后逐渐迟缓，最多减速 30%
+    const target = this.age > 0.5 ? 1 - ((this.age - 0.5) / 0.5) * 0.3 : 1;
+    if (Math.abs(target - this.agingFactor) > 0.002) {
+        this.agingFactor = target;
+        this.refreshSpeedProfile();
     }
-    if (this.age > 0.8 && this.behavior === 'wander' && Math.random() < 0.001) {
+
+    if (this.age > 0.82 && this.behavior === 'wander' && Math.random() < 0.0015) {
         this.behavior = 'rest';
+        this.behaviorTimer = 0;
         this.nextBehaviorTime = 40 + Math.random() * 60;
     }
-    if (this.age >= 1) this.preferredDepth = 75;
+
+    if (this.age >= 1) this.isElderly = true;
 };
 
 // 领地行为
 Fish.prototype.updateTerritorial = function() {
     if (this.territory.aggression < 0.1) return;
-    if (this.behavior === 'flee') return;
-    for (const other of fishes) {
+    if (this.behavior === 'flee' || this.behavior === 'hunt') return;
+
+    const radius = this.territory.radius;
+    for (let i = 0; i < fishes.length; i++) {
+        const other = fishes[i];
         if (other === this || other.behavior === 'flee') continue;
-        const dx = other.x - this.territory.centerX;
-        const dy = other.y - this.territory.centerY;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < this.territory.radius && other.personality.competitiveness < this.territory.aggression) {
-            const chaseDir = Math.atan2(dy, dx);
-            this.targetVx = Math.cos(chaseDir) * this.maxSpeed * 0.8;
-            this.targetVy = Math.sin(chaseDir) * this.maxSpeed * 0.6;
-            return;
-        }
+
+        const inX = other.x - this.territory.centerX;
+        const inY = other.y - this.territory.centerY;
+        if (inX * inX + inY * inY > radius * radius) continue;
+        if (other.personality.competitiveness >= this.territory.aggression) continue;
+
+        // 驱赶入侵者：以转向力叠加，不接管状态机
+        const dirX = other.x - this.x;
+        const dirY = other.y - this.y;
+        const dist = Math.sqrt(dirX * dirX + dirY * dirY) || 0.0001;
+        const push = 0.14 * this.territory.aggression;
+        this.targetVx += (dirX / dist) * push;
+        this.targetVy += (dirY / dist) * push * 0.7;
+
+        // 逼近时偶尔把弱势的入侵者吓退，形成可见的领地冲突
+        if (dist < 12 && Math.random() < 0.008) other.scatter();
+        return;
     }
 };
 
@@ -1146,41 +1217,55 @@ Fish.prototype.updateTerritorial = function() {
 Fish.prototype.updateLeaderFollowing = function() {
     if (this.isLeader || fishes.length < 3) return;
     if (this.behavior === 'flee' || this.behavior === 'hunt') return;
-    if (!this.followTarget || Math.random() < 0.005) {
-        const leaders = fishes.filter(f => f.isLeader);
-        if (leaders.length > 0) {
-            this.followTarget = leaders[Math.floor(Math.random() * leaders.length)];
-        }
+
+    this.followRetargetCooldown--;
+    if (!this.followTarget || this.followRetargetCooldown <= 0) {
+        const leaders = fishes.filter(f => f.isLeader && f !== this);
+        this.followTarget = leaders.length ? leaders[Math.floor(Math.random() * leaders.length)] : null;
+        this.followRetargetCooldown = 300 + Math.random() * 500;
     }
     if (!this.followTarget) return;
+
     const dx = this.followTarget.x - this.x;
     const dy = this.followTarget.y - this.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist > 5 && dist < 35) {
-        const followX = dx / dist * this.normalSpeed * this.leaderFollowStrength;
-        const followY = dy / dist * this.normalSpeed * this.leaderFollowStrength * 0.6;
-        this.targetVx += (followX - this.targetVx) * 0.03;
-        this.targetVy += (followY - this.targetVy) * 0.03;
+    const dist = Math.sqrt(dx * dx + dy * dy) || 0.0001;
+    if (dist > 5 && dist < 38) {
+        const pull = this.normalSpeed * this.leaderFollowStrength * 0.03;
+        this.targetVx += (dx / dist) * pull;
+        this.targetVy += (dy / dist) * pull * 0.6;
     }
 };
 
 // 求偶展示
 Fish.prototype.tryStartCourtship = function() {
+    if (this.courtshipCooldown > 0) {
+        this.courtshipCooldown--;
+        return;
+    }
     if (this.behavior !== 'wander' || this.targetFood || this.eventType) return;
-    if (this.personality.sociability < 0.5 || Math.random() > 0.0005) return;
+    if (this.personality.sociability < 0.55 || this.hunger > 0.7) return;
+    if (Math.random() > 0.0012) return;
+
     const partner = this.findCourtshipPartner();
     if (!partner) return;
+
     this.startEvent('courtship');
     this.eventData.partner = partner;
     partner.startEvent('courtship');
     partner.eventData.partner = this;
+
+    const cooldown = 1800 + Math.random() * 2400;
+    this.courtshipCooldown = cooldown;
+    partner.courtshipCooldown = cooldown;
 };
 
 Fish.prototype.findCourtshipPartner = function() {
     let best = null, bestDist = 400;
-    for (const other of fishes) {
+    for (let i = 0; i < fishes.length; i++) {
+        const other = fishes[i];
         if (other === this || other.eventType || other.behavior === 'flee') continue;
-        if (other.personality.sociability < 0.5) continue;
+        if (other.targetFood || other.behavior === 'hunt') continue;
+        if (other.personality.sociability < 0.55) continue;
         const dx = other.x - this.x;
         const dy = other.y - this.y;
         const d = dx*dx + dy*dy;
@@ -1204,27 +1289,18 @@ Fish.prototype.handleCourtshipEvent = function() {
 };
 
 // 鱼跃出水
-Fish.prototype.updateLeapCheck = function() {
-    if (this.eventType || this.targetFood || this.behavior === 'flee') return;
-    this.leapCooldown--;
-    if (this.leapCooldown > 0) return;
-    this.startEvent('leap');
-};
-
 Fish.prototype.handleLeapEvent = function(t) {
-    if (t < 0.25) {
-        this.targetVy = -0.5 - this.maxSpeed * 0.5 * (1 - t / 0.25);
-    } else if (t < 0.5) {
-        this.element.classList.add('leaping');
-        this.y = Math.max(2, 8 - (t - 0.25) / 0.25 * 18);
-        if (t > 0.3 && t < 0.4 && !this.eventData.splashed) {
-            this.eventData.splashed = true;
-            if (typeof createBubble === 'function') createBubble(this.x, Math.max(5, this.y));
-        }
+    // 出水的弧线由 CSS .leaping 动画表现，这里只负责蓄力与入水水花，
+    // 直接改 this.y 会和边界处理打架
+    if (t < 0.35) {
+        this.targetVy = -0.35 - this.maxSpeed * 0.3 * (1 - t / 0.35);
+        this.targetVx *= 0.88;
     } else if (t < 0.7) {
-        this.y = Math.min(15, this.y + 35 * (t - 0.5) / 0.2);
-    } else {
-        this.element.classList.remove('leaping');
+        this.targetVy += 0.12;
+        if (!this.eventData.splashed) {
+            this.eventData.splashed = true;
+            if (typeof createBubble === 'function') createBubble(this.x, Math.max(8, this.y - 4));
+        }
     }
 };
 
@@ -1238,7 +1314,7 @@ function propagateFear() {
             const dx = other.x - scared.x;
             const dy = other.y - scared.y;
             const dist = Math.sqrt(dx*dx + dy*dy);
-            if (dist < scared.fearPropagationRadius + 4 && Math.random() < 0.35) {
+            if (dist < scared.fearPropagationRadius && Math.random() < 0.18) {
                 other.scatter();
             }
         }

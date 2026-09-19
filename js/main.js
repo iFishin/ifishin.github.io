@@ -1,6 +1,5 @@
 window.__GUANYU = window.__GUANYU || {};
-var G = window.__GUANYU;
-G.MAX_FISH = 12;
+
 // ========== 页面可见性控制 ==========
         let animFrameId = null;
         let bubbleIntervalId = null;
