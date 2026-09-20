@@ -18,6 +18,15 @@ let isDragging = false;
 let draggedFish = null;
 let lastDragX = 0, lastDragY = 0;
 let touchDragStart = null;
+// 撸鱼 / 水面作画
+let pettingFish = null;
+let petStartAt = 0;
+let suppressDossierUntil = 0;
+let lastDrawRippleAt = 0;
+
+function clearPetting() {
+    if (pettingFish) { pettingFish.petting = false; pettingFish = null; }
+}
 
 // Button event listeners
 const addBtn = document.getElementById('addFishBtn');
@@ -102,7 +111,21 @@ embedCopies.forEach(btn => {
                 createParticle(mouseX, mouseY);
                 lastMouseTime = now;
             }
-            
+
+            // 水面作画：按住左键在空白水面拖动，留下一串涟漪。
+            // 撸鱼和拖鱼时不画，否则三个手势会互相打架。
+            if ((e.buttons & 1) && !pettingFish && !isDragging) {
+                if (now - lastDrawRippleAt > 130) {
+                    lastDrawRippleAt = now;
+                    const ripple = document.createElement('div');
+                    ripple.className = 'water-ripple';
+                    ripple.style.left = mouseXPct + '%';
+                    ripple.style.top = mouseYPct + '%';
+                    waterBody.appendChild(ripple);
+                    setTimeout(() => ripple.remove(), 2000);
+                }
+            }
+
             if (isDragging && draggedFish) {
                 const waterRect = waterBody.getBoundingClientRect();
                 const x = (e.clientX - waterRect.left) / waterRect.width * 100;
@@ -129,6 +152,8 @@ embedCopies.forEach(btn => {
             cursorGlow.style.opacity = '0';
             isDragging = false;
             draggedFish = null;
+            // 按着撸到一半滑出鱼缸，也要把鱼放开，否则它会一直跟着光标
+            clearPetting();
         });
         
         tank.addEventListener('mouseenter', () => {
@@ -208,7 +233,8 @@ embedCopies.forEach(btn => {
             // 点到鱼 → 看这条鱼的档案，而不是往下丢饲料
             const hit = findFishAt(x, y);
             if (hit) {
-                showFishDossier(hit);
+                // 刚撸完松手也会触发 click，这时不要再弹一次档案
+                if (Date.now() >= suppressDossierUntil) showFishDossier(hit);
                 return;
             }
 
@@ -266,19 +292,36 @@ embedCopies.forEach(btn => {
         
         // 右键拖拽
         tank.addEventListener('mousedown', (e) => {
+            // 左键按在鱼身上 → 撸鱼（右键才是拖拽）
+            if (e.button === 0) {
+                clearPetting();   // 防御：上一次没收到 mouseup 时不至于残留
+                const r = waterBody.getBoundingClientRect();
+                const fx = (e.clientX - r.left) / r.width * 100;
+                const fy = (e.clientY - r.top) / r.height * 100;
+                const fish = findFishAt(fx, fy);
+                if (fish) {
+                    pettingFish = fish;
+                    petStartAt = Date.now();
+                    fish.petting = true;
+                    // 别让它一边被摸一边还在做随机动作
+                    if (fish.eventType) fish.finishEvent(0.8);
+                }
+                return;
+            }
+
             if (e.button !== 2) return;
             e.preventDefault();
-            
+
             const rect = waterBody.getBoundingClientRect();
             const clickX = (e.clientX - rect.left) / rect.width * 100;
             const clickY = (e.clientY - rect.top) / rect.height * 100;
-            
+
             for (let i = fishes.length - 1; i >= 0; i--) {
                 const fish = fishes[i];
                 const dx = Math.abs(fish.x - clickX);
                 const dy = Math.abs(fish.y - clickY);
                 const distance = Math.sqrt(dx*dx + dy*dy);
-                
+
                 if (distance < 7) {
                     draggedFish = fish;
                     isDragging = true;
@@ -287,14 +330,25 @@ embedCopies.forEach(btn => {
                 }
             }
         });
-        
+
         tank.addEventListener('mouseup', (e) => {
+            if (pettingFish) {
+                // 按住超过 400ms 算"撸"而不是"点"：松手后别再弹一次档案
+                if (Date.now() - petStartAt > 400) suppressDossierUntil = Date.now() + 400;
+                clearPetting();
+            }
             if (isDragging && draggedFish) {
                 draggedFish.element.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.08))';
                 draggedFish = null;
                 isDragging = false;
             }
         });
+
+        // 松手发生在鱼缸外、或窗口失去焦点（cmd-tab、切标签）时，
+        // tank 上的 mouseup/mouseleave 都不会来，鱼会一直黏着光标——
+        // 所以补两个兜底
+        window.addEventListener('mouseup', clearPetting);
+        window.addEventListener('blur', clearPetting);
         
         tank.addEventListener('contextmenu', (e) => e.preventDefault());
         
@@ -456,15 +510,65 @@ embedCopies.forEach(btn => {
         // 点中某条鱼时给它的"身份"：种类来自物种表，年龄来自 updateAging，
         // 已食口数来自 consumeSingleFood——都是鱼自己一路攒下来的状态。
         function showFishDossier(fish) {
+            // 寿终的老鱼：第一次点只给提示，第二次点才真的送走——
+            // 免得随手一点就把一条养了很久的鱼弄没了
+            if (fish.isElderly) {
+                if (fish._releaseArmed) {
+                    fish._releaseArmed = false;
+                    releaseFish(fish);
+                    return;
+                }
+                fish._releaseArmed = true;
+                setTimeout(() => { fish._releaseArmed = false; }, 4000);
+                showFeedback('它已经老了 · 再点一次放生');
+                return;
+            }
+
             const sp = fish.species || {};
             const age = fish.age || 0;
             const stage = age < 0.25 ? '幼' : age < 0.6 ? '壮' : age < 0.9 ? '暮' : '老';
             showFeedback(`${sp.name || '鱼'} · ${stage} · 已食 ${fish.eatCount || 0} 口`);
 
+            // 记进鱼谱（见过就点亮）
+            if (sp.key && G.markSpeciesSeen) G.markSpeciesSeen(sp.key);
+
             // 被点到要有反应，否则不知道点中了没有
             if (!fish.eventType && fish.behavior !== 'flee') {
                 fish.startEvent('dart');
             }
+        }
+
+        // ========== 送别老鱼 ==========
+        function releaseFish(fish) {
+            const el = fish.element;
+            if (!el || !document.body.contains(el)) return;
+
+            fish.petting = false;
+            // 关键帧要接管 transform，所以把鱼自身的缩放与朝向用 CSS 变量交给它
+            // （沿用跳跃动画那套 --sx/--sy/--flip），否则动画第一帧会跳一下
+            const facingRight = fish.vx >= 0;
+            el.style.setProperty('--sx', facingRight ? fish.size : -fish.size);
+            el.style.setProperty('--sy', fish.size);
+            el.style.setProperty('--flip', facingRight ? 1 : -1);
+            el.classList.add('releasing');
+
+            // 先从 fishes 里摘掉：主循环不再更新它，才不会和 CSS 动画抢 transform
+            fishes = fishes.filter(f => f !== fish);
+            setTimeout(() => el.remove(), 1800);
+
+            const ripple = document.createElement('div');
+            ripple.className = 'water-ripple';
+            ripple.style.left = fish.x + '%';
+            ripple.style.top = Math.max(4, fish.y - 2) + '%';
+            waterBody.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 2000);
+
+            let n = 0;
+            try {
+                n = (parseInt(localStorage.getItem('guanyu-released') || '0', 10) || 0) + 1;
+                localStorage.setItem('guanyu-released', String(n));
+            } catch (e) {}
+            showFeedback('送别了一条老鱼 · 累计 ' + n + ' 条');
         }
 
         // ========== 双击水面：挑一条鱼跃出 ==========
@@ -484,3 +588,101 @@ embedCopies.forEach(btn => {
             if (e.button !== 0) return;
             leapOneFish();
         });
+
+        // ========== 定格成图 ==========
+        // 场景是 DOM+SVG 而不是 canvas，所以只能把 DOM 序列化进 foreignObject
+        // 再栅格化。已知代价：backdrop-filter（毛玻璃）在 canvas 栅格化里不被支持、
+        // 外部字体也不会加载，所以成图会比真实画面"平"一些——先用底色垫一层。
+        const SNAP_PROPS = [
+            'fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-opacity', 'stroke-linecap',
+            'stop-color', 'stop-opacity',
+            'opacity', 'color', 'background-color', 'background-image', 'background-size',
+            'background-position', 'border-radius', 'border-color', 'border-width', 'border-style',
+            'box-shadow', 'filter', 'transform', 'transform-origin', 'mix-blend-mode',
+            'font-family', 'font-size', 'font-weight', 'letter-spacing', 'line-height',
+            'text-align', 'white-space', 'writing-mode', 'text-orientation',
+            'position', 'left', 'top', 'right', 'bottom', 'width', 'height',
+            'margin', 'padding', 'display', 'flex-direction', 'align-items', 'justify-content',
+            'gap', 'overflow', 'visibility'
+        ];
+
+        // 逐节点把"当前这一帧"的计算样式抄进克隆体。
+        // 注意必须在删掉控制条之前调用：这个函数是按索引并行遍历两棵树的，
+        // 结构一旦被改就对不上了。
+        function inlineComputed(src, dst) {
+            const cs = window.getComputedStyle(src);
+            let css = '';
+            for (let i = 0; i < SNAP_PROPS.length; i++) {
+                const v = cs.getPropertyValue(SNAP_PROPS[i]);
+                if (v && v !== 'none' && v !== 'normal' && v !== 'auto') css += SNAP_PROPS[i] + ':' + v + ';';
+            }
+            dst.setAttribute('style', css);
+            const s = src.children, d = dst.children;
+            for (let i = 0; i < s.length && i < d.length; i++) inlineComputed(s[i], d[i]);
+        }
+
+        function renderTankToCanvas(cb) {
+            const tankEl = document.querySelector('.glass-tank');
+            if (!tankEl) { cb(null); return; }
+
+            const rect = tankEl.getBoundingClientRect();
+            const W = Math.round(rect.width), H = Math.round(rect.height);
+            if (W < 10 || H < 10) { cb(null); return; }
+            const SCALE = 2;
+
+            const clone = tankEl.cloneNode(true);
+            inlineComputed(tankEl, clone);
+            // 控制条和光标辉光不属于"鱼缸"本身，抄完样式再删
+            clone.querySelectorAll('.controls, .cursor-glow').forEach(function (e) { e.remove(); });
+
+            let html;
+            try {
+                html = new XMLSerializer().serializeToString(clone);
+            } catch (e) { cb(null); return; }
+
+            // viewBox 必须是 W×H、渲染尺寸是 W*SCALE×H*SCALE，
+            // 否则 foreignObject 里的内容会以 1:1 挤在左上角，而不是铺满
+            const svg =
+                '<svg xmlns="http://www.w3.org/2000/svg" width="' + (W * SCALE) + '" height="' + (H * SCALE) + '"' +
+                ' viewBox="0 0 ' + W + ' ' + H + '">' +
+                '<foreignObject x="0" y="0" width="' + W + '" height="' + H + '">' +
+                '<div xmlns="http://www.w3.org/1999/xhtml" ' +
+                'style="position:relative;width:' + W + 'px;height:' + H + 'px;margin:0;padding:0;overflow:hidden;">' +
+                html +
+                '</div></foreignObject></svg>';
+
+            const img = new Image();
+            img.onload = function () {
+                const cv = document.createElement('canvas');
+                cv.width = W * SCALE;
+                cv.height = H * SCALE;
+                const ctx = cv.getContext('2d');
+                ctx.fillStyle = '#dceade';
+                ctx.fillRect(0, 0, cv.width, cv.height);
+                ctx.drawImage(img, 0, 0, cv.width, cv.height);
+                cb(cv);
+            };
+            img.onerror = function () { cb(null); };
+            img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+        }
+
+        const snapBtn = document.getElementById('snapBtn');
+        if (snapBtn) {
+            snapBtn.addEventListener('click', function () {
+                showFeedback('正在生成…');
+                renderTankToCanvas(function (cv) {
+                    if (!cv) { showFeedback('这张图没能生成'); return; }
+                    cv.toBlob(function (blob) {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = '观鱼-' + new Date().toISOString().slice(0, 10) + '.png';
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+                        showFeedback('已存成图片');
+                    }, 'image/png');
+                });
+            });
+        }

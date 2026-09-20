@@ -102,6 +102,7 @@ var G = window.__GUANYU;
 
             const card = document.createElement('div');
             card.className = 'species-card';
+            card.dataset.species = sp.key;
 
             const fig = document.createElement('div');
             fig.className = 'species-figure';
@@ -130,6 +131,48 @@ var G = window.__GUANYU;
 
             grid.appendChild(card);
         });
+
+        refreshSpeciesSeen();
+    }
+
+    // ---------- 鱼谱：点过的鱼种点亮 ----------
+    // 把鱼谱从"静态介绍"变成"你的记录"：没点过的偏淡，点过就亮起来。
+    const SEEN_STORE = 'guanyu-seen-species';
+
+    function getSeenSpecies() {
+        try {
+            const raw = localStorage.getItem(SEEN_STORE);
+            const arr = raw ? JSON.parse(raw) : [];
+            return Array.isArray(arr) ? arr : [];
+        } catch (e) { return []; }
+    }
+
+    function markSpeciesSeen(key) {
+        if (!key) return;
+        const seen = getSeenSpecies();
+        if (seen.indexOf(key) >= 0) return;
+        seen.push(key);
+        try { localStorage.setItem(SEEN_STORE, JSON.stringify(seen)); } catch (e) {}
+        refreshSpeciesSeen();
+    }
+
+    function refreshSpeciesSeen() {
+        const seen = getSeenSpecies();
+        const cards = document.querySelectorAll('.species-card');
+        if (!cards.length) return;
+
+        cards.forEach(function (card) {
+            const on = seen.indexOf(card.dataset.species) >= 0;
+            card.classList.toggle('species-seen', on);
+            card.classList.toggle('species-unseen', !on);
+        });
+
+        const prog = document.getElementById('speciesProgress');
+        if (prog) {
+            prog.textContent = seen.length === 0
+                ? '在缸里点一条鱼，它就会记进这里。'
+                : '已识 ' + Math.min(seen.length, cards.length) + ' / ' + cards.length;
+        }
     }
 
     // ---------- 初始化 ----------
@@ -151,4 +194,5 @@ var G = window.__GUANYU;
 
     G.navigate = navigate;
     G.applyView = applyView;
+    G.markSpeciesSeen = markSpeciesSeen;
 })();

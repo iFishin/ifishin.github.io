@@ -202,6 +202,24 @@
     color: rgba(150, 70, 60, 0.62);
 }
 
+/* 没见过 / 见过：偏淡 ↔ 点亮。偏淡也要读得清，
+   否则第一次进来五张全是灰的，会像坏了 */
+.species-unseen .species-figure { opacity: 0.38; }
+.species-unseen .species-name,
+.species-unseen .species-desc,
+.species-unseen .species-trait { opacity: 0.58; }
+
+.species-seen .species-card,
+.species-seen .species-figure { opacity: 1; }
+
+.species-seen .species-name::after {
+    content: '· 已识';
+    margin-left: 6px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: rgba(150, 70, 60, 0.7);
+}
+
 /* ========== 印章导航 ==========
    做成画面的一部分而不是一条导航栏：平时只是左侧一列小印章，
    悬停才浮出文字，尽量不切割"一整幅画"的沉浸感。 */
@@ -379,6 +397,32 @@ body.theme-sky .ink-transition::before {
         animation: none;
         transform: scale(26);
     }
+}
+
+/* ========== 入定模式 ==========
+   界面元素整体淡出，只留画面本身。过渡写进两处共用的规则里，
+   否则"进入"是淡出、"退出"会瞬间跳回来。 */
+.seal-nav,
+.controls,
+.theme-btn,
+.theme-menu {
+    transition: opacity 1.6s ease;
+}
+
+body.contemplating .seal-nav,
+body.contemplating .controls,
+body.contemplating .theme-btn,
+body.contemplating .theme-menu {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* 诗句单独处理：它本来就有 0.5s 的轮播淡出（decorations.css），
+   不能被上面那条 1.6s 盖掉，否则每次换句都要慢慢淡回来 */
+body.contemplating .poem-container {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1.6s ease;
 }
 
 /* ========== 响应式 ========== */

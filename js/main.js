@@ -32,6 +32,8 @@ window.__GUANYU = window.__GUANYU || {};
                     } else {
                         updateCatEyes();
                     }
+
+                    updateAmbient();
                 } catch(e) {
                     // Silent catch - don't crash animation loop
                 }
@@ -82,6 +84,41 @@ window.__GUANYU = window.__GUANYU || {};
             if (k === 'f' && typeof feedFish === 'function') feedFish();
             else if (k === 's' && typeof scatterFish === 'function') scatterFish();
         });
+
+        // ========== 入定模式 ==========
+        // 长时间没输入后：界面元素淡出、鱼群放慢、猫睡去，只剩水草和光。
+        // "不操作"本身也该是一种体验——这正是这个站叫"观鱼"的原因。
+        const IDLE_MS = 45000;
+        const CONTEMPLATE_SCALE = 0.42;
+        let lastInputAt = Date.now();
+        let contemplating = false;
+
+        ['mousemove', 'mousedown', 'pointerdown', 'touchstart', 'keydown', 'wheel'].forEach(ev => {
+            document.addEventListener(ev, () => { lastInputAt = Date.now(); }, { passive: true });
+        });
+
+        function updateAmbient() {
+            const should = (Date.now() - lastInputAt > IDLE_MS) && !document.hidden;
+
+            if (should !== contemplating) {
+                contemplating = should;
+                document.body.classList.toggle('contemplating', should);
+                if (should) {
+                    // 把"上次互动"往前推，让猫按自己那套犯困逻辑睡过去，
+                    // 而不是硬塞 asleep——醒来时才能自然回到 idle
+                    window.__GUANYU.catLastInteractionTime = Date.now() - 61000;
+                } else if (typeof window.__GUANYU.wakeCat === 'function') {
+                    window.__GUANYU.wakeCat();
+                }
+            }
+
+            // 缓动过渡，避免速度突变
+            const target = should ? CONTEMPLATE_SCALE : 1;
+            const cur = window.__GUANYU.ambientScale;
+            if (Math.abs(cur - target) > 0.002) {
+                window.__GUANYU.ambientScale = cur + (target - cur) * 0.02;
+            }
+        }
 
         // ========== 初始化 ==========
         function init() {

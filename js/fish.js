@@ -1,6 +1,11 @@
 window.__GUANYU = window.__GUANYU || {};
 var G = window.__GUANYU;
 
+// 入定时由 main.js 把它压到 1 以下，整体放慢。
+// 移动步长与摆尾/呼吸/瞳孔/嘴的相位都要乘它——只放慢移动的话，
+// 鱼会停在原地拼命摆尾，反而更吵。
+G.ambientScale = 1;
+
 // Global shared state (accessible to all modules)
 var fishes = [];
 var foods = [];
@@ -164,6 +169,9 @@ const fishColors = [
                 this.fearPropagationRadius = 14 + Math.random() * 9;
                 this.leapCooldown = 600 + Math.random() * 1800;
 
+                // 被抚摸中（由 tank.js 置位）
+                this.petting = false;
+
                 this.element = this.createSVGElement();
             }
 
@@ -301,8 +309,10 @@ const fishColors = [
                 this.updateAging();
 
                 if (this.depthWanderTimer <= 0) {
+                    // 老鱼浮到水面附近慢慢游：既符合"老了"的样子，
+                    // 也让"送别"这件事发生在看得见的地方
                     this.preferredDepth = this.isElderly
-                        ? 55 + Math.random() * 35
+                        ? 12 + Math.random() * 16
                         : 16 + Math.random() * 70;
                     this.depthWanderTimer = 160 + Math.random() * 260;
                 }
@@ -363,11 +373,14 @@ const fishColors = [
                         break;
                 }
 
-                this.updateRandomEvent();
-
-                this.tryStartCourtship();
-                this.updateTerritorial();
-                this.updateLeaderFollowing();
+                if (this.petting) {
+                    this.applyPetting();
+                } else {
+                    this.updateRandomEvent();
+                    this.tryStartCourtship();
+                    this.updateTerritorial();
+                    this.updateLeaderFollowing();
+                }
 
                 if (this.behaviorTimer % 5 === 0) {
                     this.updateAvoidance();
@@ -421,7 +434,7 @@ const fishColors = [
                 
                 this.handleBoundaries();
                 
-                const movementStep = 0.108 * currentSwimProfile.speed;
+                const movementStep = 0.108 * currentSwimProfile.speed * G.ambientScale;
                 this.x += this.vx * movementStep;
                 this.y += this.vy * movementStep;
                 
@@ -1059,6 +1072,29 @@ const fishColors = [
                 this.targetVx *= decelFactor;
                 this.targetVy *= decelFactor;
             }
+
+            // 被抚摸：平静下来，慢慢跟着光标，不再乱窜。
+            // 直接"赋值"目标速度而不是叠加——叠加的话它会一边温顺跟随、
+            // 一边还在执行自己的 wander/hunt，看起来就不像被摸服了。
+            applyPetting() {
+                this.behavior = 'wander';
+                this.targetFood = null;
+                this.eventType = null;
+                this.hunger = Math.max(0.05, this.hunger - 0.0004);   // 被摸很安心
+
+                const dx = mouseXPct - this.x;
+                const dy = mouseYPct - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy) || 0.0001;
+
+                if (dist > 5) {
+                    const pull = Math.min(0.18, dist * 0.014);
+                    this.targetVx = (dx / dist) * pull * 4;
+                    this.targetVy = (dy / dist) * pull * 3;
+                } else {
+                    this.targetVx *= 0.86;
+                    this.targetVy *= 0.86;
+                }
+            }
             
             fleeBehavior() {
                 if (this.behaviorTimer === 0) {
@@ -1072,11 +1108,11 @@ const fishColors = [
             updateAnimation() {
                 const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
                 
-                this.tailPhase += this.tailFrequency + speed * 0.08;
+                this.tailPhase += (this.tailFrequency + speed * 0.08) * G.ambientScale;
                 const tailAngle = Math.sin(this.tailPhase) * (this.tailAmplitudeBase + speed * 6.5);
                 this.tailElement.style.transform = `rotate(${tailAngle}deg)`;
                 
-                this.bodyPhase += 0.015 + speed * 0.009;
+                this.bodyPhase += (0.015 + speed * 0.009) * G.ambientScale;
                 const breath = 1 + Math.sin(this.bodyPhase) * 0.017;
                 this.bodyElement.style.transform = `scale(${breath})`;
                 
@@ -1087,7 +1123,7 @@ const fishColors = [
                 this.pectoralLeftElement.style.transform = `rotate(${pectoralAngle}deg)`;
                 this.pectoralRightElement.style.transform = `rotate(${-pectoralAngle}deg)`;
 
-                this.pupilPhase += 0.08 + speed * 0.03;
+                this.pupilPhase += (0.08 + speed * 0.03) * G.ambientScale;
                 let gazeX = Math.max(-1.4, Math.min(1.4, this.vx * 1.1));
                 let gazeY = Math.max(-1.1, Math.min(1.1, this.vy * 0.9));
                 if (this.eventType === 'inspectCursor' && isMouseInTank) {
@@ -1104,7 +1140,7 @@ const fishColors = [
                 this.eyeShine.setAttribute('cx', (this.eyeX + 2 + gazeX * 0.5).toFixed(2));
                 this.eyeShine.setAttribute('cy', (this.eyeY - 1 + gazeY * 0.3).toFixed(2));
 
-                this.mouthPhase += 0.04 + speed * 0.02;
+                this.mouthPhase += (0.04 + speed * 0.02) * G.ambientScale;
                 const mouthOpen = 0.5 + Math.sin(this.mouthPhase) * 0.6 + (this.eventType === 'surfaceSip' ? 0.5 : 0);
                 // 嘴画在吻端（原来写死 x=105，身体只到 x=90，是一个悬空的墨点）
                 const nx = this.noseX;
@@ -1183,7 +1219,12 @@ const fishColors = [
 
 // 年龄增长
 Fish.prototype.updateAging = function() {
-    if (this.age >= 1) return;
+    // 注意：age 一旦到 1 就必须先置 isElderly 再返回，
+    // 否则这个提前 return 会让 isElderly 永远为 false
+    if (this.age >= 1) {
+        this.isElderly = true;
+        return;
+    }
     this.age = Math.min(1, this.age + this.ageRate);
 
     // 半岁后逐渐迟缓，最多减速 30%

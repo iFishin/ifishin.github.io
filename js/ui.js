@@ -72,12 +72,13 @@ function rotatePoem() {
     currentPoemIndex = (currentPoemIndex + 1) % poems.length;
     const poem = poems[currentPoemIndex];
     const container = document.getElementById('poemContainer');
-    container.style.opacity = '0';
+    // 用类而不是内联 opacity：内联样式会盖过 body.contemplating 的淡出规则
+    container.classList.add('poem-fading');
     setTimeout(() => {
         document.getElementById('poemLine1').textContent = poem.line1;
         document.getElementById('poemLine2').textContent = poem.line2;
         document.getElementById('poemAuthor').textContent = '—— ' + poem.author;
-        container.style.opacity = '0.6';
+        container.classList.remove('poem-fading');
     }, 500);
 }
 
