@@ -54,6 +54,8 @@ body.theme-night .control-btn {
     .ink-wash { animation: none !important; }
     .fish { transition: none !important; }
     .bubble { display: none !important; }
+    /* 不动的反光仍然保留，只是定格——否则上面那条 0.01ms 会让它闪一下就消失 */
+    .glint { animation: none !important; opacity: 0.22; }
 }
 
 /* 移动端适配 */

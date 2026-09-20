@@ -57,11 +57,51 @@
     left: 0;
     right: 0;
     height: 40px;
-    background: linear-gradient(to bottom, 
-        rgba(255, 255, 255, 0.15) 0%, 
+    background: linear-gradient(to bottom,
+        rgba(255, 255, 255, 0.15) 0%,
         transparent 100%);
     border-radius: 18px 18px 0 0;
     pointer-events: none;
+}
+
+/* ========== 水面春日反光 ==========
+   几道横向的柔光缓慢漂过水面。用 span 而不是伪元素，是因为要分别调
+   相位与速度；每道的高度/透明度都不同，避免看出是同一张图在循环。 */
+.water-glints {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.glint {
+    position: absolute;
+    left: -35%;
+    width: 170%;
+    height: 10px;
+    border-radius: 50%;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.42) 34%,
+        rgba(255, 255, 255, 0.72) 50%,
+        rgba(255, 255, 255, 0.42) 66%,
+        transparent 100%);
+    filter: blur(4px);
+    opacity: 0;
+    animation: glintDrift linear infinite;
+}
+
+.glint.g1 { top: 7%;  height: 11px; animation-duration: 19s; animation-delay: -2s; }
+.glint.g2 { top: 21%; height: 7px;  animation-duration: 26s; animation-delay: -13s; }
+.glint.g3 { top: 34%; height: 14px; animation-duration: 33s; animation-delay: -24s; }
+
+@keyframes glintDrift {
+    0%   { transform: translateX(-10%) scaleY(1);    opacity: 0; }
+    18%  { opacity: 0.34; }
+    50%  { transform: translateX(4%) scaleY(1.3); }
+    82%  { opacity: 0.28; }
+    100% { transform: translateX(12%) scaleY(1);     opacity: 0; }
 }
 
 .water-ripple {
