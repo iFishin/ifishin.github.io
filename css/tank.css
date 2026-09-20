@@ -1,10 +1,16 @@
-/* 鱼缸 - iOS 26风格毛玻璃 */
-.glass-tank {
+/* 视图舞台：尺寸定义在这里，四个视图叠在它上面做原位替换 */
+.stage {
     position: relative;
     width: 55vw;
     height: 50vh;
     z-index: 10;
     margin: 0 auto;
+}
+
+/* 鱼缸 - iOS 26风格毛玻璃 */
+.glass-tank {
+    position: absolute;
+    inset: 0;
 }
 
 .glass-base {

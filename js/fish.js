@@ -45,11 +45,11 @@ const fishColors = [
         // 在此之前所有鱼共用同一套几何（椭圆身体 + 固定鳍位），只有颜色不同。
         // 这里用 rx/ry 控制体型、tail 控制尾形，再叠加尺寸/游速/摆尾频率的差异。
         const FISH_SPECIES = [
-            { key: 'dan',   name: '墨丹', rx: 30,   ry: 15.5, tail: 'fan',     tailScale: 1.00, finScale: 1.00, sizeScale: 1.00, speedScale: 1.00, tailRate: 1.00, palette: [0, 1, 3, 4] },
-            { key: 'jin',   name: '锦鲤', rx: 37,   ry: 15.0, tail: 'flowing', tailScale: 1.15, finScale: 0.90, sizeScale: 1.16, speedScale: 0.92, tailRate: 0.80, palette: [0, 6, 4], barbels: true, spots: true },
-            { key: 'jinji', name: '金鲫', rx: 27,   ry: 17.5, tail: 'veil',    tailScale: 1.25, finScale: 1.15, sizeScale: 1.08, speedScale: 0.86, tailRate: 0.90, palette: [0, 6, 5] },
-            { key: 'qing',  name: '青鳞', rx: 32,   ry: 13.0, tail: 'forked',  tailScale: 1.05, finScale: 0.95, sizeScale: 0.95, speedScale: 1.08, tailRate: 1.10, palette: [1, 7, 2] },
-            { key: 'yin',   name: '银梭', rx: 24,   ry: 11.0, tail: 'small',   tailScale: 0.90, finScale: 0.80, sizeScale: 0.74, speedScale: 1.34, tailRate: 1.30, palette: [2, 3, 5] }
+            { key: 'dan',   name: '墨丹', rx: 30,   ry: 15.5, tail: 'fan',     tailScale: 1.00, finScale: 1.00, sizeScale: 1.00, speedScale: 1.00, tailRate: 1.00, palette: [0, 1, 3, 4], desc: '最常见的墨色小鱼，成群游动，性情温和。' },
+            { key: 'jin',   name: '锦鲤', rx: 37,   ry: 15.0, tail: 'flowing', tailScale: 1.15, finScale: 0.90, sizeScale: 1.16, speedScale: 0.92, tailRate: 0.80, palette: [0, 6, 4], barbels: true, spots: true, desc: '体形修长，口边有须，身上留白如墨迹，游姿从容。' },
+            { key: 'jinji', name: '金鲫', rx: 27,   ry: 17.5, tail: 'veil',    tailScale: 1.25, finScale: 1.15, sizeScale: 1.08, speedScale: 0.86, tailRate: 0.90, palette: [0, 6, 5], desc: '身躯圆润，尾鳍长垂如纱，游动时最是好看。' },
+            { key: 'qing',  name: '青鳞', rx: 32,   ry: 13.0, tail: 'forked',  tailScale: 1.05, finScale: 0.95, sizeScale: 0.95, speedScale: 1.08, tailRate: 1.10, palette: [1, 7, 2], desc: '身细尾分，青碧之色，游速轻快。' },
+            { key: 'yin',   name: '银梭', rx: 24,   ry: 11.0, tail: 'small',   tailScale: 0.90, finScale: 0.80, sizeScale: 0.74, speedScale: 1.34, tailRate: 1.30, palette: [2, 3, 5], desc: '体型最小、游得最快，常成群掠过水面。' }
         ];
 
         // 尾形：以尾柄为原点 (0,0)，向 -x 方向展开，便于按 bodyRx 平移挂接

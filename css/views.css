@@ -1,0 +1,382 @@
+/* ========== 视图与原位换景 ==========
+   四个视图叠在 .stage 上原位交叉淡入，宣纸／柳树／猫／背景水墨常驻不动。
+   鱼缸用透明度隐藏而非 display:none —— 鱼群继续游，切回来不会重来一遍。 */
+.view {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.45s ease, visibility 0s linear 0.45s;
+}
+
+.view.is-active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.45s ease, visibility 0s;
+}
+
+/* ---------- 内容面板：沿用鱼缸那套毛玻璃语汇 ---------- */
+.panel {
+    height: 100%;
+    overflow-y: auto;
+    padding: 26px 30px 30px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.16) 100%);
+    backdrop-filter: blur(25px) saturate(140%);
+    -webkit-backdrop-filter: blur(25px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.12),
+        inset 0 1px 1px rgba(255, 255, 255, 0.6);
+    color: rgba(52, 68, 52, 0.9);
+    font-size: 13.5px;
+    line-height: 1.95;
+    letter-spacing: 0.04em;
+}
+
+.panel-title {
+    font-size: 1.35rem;
+    font-weight: 400;
+    letter-spacing: 0.34em;
+    color: rgba(48, 66, 48, 0.92);
+    margin-bottom: 6px;
+}
+
+.panel-lede {
+    color: rgba(60, 80, 60, 0.62);
+    letter-spacing: 0.14em;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(60, 80, 60, 0.1);
+}
+
+.panel-sub {
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    color: rgba(52, 70, 52, 0.85);
+    margin: 18px 0 6px;
+}
+
+.panel p { margin-bottom: 10px; }
+
+.panel-list {
+    list-style: none;
+    margin-bottom: 12px;
+}
+
+.panel-list li {
+    position: relative;
+    padding-left: 16px;
+    margin-bottom: 8px;
+}
+
+.panel-list li::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 0.85em;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(150, 70, 60, 0.4);
+}
+
+.panel-list b {
+    font-weight: 500;
+    color: rgba(45, 62, 45, 0.95);
+}
+
+.panel-note {
+    font-size: 12px;
+    color: rgba(60, 80, 60, 0.55);
+    border-left: 2px solid rgba(150, 70, 60, 0.25);
+    padding-left: 12px;
+    margin-top: 14px;
+}
+
+.panel code {
+    font-family: 'SF Mono', Consolas, 'Courier New', monospace;
+    font-size: 0.92em;
+    background: rgba(60, 80, 60, 0.08);
+    padding: 1px 5px;
+    border-radius: 4px;
+}
+
+/* ---------- 鱼谱 ---------- */
+.species-grid {
+    display: grid;
+    /* 横排卡片：鱼在左、说明在右。列宽压到这个尺寸才能三列成行，
+       五族正好两行放下，不用滚动 */
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.species-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(255, 255, 255, 0.34);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    padding: 10px 14px;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+}
+
+.species-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.09);
+}
+
+.species-figure {
+    flex: 0 0 auto;
+    width: 84px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 鱼谱里的鱼是静态克隆，不受 updateTransform 影响，直接按 viewBox 缩放 */
+.species-figure svg {
+    width: 84px;
+    height: 46px;
+    overflow: visible;
+}
+
+.species-text {
+    min-width: 0;
+}
+
+.species-name {
+    font-size: 0.92rem;
+    letter-spacing: 0.2em;
+    color: rgba(45, 62, 45, 0.9);
+    margin-bottom: 2px;
+}
+
+.species-desc {
+    font-size: 11.5px;
+    line-height: 1.6;
+    color: rgba(60, 80, 60, 0.66);
+    /* 夹到两行，保证卡片高度整齐、五族一屏放得下 */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.species-trait {
+    margin-top: 4px;
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    color: rgba(150, 70, 60, 0.62);
+}
+
+/* ========== 印章导航 ==========
+   做成画面的一部分而不是一条导航栏：平时只是左侧一列小印章，
+   悬停才浮出文字，尽量不切割"一整幅画"的沉浸感。 */
+.seal-nav {
+    position: fixed;
+    left: 26px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.seal-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.seal-mark {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    border-radius: 7px;
+    color: rgba(150, 66, 56, 0.68);
+    background: linear-gradient(135deg, rgba(180, 60, 50, 0.1), rgba(180, 60, 50, 0.04));
+    border: 1px solid rgba(150, 66, 56, 0.26);
+    transition: color 0.28s, border-color 0.28s, transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s;
+}
+
+.seal-nav-item:hover .seal-mark,
+.seal-nav-item:focus-visible .seal-mark {
+    transform: scale(1.08);
+    color: rgba(150, 66, 56, 0.9);
+    border-color: rgba(150, 66, 56, 0.45);
+}
+
+.seal-nav-item[aria-current="page"] .seal-mark {
+    color: rgba(250, 248, 244, 0.95);
+    background: linear-gradient(135deg, rgba(165, 64, 52, 0.82), rgba(140, 52, 42, 0.88));
+    border-color: rgba(140, 52, 42, 0.5);
+    box-shadow: 0 3px 10px rgba(140, 52, 42, 0.22);
+}
+
+.seal-label {
+    font-size: 12px;
+    letter-spacing: 0.28em;
+    color: rgba(60, 80, 60, 0.72);
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: opacity 0.28s, transform 0.28s;
+    white-space: nowrap;
+    text-shadow: 0 1px 6px rgba(255, 255, 255, 0.7);
+}
+
+.seal-nav-item:hover .seal-label,
+.seal-nav-item:focus-visible .seal-label {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* ========== 水墨晕开转场 ========== */
+.ink-transition {
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+    pointer-events: none;
+    opacity: 0;
+}
+
+.ink-transition::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 12vmax;
+    height: 12vmax;
+    margin: -6vmax 0 0 -6vmax;
+    border-radius: 50%;
+    background: radial-gradient(circle,
+        rgba(58, 74, 60, 0.94) 0%,
+        rgba(58, 74, 60, 0.86) 52%,
+        rgba(58, 74, 60, 0) 74%);
+    filter: blur(3px);
+    transform: scale(0);
+}
+
+.ink-transition.spreading {
+    opacity: 1;
+}
+
+.ink-transition.spreading::before {
+    animation: inkSpread 0.5s ease-in forwards;
+}
+
+.ink-transition.draining {
+    opacity: 1;
+}
+
+.ink-transition.draining::before {
+    animation: inkDrain 0.46s ease-out forwards;
+}
+
+@keyframes inkSpread {
+    0%   { transform: scale(0); opacity: 0.9; }
+    100% { transform: scale(26); opacity: 1; }
+}
+
+@keyframes inkDrain {
+    0%   { transform: scale(26); opacity: 1; }
+    100% { transform: scale(0); opacity: 0.9; }
+}
+
+/* ========== 主题联动 ========== */
+body.theme-night .panel {
+    background: linear-gradient(135deg, rgba(40, 50, 55, 0.5) 0%, rgba(30, 40, 45, 0.3) 100%);
+    border-color: rgba(80, 90, 100, 0.3);
+    color: rgba(196, 206, 196, 0.86);
+}
+
+body.theme-night .panel-title { color: rgba(200, 210, 200, 0.9); }
+body.theme-night .panel-lede {
+    color: rgba(180, 192, 180, 0.6);
+    border-bottom-color: rgba(90, 105, 95, 0.2);
+}
+body.theme-night .panel-sub { color: rgba(196, 206, 196, 0.85); }
+body.theme-night .panel-list b { color: rgba(210, 220, 210, 0.92); }
+body.theme-night .panel-note { color: rgba(180, 192, 180, 0.55); }
+body.theme-night .panel code { background: rgba(180, 192, 180, 0.12); }
+
+body.theme-night .species-card {
+    background: rgba(40, 50, 55, 0.4);
+    border-color: rgba(80, 90, 100, 0.3);
+}
+body.theme-night .species-name { color: rgba(200, 210, 200, 0.9); }
+body.theme-night .species-desc { color: rgba(180, 192, 180, 0.6); }
+body.theme-night .seal-label {
+    color: rgba(180, 192, 180, 0.7);
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+}
+
+body.theme-night .ink-transition::before {
+    background: radial-gradient(circle,
+        rgba(12, 18, 16, 0.95) 0%,
+        rgba(12, 18, 16, 0.88) 52%,
+        rgba(12, 18, 16, 0) 74%);
+}
+
+body.theme-sky .ink-transition::before {
+    background: radial-gradient(circle,
+        rgba(70, 92, 106, 0.9) 0%,
+        rgba(70, 92, 106, 0.82) 52%,
+        rgba(70, 92, 106, 0) 74%);
+}
+
+/* ========== 减弱动效 ========== */
+@media (prefers-reduced-motion: reduce) {
+    .view { transition: none; }
+
+    .ink-transition.spreading::before,
+    .ink-transition.draining::before {
+        animation: none;
+        transform: scale(26);
+    }
+}
+
+/* ========== 响应式 ========== */
+@media (max-width: 1180px) {
+    .seal-nav { left: 12px; gap: 9px; }
+    .seal-mark { width: 30px; height: 30px; flex-basis: 30px; font-size: 13px; }
+    .seal-label { display: none; }
+}
+
+@media (max-width: 768px) {
+    /* 移动端：挪到右上角横排（主题按钮在该断点本来就隐藏），避免压住鱼缸与底部控制条 */
+    .seal-nav {
+        left: auto;
+        right: 12px;
+        top: 14px;
+        transform: none;
+        flex-direction: row;
+        gap: 8px;
+    }
+
+    .seal-label { display: none; }
+
+    .panel {
+        padding: 20px 18px 22px;
+        font-size: 13px;
+    }
+
+    .species-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 10px;
+    }
+
+    .species-figure svg { width: 110px; height: 55px; }
+}

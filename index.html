@@ -20,7 +20,6 @@
     <link rel="icon" type="image/png" href="/assets/favicon.png">
     <link rel="apple-touch-icon" href="/assets/favicon.png">
     <title>观鱼</title>
-    <base target="_blank">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -29,6 +28,7 @@
     <link rel="stylesheet" href="css/decorations.css">
     <link rel="stylesheet" href="css/controls.css">
     <link rel="stylesheet" href="css/themes.css">
+    <link rel="stylesheet" href="css/views.css">
     <script>(function(){var t=localStorage.getItem('guanyu-theme')||'';if(t)document.body.classList.add('theme-'+t)})();</script>
 </head>
 <body>
@@ -68,11 +68,23 @@
             <path d="M76,320 Q45,420 35,550 Q30,650 45,750" stroke="rgba(70,90,70,0.22)" stroke-width="1.5" fill="none"/>
         </g>
         
+        <!-- 嫩芽 -->
+        <g class="willow-bud">
+            <circle cx="140" cy="272" r="3.4" fill="rgba(150,190,140,0.42)"/>
+            <circle cx="130" cy="492" r="3" fill="rgba(150,190,140,0.36)"/>
+            <circle cx="35" cy="542" r="3" fill="rgba(150,190,140,0.34)"/>
+            <circle cx="25" cy="392" r="2.8" fill="rgba(150,190,140,0.34)"/>
+            <circle cx="120" cy="472" r="2.6" fill="rgba(150,190,140,0.3)"/>
+            <circle cx="138" cy="352" r="2.6" fill="rgba(150,190,140,0.3)"/>
+        </g>
+
         <!-- 柳叶点缀 -->
-        <ellipse cx="140" cy="280" rx="8" ry="3" fill="rgba(90,120,90,0.2)" transform="rotate(30 140 280)"/>
-        <ellipse cx="25" cy="400" rx="8" ry="3" fill="rgba(90,120,90,0.2)" transform="rotate(-20 25 400)"/>
-        <ellipse cx="120" cy="480" rx="7" ry="2.5" fill="rgba(90,120,90,0.18)" transform="rotate(25 120 480)"/>
-        <ellipse cx="35" cy="550" rx="7" ry="2.5" fill="rgba(90,120,90,0.18)" transform="rotate(-25 35 550)"/>
+        <g class="willow-leaves">
+            <ellipse cx="140" cy="280" rx="8" ry="3" fill="rgba(90,120,90,0.2)" transform="rotate(30 140 280)"/>
+            <ellipse cx="25" cy="400" rx="8" ry="3" fill="rgba(90,120,90,0.2)" transform="rotate(-20 25 400)"/>
+            <ellipse cx="120" cy="480" rx="7" ry="2.5" fill="rgba(90,120,90,0.18)" transform="rotate(25 120 480)"/>
+            <ellipse cx="35" cy="550" rx="7" ry="2.5" fill="rgba(90,120,90,0.18)" transform="rotate(-25 35 550)"/>
+        </g>
     </svg>
     
     <!-- 右侧柳树 -->
@@ -99,10 +111,23 @@
             <path d="M76,320 Q45,420 35,550 Q30,650 45,750" stroke="rgba(70,90,70,0.22)" stroke-width="1.5" fill="none"/>
         </g>
         
-        <ellipse cx="140" cy="280" rx="8" ry="3" fill="rgba(90,120,90,0.2)" transform="rotate(30 140 280)"/>
-        <ellipse cx="25" cy="400" rx="8" ry="3" fill="rgba(90,120,90,0.2)" transform="rotate(-20 25 400)"/>
-        <ellipse cx="120" cy="480" rx="7" ry="2.5" fill="rgba(90,120,90,0.18)" transform="rotate(25 120 480)"/>
-        <ellipse cx="35" cy="550" rx="7" ry="2.5" fill="rgba(90,120,90,0.18)" transform="rotate(-25 35 550)"/>
+        <!-- 嫩芽 -->
+        <g class="willow-bud">
+            <circle cx="140" cy="272" r="3.4" fill="rgba(150,190,140,0.42)"/>
+            <circle cx="130" cy="492" r="3" fill="rgba(150,190,140,0.36)"/>
+            <circle cx="35" cy="542" r="3" fill="rgba(150,190,140,0.34)"/>
+            <circle cx="25" cy="392" r="2.8" fill="rgba(150,190,140,0.34)"/>
+            <circle cx="120" cy="472" r="2.6" fill="rgba(150,190,140,0.3)"/>
+            <circle cx="138" cy="352" r="2.6" fill="rgba(150,190,140,0.3)"/>
+        </g>
+
+        <!-- 柳叶点缀 -->
+        <g class="willow-leaves">
+            <ellipse cx="140" cy="280" rx="8" ry="3" fill="rgba(90,120,90,0.2)" transform="rotate(30 140 280)"/>
+            <ellipse cx="25" cy="400" rx="8" ry="3" fill="rgba(90,120,90,0.2)" transform="rotate(-20 25 400)"/>
+            <ellipse cx="120" cy="480" rx="7" ry="2.5" fill="rgba(90,120,90,0.18)" transform="rotate(25 120 480)"/>
+            <ellipse cx="35" cy="550" rx="7" ry="2.5" fill="rgba(90,120,90,0.18)" transform="rotate(-25 35 550)"/>
+        </g>
     </svg>
     
     <!-- 标题 -->
@@ -134,8 +159,25 @@
     </div>
     </header>
     
-    <!-- 鱼缸 -->
-    <main>
+    <!-- 印章导航：画面的一部分，悬停才浮出文字 -->
+    <nav class="seal-nav" id="sealNav" aria-label="页面导航">
+        <a class="seal-nav-item" href="#/tank" data-view="tank">
+            <span class="seal-mark">鱼</span><span class="seal-label">观鱼</span>
+        </a>
+        <a class="seal-nav-item" href="#/species" data-view="species">
+            <span class="seal-mark">谱</span><span class="seal-label">鱼谱</span>
+        </a>
+        <a class="seal-nav-item" href="#/cat" data-view="cat">
+            <span class="seal-mark">猫</span><span class="seal-label">猫说</span>
+        </a>
+        <a class="seal-nav-item" href="#/about" data-view="about">
+            <span class="seal-mark">跋</span><span class="seal-label">关于</span>
+        </a>
+    </nav>
+
+    <!-- 视图舞台：四个视图原位交叉淡入，宣纸／柳树／猫／背景水墨常驻 -->
+    <main class="stage" id="stage">
+    <section class="view is-active" id="view-tank" data-view="tank" aria-label="观鱼鱼缸">
     <div class="glass-tank" id="tank" role="application" aria-label="观鱼鱼缸">
         <div class="glass-base"></div>
         <div class="glass-rim"></div>
@@ -181,7 +223,46 @@
         </div>
         </nav>
     </div>
+    </section>
+
+    <section class="view" id="view-species" data-view="species" aria-label="鱼谱">
+        <div class="panel">
+            <h2 class="panel-title">鱼谱</h2>
+            <p class="panel-lede">缸中五族，形色各异。</p>
+            <div class="species-grid" id="speciesGrid"></div>
+        </div>
+    </section>
+
+    <section class="view" id="view-cat" data-view="cat" aria-label="猫说">
+        <div class="panel">
+            <h2 class="panel-title">猫说</h2>
+            <p class="panel-lede">缸边这只黑猫，其实一直在看。</p>
+            <ul class="panel-list">
+                <li><b>盯着鱼看</b>——视线跟着最靠右的那条鱼移动。</li>
+                <li><b>点它</b>——会应你一声，声音是 Web Audio 现合成的，没有音频文件。</li>
+                <li><b>鱼游到右边</b>——它会好奇前倾，偶尔伸爪拍一下。</li>
+                <li><b>许久没人理</b>——打哈欠、理毛，最后打起瞌睡；碰一下鱼缸就醒。</li>
+                <li><b>惊扰鱼群</b>——它会被吓一跳，尾巴立刻竖起来。</li>
+            </ul>
+            <p class="panel-note">耳朵会抖、胡须会颤、尾巴一圈圈地摆——这些不是随机噪声，是按各自节奏叠加出来的。</p>
+        </div>
+    </section>
+
+    <section class="view" id="view-about" data-view="about" aria-label="关于">
+        <div class="panel">
+            <h2 class="panel-title">关于</h2>
+            <p class="panel-lede">一个水墨风格的在线鱼缸。</p>
+            <p>纯静态页面，没有构建步骤，也没有框架依赖——打开 <code>index.html</code> 就跑。鱼、猫、柳树全是 SVG 画的，声音是 Web Audio 实时合成的。</p>
+            <h3 class="panel-sub">鱼是有性格的</h3>
+            <p>每条鱼都有自己的好奇心、顽皮度、食欲、竞争性与社交性。这些数值驱使它游向食物、追逐同伴、圈占领地，或者凑过来看你的光标。它们会长大，也会变老。</p>
+            <h3 class="panel-sub">嵌入到你的页面</h3>
+            <p>卡片版是一个 480×240 的自包含页面，可以直接 iframe 引用，也可以放 README 徽章。点左下角的「嵌入」按钮取代码。</p>
+        </div>
+    </section>
     </main>
+
+    <!-- 水墨晕开转场 -->
+    <div class="ink-transition" id="inkTransition" aria-hidden="true"></div>
 
     <!-- 嵌入弹窗 -->
     <div class="embed-overlay" id="embedOverlay">
@@ -338,6 +419,8 @@
     <script src="js/fish.js"></script>
     <script src="js/cat.js"></script>
     <script src="js/tank.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/scenery.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

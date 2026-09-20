@@ -32,9 +32,12 @@
 .willow-branch:nth-child(4) { animation-delay: -1.5s; }
 .willow-branch:nth-child(5) { animation-delay: -2s; }
 
+/* 摆幅加大、节奏不再对称，读起来才像风一阵阵吹过而不是匀速摆动 */
 @keyframes willowSway {
-    0%, 100% { transform: rotate(-2deg); }
-    50% { transform: rotate(2deg); }
+    0%, 100% { transform: rotate(-3.4deg); }
+    28%      { transform: rotate(2.2deg); }
+    52%      { transform: rotate(-1.2deg); }
+    78%      { transform: rotate(3.4deg); }
 }
 
 /* 标题 */
@@ -497,3 +500,107 @@
 .cat-container.stretching .ink-cat-head {
     animation: catStretchHead 2.6s ease-in-out;
 }
+
+/* ========== 春日氛围 ========== */
+.scenery-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 6;
+    overflow: hidden;
+}
+
+/* 柳絮：极轻的白色绒点，随风斜落 */
+.catkin {
+    position: fixed;
+    top: -24px;
+    left: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 34% 34%,
+        rgba(255, 255, 255, 0.95) 0%,
+        rgba(255, 255, 255, 0.34) 58%,
+        rgba(255, 255, 255, 0) 74%);
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    animation: catkinDrift linear forwards;
+    will-change: transform, opacity;
+}
+
+@keyframes catkinDrift {
+    0%   { transform: translate3d(0, 0, 0); opacity: 0; }
+    10%  { opacity: 0.72; }
+    55%  { opacity: 0.55; }
+    100% { transform: translate3d(var(--catkin-dx, 60px), 108vh, 0); opacity: 0; }
+}
+
+/* 燕子：偶尔掠过的墨色剪影。缩放交给容器尺寸，transform 归关键帧 */
+.swallow {
+    position: fixed;
+    left: 0;
+    opacity: 0;
+    animation: swallowFly linear forwards;
+    will-change: transform, opacity;
+}
+
+.swallow svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+@keyframes swallowFly {
+    0%   { transform: translate3d(-16vw, 0, 0); opacity: 0; }
+    9%   { opacity: 0.72; }
+    86%  { opacity: 0.72; }
+    100% { transform: translate3d(114vw, var(--swallow-dy, -40px), 0); opacity: 0; }
+}
+
+/* 柳叶点缀：整簇做轻微平移。
+   只做 translate 是刻意的——rotate/scale 会依赖 transform-origin，而在
+   transform-box: view-box 下 `center` 指的是整个 viewBox 的中心，叶子会被甩飞；
+   而且 CSS transform 会覆盖叶子自身的 rotate 属性。 */
+.willow-leaves {
+    animation: leafDrift 6.4s ease-in-out infinite;
+}
+
+@keyframes leafDrift {
+    0%, 100% { transform: translate(0, 0); }
+    35%      { transform: translate(-3px, 4px); }
+    70%      { transform: translate(4px, 6px); }
+}
+
+/* 枝头嫩芽：只做呼吸式的明暗变化，同样不碰 transform */
+.willow-bud {
+    animation: budBreath 7.5s ease-in-out infinite;
+}
+
+@keyframes budBreath {
+    0%, 100% { opacity: 0.5; }
+    50%      { opacity: 0.95; }
+}
+
+/* 春日水面反光：几块柔光缓慢游移 */
+.water-body::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse 130px 38px at 24% 13%, rgba(255, 255, 255, 0.32), transparent 72%),
+        radial-gradient(ellipse 96px 30px at 66% 7%, rgba(255, 255, 255, 0.22), transparent 72%),
+        radial-gradient(ellipse 70px 24px at 46% 4%, rgba(255, 255, 255, 0.18), transparent 72%);
+    animation: waterShimmer 9s ease-in-out infinite;
+}
+
+@keyframes waterShimmer {
+    0%, 100% { opacity: 0.45; transform: translateX(0); }
+    50%      { opacity: 0.9; transform: translateX(16px); }
+}
+
+/* 夜色主题下柳絮/燕子偏冷，别在深色背景上刺眼 */
+body.theme-night .catkin {
+    box-shadow: 0 0 6px rgba(200, 210, 220, 0.28);
+    opacity: 0.5;
+}
+body.theme-night .swallow svg path { stroke: rgba(180, 190, 200, 0.4); }
+body.theme-night .water-body::after { opacity: 0.25; }
