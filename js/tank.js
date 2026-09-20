@@ -196,13 +196,27 @@ embedCopies.forEach(btn => {
         }, { passive: true });
 
         // ========== 点击投喂 ==========
+        let lastFeedClickAt = 0;
+
         tank.addEventListener('click', (e) => {
             if (e.button !== 0) return;
-            
+
             const rect = waterBody.getBoundingClientRect();
             const x = (e.clientX - rect.left) / rect.width * 100;
             const y = (e.clientY - rect.top) / rect.height * 100;
-            
+
+            // 点到鱼 → 看这条鱼的档案，而不是往下丢饲料
+            const hit = findFishAt(x, y);
+            if (hit) {
+                showFishDossier(hit);
+                return;
+            }
+
+            // 双击的第二下不投食：双击是"让鱼跃出水面"，否则会连掉两粒饲料
+            const now = Date.now();
+            if (now - lastFeedClickAt < 320) { lastFeedClickAt = 0; return; }
+            lastFeedClickAt = now;
+
             const food = document.createElement('div');
             food.className = 'food-pellet';
             
@@ -437,3 +451,36 @@ embedCopies.forEach(btn => {
                 }, i * (50 + Math.random() * 60));
             }
         }
+
+        // ========== 鱼的档案 ==========
+        // 点中某条鱼时给它的"身份"：种类来自物种表，年龄来自 updateAging，
+        // 已食口数来自 consumeSingleFood——都是鱼自己一路攒下来的状态。
+        function showFishDossier(fish) {
+            const sp = fish.species || {};
+            const age = fish.age || 0;
+            const stage = age < 0.25 ? '幼' : age < 0.6 ? '壮' : age < 0.9 ? '暮' : '老';
+            showFeedback(`${sp.name || '鱼'} · ${stage} · 已食 ${fish.eatCount || 0} 口`);
+
+            // 被点到要有反应，否则不知道点中了没有
+            if (!fish.eventType && fish.behavior !== 'flee') {
+                fish.startEvent('dart');
+            }
+        }
+
+        // ========== 双击水面：挑一条鱼跃出 ==========
+        function leapOneFish() {
+            const candidates = fishes.filter(f => !f.eventType && f.behavior !== 'flee');
+            if (candidates.length === 0) {
+                showFeedback('鱼儿们正忙着');
+                return;
+            }
+            const fish = candidates[Math.floor(Math.random() * candidates.length)];
+            fish.leapCooldown = 0;
+            fish.startEvent('leap');
+            showFeedback('鱼跃出水面');
+        }
+
+        tank.addEventListener('dblclick', (e) => {
+            if (e.button !== 0) return;
+            leapOneFish();
+        });

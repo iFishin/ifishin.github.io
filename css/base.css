@@ -6,7 +6,9 @@
 
 body {
     font-family: 'Noto Serif SC', serif;
-    background: linear-gradient(180deg, #e8f0e5 0%, #dde8d8 50%, #d4e3ce 100%);
+    /* hue≈126° 的春绿。原来的 #e8f0e5→#d4e3ce hue 只有约 103°，
+       R 比 B 还高，所以读起来偏黄绿而不是青绿 */
+    background: linear-gradient(180deg, #e7f1e8 0%, #dceade 50%, #cfe4d1 100%);
     overflow: hidden;
     position: relative;
     display: flex;
@@ -43,7 +45,9 @@ body {
 .ink-wash-1 {
     width: 400px;
     height: 400px;
-    background: #78716c;
+    /* 原来是 stone-500 #78716c：暖灰，R>G>B。400px 铺在左上角再模糊 100px，
+       等于给整页左上罩了一层暖色霾，是"偏黄"的主因 */
+    background: #6d7d6b;
     top: -64px;
     left: -64px;
 }
@@ -51,7 +55,7 @@ body {
 .ink-wash-2 {
     width: 350px;
     height: 350px;
-    background: #475569;
+    background: #4a6f68;
     bottom: -48px;
     right: -48px;
 }

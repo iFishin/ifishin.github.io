@@ -104,6 +104,33 @@
     border-radius: 4px;
 }
 
+.panel-list {
+    margin: 8px 0 0;
+    padding-left: 1.2em;
+    font-size: 13px;
+    line-height: 2;
+    color: rgba(60, 80, 60, 0.78);
+}
+
+.panel-list li { margin-bottom: 2px; }
+
+.panel-list b {
+    font-weight: 500;
+    color: rgba(45, 62, 45, 0.92);
+}
+
+.panel kbd {
+    font-family: 'SF Mono', Consolas, 'Courier New', monospace;
+    font-size: 0.86em;
+    background: rgba(60, 80, 60, 0.10);
+    border: 1px solid rgba(60, 80, 60, 0.16);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 0 5px;
+    margin: 0 1px;
+    color: rgba(52, 70, 52, 0.9);
+}
+
 /* ---------- 鱼谱 ---------- */
 .species-grid {
     display: grid;
@@ -308,7 +335,13 @@ body.theme-night .panel-lede {
     border-bottom-color: rgba(90, 105, 95, 0.2);
 }
 body.theme-night .panel-sub { color: rgba(196, 206, 196, 0.85); }
+body.theme-night .panel-list { color: rgba(186, 198, 186, 0.74); }
 body.theme-night .panel-list b { color: rgba(210, 220, 210, 0.92); }
+body.theme-night .panel kbd {
+    background: rgba(180, 192, 180, 0.14);
+    border-color: rgba(180, 192, 180, 0.2);
+    color: rgba(200, 210, 200, 0.9);
+}
 body.theme-night .panel-note { color: rgba(180, 192, 180, 0.55); }
 body.theme-night .panel code { background: rgba(180, 192, 180, 0.12); }
 

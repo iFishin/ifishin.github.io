@@ -79,7 +79,9 @@
     display: block;
 }
 
-.theme-option {
+/* 主题菜单里同时放主题与猫色，两者共用同一套选项样式 */
+.theme-option,
+.coat-option {
     padding: 8px 18px;
     font-size: 13px;
     color: #4a5a4a;
@@ -87,8 +89,28 @@
     transition: background 0.2s;
 }
 
-.theme-option:hover {
+.theme-option:hover,
+.coat-option:hover {
     background: #e8f0e5;
+}
+
+/* 当前选中的那一项 */
+.coat-option[aria-current="true"] {
+    color: #9a4a3c;
+    font-weight: 500;
+}
+
+.menu-label {
+    padding: 4px 18px 2px;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: rgba(74, 90, 74, 0.42);
+}
+
+.menu-sep {
+    height: 1px;
+    margin: 6px 14px;
+    background: rgba(74, 90, 74, 0.12);
 }
 
 /* 嵌入弹窗 */

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="观鱼——水墨风格在线鱼缸，看鱼、喂鱼、逗猫，享受一份宁静。">
-    <meta name="theme-color" content="#e8f0e5">
+    <meta name="theme-color" content="#e7f1e8">
     <meta property="og:title" content="观鱼">
     <meta property="og:description" content="水墨风格在线鱼缸，看鱼、喂鱼、逗猫，享受一份宁静。">
     <meta property="og:type" content="website">
@@ -147,15 +147,22 @@
     </div>
 
     <!-- 主题切换 -->
-    <button class="theme-btn" id="themeBtn" title="切换主题" aria-label="切换主题" aria-haspopup="true">
+    <button class="theme-btn" id="themeBtn" title="切换主题与猫色" aria-label="切换主题与猫色" aria-haspopup="true">
         <svg width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364l-1.414 1.414M6.05 17.95l-1.414 1.414m12.728 0l-1.414-1.414M6.05 6.05L4.636 4.636" stroke="#4a5a4a" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
     </button>
-    <div class="theme-menu" id="themeMenu" role="menu" aria-label="主题选择">
+    <div class="theme-menu" id="themeMenu" role="menu" aria-label="主题与猫色选择">
+        <div class="menu-label">主题</div>
         <div class="theme-option" data-theme="" role="menuitem" tabindex="0">春绿</div>
         <div class="theme-option" data-theme="sky" role="menuitem" tabindex="0">晴空</div>
         <div class="theme-option" data-theme="night" role="menuitem" tabindex="0">夜色</div>
+        <div class="menu-sep"></div>
+        <div class="menu-label">猫色</div>
+        <div class="coat-option" data-coat="ink" role="menuitem" tabindex="0">墨</div>
+        <div class="coat-option" data-coat="tabby" role="menuitem" tabindex="0">狸花</div>
+        <div class="coat-option" data-coat="ginger" role="menuitem" tabindex="0">橘</div>
+        <div class="coat-option" data-coat="snow" role="menuitem" tabindex="0">雪</div>
     </div>
     </header>
     
@@ -255,6 +262,16 @@
             <p>纯静态页面，没有构建步骤，也没有框架依赖——打开 <code>index.html</code> 就跑。鱼、猫、柳树全是 SVG 画的，声音是 Web Audio 实时合成的。</p>
             <h3 class="panel-sub">鱼是有性格的</h3>
             <p>每条鱼都有自己的好奇心、顽皮度、食欲、竞争性与社交性。这些数值驱使它游向食物、追逐同伴、圈占领地，或者凑过来看你的光标。它们会长大，也会变老。</p>
+            <h3 class="panel-sub">可以怎么玩</h3>
+            <ul class="panel-list">
+                <li><b>投喂</b>：点鱼缸里任意位置撒食，或按 <kbd>F</kbd>。</li>
+                <li><b>看鱼</b>：点中某条鱼，会告诉你它的种类、岁数和已经吃了几口。</li>
+                <li><b>惊扰</b>：按 <kbd>S</kbd> 或点「惊扰」，鱼群四散，而且恐惧会传染给旁边的鱼。</li>
+                <li><b>逗猫</b>：点一下猫它会叫；在它身上按住来回摩挲，它会眯起眼睛打呼噜。</li>
+                <li><b>看鱼跃</b>：双击鱼缸，会有鱼跃出水面。</li>
+                <li><b>拖着玩</b>：右键按住可以拖动一条鱼，手机上直接用手指拖。</li>
+                <li><b>暂停</b>：按 <kbd>空格</kbd> 定格整个画面。</li>
+            </ul>
             <h3 class="panel-sub">嵌入到你的页面</h3>
             <p>卡片版是一个 480×240 的自包含页面，可以直接 iframe 引用，也可以放 README 徽章。点左下角的「嵌入」按钮取代码。</p>
         </div>
@@ -300,9 +317,9 @@
             <svg viewBox="0 0 330 235" role="img" aria-label="水墨风格的黑猫坐在凳子上">
                 <defs>
                     <linearGradient id="inkCatWash" x1="18%" y1="0%" x2="82%" y2="100%">
-                        <stop offset="0%" stop-color="rgba(60,60,64,0.96)" />
-                        <stop offset="55%" stop-color="rgba(22,22,26,0.97)" />
-                        <stop offset="100%" stop-color="rgba(6,6,9,0.99)" />
+                        <stop offset="0%" style="stop-color:var(--fur-0)" />
+                        <stop offset="55%" style="stop-color:var(--fur-1)" />
+                        <stop offset="100%" style="stop-color:var(--fur-2)" />
                     </linearGradient>
                     <linearGradient id="stoolWash" x1="0%" y1="0%" x2="0%" y2="100%">
                         <stop offset="0%" stop-color="rgba(122,102,78,0.8)" />
@@ -338,37 +355,37 @@
                         <!-- 后腿（臀）：一块略亮的体积 + 折痕，避免躯干是一整块死黑 -->
                         <path d="M228,146 C254,140 276,156 280,179 C283,197 264,205 244,201
                                  C226,197 218,176 228,146 Z"
-                              fill="rgba(50,50,57,0.42)"/>
-                        <path d="M228,146 C254,140 276,156 280,179" stroke="rgba(215,215,215,0.15)" stroke-width="1.8" fill="none"/>
+                              style="fill:var(--volume)"/>
+                        <path d="M228,146 C254,140 276,156 280,179" style="stroke:var(--line-soft)" stroke-width="1.8" fill="none"/>
                         <!-- 背脊高光 -->
-                        <path d="M158,112 C196,98 246,104 268,122" stroke="rgba(220,220,220,0.17)" stroke-width="2.4" fill="none"/>
+                        <path d="M158,112 C196,98 246,104 268,122" style="stroke:var(--line)" stroke-width="2.4" fill="none"/>
                         <!-- 后腿折痕 -->
-                        <path d="M234,150 C247,163 251,180 246,195" stroke="rgba(200,200,200,0.13)" stroke-width="1.8" fill="none"/>
+                        <path d="M234,150 C247,163 251,180 246,195" style="stroke:var(--line-soft)" stroke-width="1.8" fill="none"/>
                         <!-- 臀部体积 -->
-                        <path d="M276,140 C291,155 294,175 288,190" stroke="rgba(220,220,220,0.10)" stroke-width="2" fill="none"/>
+                        <path d="M276,140 C291,155 294,175 288,190" style="stroke:var(--line-soft)" stroke-width="2" fill="none"/>
                         <!-- 胸口 -->
-                        <path d="M160,130 C168,150 172,172 174,192" stroke="rgba(200,200,200,0.10)" stroke-width="1.6" fill="none"/>
+                        <path d="M160,130 C168,150 172,172 174,192" style="stroke:var(--line-soft)" stroke-width="1.6" fill="none"/>
                         <!-- 前腿：比躯干略亮，且两只拉开距离，否则黑压黑完全看不见 -->
                         <path class="ink-cat-paw-front"
                               d="M168,166 C164,178 163,187 163,193 C163,198 177,198 177,193 C177,185 178,174 180,164 Z"
-                              fill="rgba(46,46,54,0.97)"/>
+                              style="fill:var(--fur-leg)"/>
                         <path d="M192,168 C189,179 188,188 188,194 C188,199 202,199 202,194 C202,186 203,175 204,167 Z"
-                              fill="rgba(36,36,43,0.95)"/>
+                              style="fill:var(--fur-dark)"/>
                     </g>
 
                     <g class="ink-cat-head">
                         <!-- 耳朵：左右镜像的三角形，底宽≈高（近乎等边），只留轻微外弧；
                              太窄太高会读成猞猁/兔耳 -->
-                        <path class="ink-cat-ear-left"  d="M116,60 Q108,40 116,22 Q130,34 146,44 Z" fill="rgba(14,14,16,0.94)"/>
-                        <path class="ink-cat-ear-right" d="M180,60 Q188,40 180,22 Q166,34 150,44 Z" fill="rgba(18,18,20,0.97)"/>
-                        <path d="M122,56 Q116,40 122,27 Q132,37 142,45 Z" fill="rgba(120,110,110,0.16)"/>
-                        <path d="M174,56 Q180,40 174,27 Q164,37 154,45 Z" fill="rgba(120,110,110,0.13)"/>
+                        <path class="ink-cat-ear-left"  d="M116,60 Q108,40 116,22 Q130,34 146,44 Z" style="fill:var(--fur-dark)"/>
+                        <path class="ink-cat-ear-right" d="M180,60 Q188,40 180,22 Q166,34 150,44 Z" style="fill:var(--fur-dark)"/>
+                        <path d="M122,56 Q116,40 122,27 Q132,37 142,45 Z" style="fill:var(--inner-ear)"/>
+                        <path d="M174,56 Q180,40 174,27 Q164,37 154,45 Z" style="fill:var(--inner-ear)"/>
 
                         <!-- 头：宽颧、收下巴的猫脸轮廓，用椭圆会读成一颗球 -->
                         <path d="M148,42 C169,42 185,55 189,77 C192,94 178,109 159,112
                                  C154,113 143,113 137,112 C118,109 104,94 107,77
                                  C111,55 127,42 148,42 Z" fill="url(#inkCatWash)"/>
-                        <path d="M114,74 Q107,88 115,101" stroke="rgba(225,225,225,0.13)" stroke-width="1.9" fill="none"/>
+                        <path d="M114,74 Q107,88 115,101" style="stroke:var(--line-soft)" stroke-width="1.9" fill="none"/>
 
                         <!-- 鼻子 -->
                         <path d="M143,89 L153,89 L148,95 Z" fill="rgba(96,78,78,0.6)"/>
@@ -380,16 +397,16 @@
 
                         <!-- 胡须 - 左 -->
                         <g class="whisker-group-left">
-                            <line class="whisker" x1="134" y1="94" x2="98" y2="86"  stroke="rgba(210,210,210,0.5)"  stroke-width="0.7"/>
-                            <line class="whisker" x1="134" y1="98" x2="94" y2="98"  stroke="rgba(210,210,210,0.45)" stroke-width="0.7"/>
-                            <line class="whisker" x1="134" y1="102" x2="99" y2="111" stroke="rgba(210,210,210,0.4)"  stroke-width="0.7"/>
+                            <line class="whisker" x1="134" y1="94" x2="98" y2="86"  style="stroke:var(--whisker-hi)"  stroke-width="0.7"/>
+                            <line class="whisker" x1="134" y1="98" x2="94" y2="98"  style="stroke:var(--whisker)" stroke-width="0.7"/>
+                            <line class="whisker" x1="134" y1="102" x2="99" y2="111" style="stroke:var(--whisker-lo)"  stroke-width="0.7"/>
                         </g>
 
                         <!-- 胡须 - 右 -->
                         <g class="whisker-group-right">
-                            <line class="whisker" x1="162" y1="94" x2="198" y2="86"  stroke="rgba(210,210,210,0.5)"  stroke-width="0.7"/>
-                            <line class="whisker" x1="162" y1="98" x2="202" y2="98"  stroke="rgba(210,210,210,0.45)" stroke-width="0.7"/>
-                            <line class="whisker" x1="162" y1="102" x2="197" y2="111" stroke="rgba(210,210,210,0.4)"  stroke-width="0.7"/>
+                            <line class="whisker" x1="162" y1="94" x2="198" y2="86"  style="stroke:var(--whisker-hi)"  stroke-width="0.7"/>
+                            <line class="whisker" x1="162" y1="98" x2="202" y2="98"  style="stroke:var(--whisker)" stroke-width="0.7"/>
+                            <line class="whisker" x1="162" y1="102" x2="197" y2="111" style="stroke:var(--whisker-lo)"  stroke-width="0.7"/>
                         </g>
 
                         <g class="ink-cat-eye ink-cat-eye-left">
@@ -404,8 +421,8 @@
                         </g>
 
                         <!-- 眉 -->
-                        <path d="M122,61 Q128,56 136,59" stroke="rgba(210,210,210,0.16)" stroke-width="1" fill="none"/>
-                        <path d="M158,63 Q165,58 173,61" stroke="rgba(210,210,210,0.13)" stroke-width="1" fill="none"/>
+                        <path d="M122,61 Q128,56 136,59" style="stroke:var(--brow)" stroke-width="1" fill="none"/>
+                        <path d="M158,63 Q165,58 173,61" style="stroke:var(--brow)" stroke-width="1" fill="none"/>
                     </g>
                 </g>
             </svg>

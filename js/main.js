@@ -3,6 +3,7 @@ window.__GUANYU = window.__GUANYU || {};
 // ========== 页面可见性控制 ==========
         let animFrameId = null;
         let bubbleIntervalId = null;
+        let pausedByUser = false;   // 用户按空格暂停过：这时切回标签页也不该自动恢复
 
         function startAnimation() {
             function animate() {
@@ -49,9 +50,37 @@ window.__GUANYU = window.__GUANYU || {};
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
                 stopAnimation();
-            } else if (fishes.length > 0) {
+            } else if (!pausedByUser && fishes.length > 0) {
                 startAnimation();
             }
+        });
+
+        // ========== 暂停与键盘快捷键 ==========
+        function togglePause() {
+            pausedByUser = !pausedByUser;
+            if (pausedByUser) stopAnimation(); else startAnimation();
+            if (typeof showFeedback === 'function') {
+                showFeedback(pausedByUser ? '已暂停 · 空格继续' : '继续观鱼');
+            }
+        }
+        window.__GUANYU.togglePause = togglePause;
+
+        document.addEventListener('keydown', (e) => {
+            // 别抢输入框的按键：嵌入弹窗里有两个 textarea
+            if (e.metaKey || e.ctrlKey || e.altKey) return;
+            const t = e.target;
+            if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+
+            if (e.code === 'Space' || e.key === ' ') {
+                e.preventDefault();
+                togglePause();
+                return;
+            }
+
+            if (pausedByUser) return;
+            const k = e.key.toLowerCase();
+            if (k === 'f' && typeof feedFish === 'function') feedFish();
+            else if (k === 's' && typeof scatterFish === 'function') scatterFish();
         });
 
         // ========== 初始化 ==========

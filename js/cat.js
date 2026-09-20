@@ -198,7 +198,90 @@ catContainer.addEventListener('keydown', (e) => {
     }
 });
 
+// ========== 摸猫：在猫身上摩挲会呼噜 ==========
+// 和"点一下"区分开：点=喵一声，来回摩挲=呼噜。摩挲距离够了才触发，
+// 免得随手一划就被判定成摸。
+let strokePrev = null;
+let strokeDist = 0;
+let purring = false;
+let purrTimer = null;
+let justStroked = false;
+
+catContainer.addEventListener('pointerdown', function (e) {
+    strokePrev = { x: e.clientX, y: e.clientY };
+    strokeDist = 0;
+});
+
+catContainer.addEventListener('pointermove', function (e) {
+    if (!strokePrev) return;
+    strokeDist += Math.abs(e.clientX - strokePrev.x) + Math.abs(e.clientY - strokePrev.y);
+    strokePrev = { x: e.clientX, y: e.clientY };
+    if (strokeDist > 120 && !purring) triggerPurr();
+});
+
+window.addEventListener('pointerup', function () {
+    if (!strokePrev) return;
+    strokePrev = null;
+    if (purring) {
+        justStroked = true;
+        setTimeout(function () { justStroked = false; }, 500);
+    }
+});
+
+function triggerPurr() {
+    purring = true;
+    wakeCat();                                   // 睡着被摸会醒
+    G.catLastInteractionTime = Date.now();
+    G.catExciteLevel = Math.min(1, G.catExciteLevel + 0.3);
+
+    catContainer.classList.add('purring', 'active');
+    meowBubble.textContent = '呼噜呼噜…';
+    playPurrSound();
+
+    if (purrTimer) clearTimeout(purrTimer);
+    purrTimer = setTimeout(function () {
+        catContainer.classList.remove('purring');
+        purring = false;
+    }, 2600);
+
+    if (catActiveTimer) clearTimeout(catActiveTimer);
+    catActiveTimer = setTimeout(function () { catContainer.classList.remove('active'); }, 2600);
+}
+
+// 低频锯齿波 + 27Hz 的颤音＝呼噜
+function playPurrSound() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const dur = 2.4;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const lfo = ctx.createOscillator();
+        const lfoGain = ctx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(46, ctx.currentTime);
+        lfo.type = 'sine';
+        lfo.frequency.setValueAtTime(27, ctx.currentTime);
+        lfoGain.gain.setValueAtTime(0.05, ctx.currentTime);
+
+        gain.gain.setValueAtTime(0.055, ctx.currentTime);
+        gain.gain.setValueAtTime(0.055, ctx.currentTime + dur - 0.4);
+        gain.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + dur);
+
+        lfo.connect(lfoGain);
+        lfoGain.connect(gain.gain);              // 颤音叠加在音量上
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        lfo.start();
+        osc.stop(ctx.currentTime + dur);
+        lfo.stop(ctx.currentTime + dur);
+    } catch (e) {}
+}
+
 catContainer.addEventListener('click', () => {
+    if (justStroked) return;                     // 刚摸完，别再补一声喵
     wakeCat(); showRandomCatPhrase();
     catContainer.classList.add('active');
     playMeowSound(Math.floor(Math.random() * catSoundProfiles.length));
@@ -228,13 +311,15 @@ function playMeowSound(profileIndex = 0) {
 // 原来尾巴只有根部整体旋转，读起来像一根硬棍。这里沿中心线叠加一道行波，
 // 再按"位移后折线"的法线加厚，得到随尾尖摆动的 S 形，且不会在尾尖自交夹断。
 const tailEl = document.querySelector('.ink-cat-tail');
-const baseTailPath = tailEl ? tailEl.getAttribute('d') : null;
 const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 let tailPhase = 0;
+let tailStaticApplied = false;
 
 function buildTailPath(phase, ampScale) {
     const STEPS = 12;
-    const p0 = [292, 168], p1 = [309, 176], p2 = [319, 197], p3 = [302, 221];
+    // 尾根落在臀部轮廓内侧，靠到 x≈304 的体缘才露出来，因此看不出接缝；
+    // 末端比原来更靠外（312 而非 302），垂落的弧线更完整
+    const p0 = [291, 169], p1 = [313, 177], p2 = [324, 200], p3 = [312, 224];
 
     // 第一遍：中心线 = 基准三次贝塞尔 + 法线方向的行波
     const centre = [];
@@ -245,7 +330,10 @@ function buildTailPath(phase, ampScale) {
         const dx = 3*mt*mt*(p1[0]-p0[0]) + 6*mt*t*(p2[0]-p1[0]) + 3*t*t*(p3[0]-p2[0]);
         const dy = 3*mt*mt*(p1[1]-p0[1]) + 6*mt*t*(p2[1]-p1[1]) + 3*t*t*(p3[1]-p2[1]);
         const len = Math.hypot(dx, dy) || 1;
-        const wave = Math.sin(t * 7.2 - phase) * (0.8 + 5.0 * t * t) * ampScale;
+        // 频率 3.2 而不是原来的 7.2：尾巴全长只有约 70px，7.2 相当于塞进 1.15 个
+        // 完整波，读起来是在"扭动"而不是"摆动"。3.2 ≈ 半个波，刚好一个 S。
+        // 振幅也收了一半多，原来尾尖要摆 ±5px 而尾尖本身只有 6px 宽。
+        const wave = Math.sin(t * 3.2 - phase) * (0.4 + 1.8 * t * t) * ampScale;
         centre.push([x + (-dy / len) * wave, y + (dx / len) * wave]);
     }
 
@@ -256,7 +344,9 @@ function buildTailPath(phase, ampScale) {
         const b = centre[Math.min(STEPS, i + 1)];
         const dx = b[0] - a[0], dy = b[1] - a[1];
         const len = Math.hypot(dx, dy) || 1;
-        const half = (14 - 8 * (i / STEPS)) / 2;
+        // 17 → 9：猫尾巴本来就粗，收到尖会读成老鼠尾巴。
+        // 尾尖留 9px 的钝头，靠平口收尾而不是收成一点。
+        const half = (17 - 8 * (i / STEPS)) / 2;
         const nx = -dy / len * half, ny = dx / len * half;
         outer.push([centre[i][0] + nx, centre[i][1] + ny]);
         inner.push([centre[i][0] - nx, centre[i][1] - ny]);
@@ -269,13 +359,16 @@ function buildTailPath(phase, ampScale) {
 function updateCatTail() {
     if (!tailEl) return;
 
-    // 尊重系统的"减弱动效"：回到作者绘制的静态尾巴
+    // 尊重系统的"减弱动效"：给一条振幅为 0 的平滑尾巴（纯贝塞尔中心线），
+    // 不再回退到手绘的那条月牙——两者轮廓不同，切换时会跳形
     if (reduceMotionQuery.matches) {
-        if (baseTailPath && tailEl.getAttribute('d') !== baseTailPath) {
-            tailEl.setAttribute('d', baseTailPath);
+        if (!tailStaticApplied) {
+            tailEl.setAttribute('d', buildTailPath(0, 0));
+            tailStaticApplied = true;
         }
         return;
     }
+    tailStaticApplied = false;
 
     let speed = 0.045, amp = 1;
     if (G.catSleepStage > 0) {
@@ -287,6 +380,46 @@ function updateCatTail() {
     tailPhase += speed;
     tailEl.setAttribute('d', buildTailPath(tailPhase, amp));
 }
+
+// ========== 毛色 ==========
+// 毛色只在容器上换一个 data-coat，SVG 里的色块全部读 CSS 变量，
+// 因此换毛不用重建 DOM，也不会打断正在跑的行为动画。
+const CAT_COATS = ['ink', 'tabby', 'ginger', 'snow'];
+const COAT_STORE = 'guanyu-cat-coat';
+
+function applyCoat(coat) {
+    if (CAT_COATS.indexOf(coat) < 0) coat = 'ink';
+    catContainer.setAttribute('data-coat', coat);
+    document.querySelectorAll('.coat-option').forEach(function (opt) {
+        if (opt.dataset.coat === coat) opt.setAttribute('aria-current', 'true');
+        else opt.removeAttribute('aria-current');
+    });
+}
+
+// 显式选择才落盘；随机的毛色不写，这样下次来还会换个样子
+function setCatCoat(coat) {
+    applyCoat(coat);
+    try { localStorage.setItem(COAT_STORE, coat); } catch (e) {}
+}
+
+function initCatCoat() {
+    let saved = null;
+    try { saved = localStorage.getItem(COAT_STORE); } catch (e) {}
+    applyCoat(saved || CAT_COATS[Math.floor(Math.random() * CAT_COATS.length)]);
+
+    document.querySelectorAll('.coat-option').forEach(function (opt) {
+        const pick = function () { setCatCoat(opt.dataset.coat); };
+        opt.addEventListener('click', pick);
+        opt.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); }
+        });
+    });
+}
+
+// 这里同步执行（脚本在 </body> 前），首帧之前就定好毛色，不会闪一下黑猫
+initCatCoat();
+
+G.setCatCoat = setCatCoat;
 
 G.updateCatEyes = updateCatEyes;
 G.updateCat = updateCat;
