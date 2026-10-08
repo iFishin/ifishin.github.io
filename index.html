@@ -32,6 +32,28 @@
     <script>(function(){var t=localStorage.getItem('guanyu-theme')||'';if(t)document.body.classList.add('theme-'+t)})();</script>
 </head>
 <body>
+    <!-- 共用的笔触滤镜：给纯矢量图形加一点边缘扰动，读起来像是毛笔写出来的，
+         而不是用填充工具填的。
+         参数按各自 SVG 的用户坐标系给（鱼是 120×60，猫是 330×235），
+         这样"粗糙度"相对图形本身恒定，缩放视口不会改变观感。
+         挂 HTML 容器上是错的：那里的位移量是 CSS px，鱼放大一倍边缘就平了。 -->
+    <svg class="brush-defs" aria-hidden="true" focusable="false">
+        <defs>
+            <filter id="brushEdge" x="-14%" y="-14%" width="128%" height="128%"
+                    color-interpolation-filters="sRGB">
+                <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="7" result="n"/>
+                <feDisplacementMap in="SourceGraphic" in2="n" scale="2.6"
+                                   xChannelSelector="R" yChannelSelector="G"/>
+            </filter>
+            <filter id="brushEdgeWide" x="-12%" y="-12%" width="124%" height="124%"
+                    color-interpolation-filters="sRGB">
+                <feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="2" seed="11" result="n"/>
+                <feDisplacementMap in="SourceGraphic" in2="n" scale="4"
+                                   xChannelSelector="R" yChannelSelector="G"/>
+            </filter>
+        </defs>
+    </svg>
+
     <!-- 宣纸纹理 -->
     <div class="paper-texture"></div>
     

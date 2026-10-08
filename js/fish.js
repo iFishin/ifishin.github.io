@@ -214,6 +214,12 @@ const fishColors = [
                 const svg = mk('svg', { viewBox: '0 0 120 60' });
                 svg.style.overflow = 'visible';
 
+                // 所有"墨"的部分放进这个组，整组过一遍笔触滤镜。
+                // 滤镜跑在 SVG 的用户坐标系（120×60）里，粗糙度不随显示尺寸变化；
+                // 挂在 HTML 容器上的话位移量是 CSS px，放大缩小观感就变了。
+                // 眼睛和嘴留在组外，保持清晰不被扰动。
+                const ink = mk('g', { filter: 'url(#brushEdge)' }, svg);
+
                 const defs = mk('defs', {}, svg);
                 const gradId = `grad-${this.color.name}-${Math.floor(Math.random() * 1000)}`;
                 const grad = mk('linearGradient', { id: gradId, x1: '0%', y1: '0%', x2: '100%', y2: '100%' }, defs);
@@ -231,7 +237,7 @@ const fishColors = [
                 // 画在最前 => 落在所有鳍和身体之后，成为晕开的底子
                 this.washElement = mk('ellipse', {
                     cx: 58 - Rx * 0.05, cy: 30, rx: Rx * 1.22, ry: Ry * 1.5, fill: `url(#${washId})`
-                }, svg);
+                }, ink);
 
                 // 身体：尖吻、最宽处略靠前、向尾柄收细。
                 // 原来是纯椭圆（rx32/ry18），只能靠颜色区分，看不出鱼形。
@@ -246,7 +252,7 @@ const fishColors = [
 
                 // 尾鳍：外层 <g> 只做挂接与缩放，内层 <g> 承担 updateAnimation 的 CSS transform。
                 // SVG 的 transform 属性与 CSS transform 是同一个属性，混用会互相覆盖。
-                const tailOuter = mk('g', { transform: `translate(${pedX.toFixed(1)},30) scale(${sp.tailScale})` }, svg);
+                const tailOuter = mk('g', { transform: `translate(${pedX.toFixed(1)},30) scale(${sp.tailScale})` }, ink);
                 const tailInner = mk('g', { fill: this.color.tail }, tailOuter);
                 this.tailElement = tailInner;
                 tailInner.style.transformOrigin = '0px 0px';
@@ -257,29 +263,29 @@ const fishColors = [
                 this.dorsalElement = mk('path', {
                     d: `M ${58 - Rx * 0.35},${30 - Ry * 0.92} C ${58 - Rx * 0.1},${30 - Ry - 9 * fs} ${58 + Rx * 0.34},${30 - Ry - 9 * fs} ${58 + Rx * 0.46},${30 - Ry * 0.8} C ${58 + Rx * 0.16},${30 - Ry * 0.86} ${58 - Rx * 0.14},${30 - Ry * 0.88} ${58 - Rx * 0.35},${30 - Ry * 0.92} Z`,
                     fill: this.color.tail, opacity: 0.25
-                }, svg);
+                }, ink);
                 this.ventralElement = mk('path', {
                     d: `M ${58 - Rx * 0.2},${30 + Ry * 0.9} C ${58 - Rx * 0.05},${30 + Ry + 5 * fs} ${58 + Rx * 0.16},${30 + Ry + 5 * fs} ${58 + Rx * 0.3},${30 + Ry * 0.78} C ${58 + Rx * 0.1},${30 + Ry * 0.86} ${58 - Rx * 0.04},${30 + Ry * 0.88} ${58 - Rx * 0.2},${30 + Ry * 0.9} Z`,
                     fill: this.color.tail, opacity: 0.18
-                }, svg);
+                }, ink);
 
                 // 胸鳍（上下各一，动画里反向摆动）
                 const pecD = sign => `M ${58 - Rx * 0.34},${30 + sign * Ry * 0.3} C ${58 - Rx * 0.6},${30 + sign * Ry * 0.66} ${58 - Rx * 0.86},${30 + sign * Ry * 0.62} ${58 - Rx * 0.78},${30 + sign * Ry * 0.26} C ${58 - Rx * 0.62},${30 + sign * Ry * 0.1} ${58 - Rx * 0.46},${30 + sign * Ry * 0.12} ${58 - Rx * 0.34},${30 + sign * Ry * 0.3} Z`;
                 const pecOriginX = `${(58 - Rx * 0.34).toFixed(1)}px`;
-                this.pectoralRightElement = mk('path', { d: pecD(-1), fill: this.color.tail, opacity: 0.2 }, svg);
+                this.pectoralRightElement = mk('path', { d: pecD(-1), fill: this.color.tail, opacity: 0.2 }, ink);
                 this.pectoralRightElement.style.transformOrigin = `${pecOriginX} ${(30 - Ry * 0.3).toFixed(1)}px`;
-                this.pectoralLeftElement = mk('path', { d: pecD(1), fill: this.color.tail, opacity: 0.2 }, svg);
+                this.pectoralLeftElement = mk('path', { d: pecD(1), fill: this.color.tail, opacity: 0.2 }, ink);
                 this.pectoralLeftElement.style.transformOrigin = `${pecOriginX} ${(30 + Ry * 0.3).toFixed(1)}px`;
 
                 // 身体
-                this.bodyElement = mk('path', { d: bodyD, fill: `url(#${gradId})`, opacity: 0.88 }, svg);
+                this.bodyElement = mk('path', { d: bodyD, fill: `url(#${gradId})`, opacity: 0.88 }, ink);
 
                 // 锦鲤斑纹：裁在身体轮廓内，当作水墨留白
                 if (sp.spots) {
                     const clipId = `${gradId}-clip`;
                     const clip = mk('clipPath', { id: clipId }, defs);
                     mk('path', { d: bodyD }, clip);
-                    const spotG = mk('g', { 'clip-path': `url(#${clipId})` }, svg);
+                    const spotG = mk('g', { 'clip-path': `url(#${clipId})` }, ink);
                     mk('ellipse', { cx: 58 + Rx * 0.3, cy: 30 - Ry * 0.34, rx: Rx * 0.3, ry: Ry * 0.44, fill: 'rgba(255,255,255,0.42)' }, spotG);
                     mk('ellipse', { cx: 58 - Rx * 0.3, cy: 30 + Ry * 0.36, rx: Rx * 0.22, ry: Ry * 0.3, fill: 'rgba(255,255,255,0.28)' }, spotG);
                 }
@@ -288,7 +294,7 @@ const fishColors = [
                 mk('path', {
                     d: `M ${noseX - 15},${30 - Ry * 0.55} C ${noseX - 13},${30 - Ry * 0.2} ${noseX - 13},${30 + Ry * 0.2} ${noseX - 15},${30 + Ry * 0.55}`,
                     stroke: 'rgba(200,200,200,0.15)', 'stroke-width': 0.8, fill: 'none'
-                }, svg);
+                }, ink);
 
                 // 眼睛
                 const eyeR = 6.5 * (Ry / 18);

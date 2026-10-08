@@ -85,6 +85,23 @@
     overflow: hidden;
 }
 
+/* 三层原本是无样式的静态 div（尺寸为 0）。给它们真实尺寸，
+   让鱼按百分比定位的参照物明确落在 .water-body 上。 */
+#fishLayer,
+#foodLayer,
+#bubbleLayer {
+    position: absolute;
+    inset: 0;
+}
+
+/* 只放 <defs> 的 svg，不参与布局 */
+.brush-defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+
 .water-surface {
     position: absolute;
     top: 0;
