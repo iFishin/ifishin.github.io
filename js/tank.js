@@ -622,7 +622,7 @@ embedCopies.forEach(btn => {
         }
 
         function renderTankToCanvas(cb) {
-            const tankEl = document.querySelector('.glass-tank');
+            const tankEl = document.querySelector('.scroll-tank');
             if (!tankEl) { cb(null); return; }
 
             const rect = tankEl.getBoundingClientRect();

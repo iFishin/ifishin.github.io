@@ -103,15 +103,19 @@
 }
 
 /* 诗句展示 */
+/* 诗句现在是画上的题款：锚在画心内侧。
+   画心宽 55vw 居中 => 右缘在 77.5vw，距视口右边 22.5vw，
+   所以用 calc(22.5vw + 44px) 把它钉在纸面右侧留白里，
+   换视口宽度时不会飘到纸外去。 */
 .poem-container {
     position: absolute;
-    top: 100px;
-    right: 220px;
+    top: 27%;
+    right: calc(22.5vw + 44px);
     writing-mode: vertical-rl;
     text-orientation: upright;
-    z-index: 5;
+    z-index: 12;
     pointer-events: none;
-    opacity: 0.6;
+    opacity: 0.72;
     transition: opacity 0.5s;
 }
 
@@ -133,6 +137,22 @@
     color: rgba(60, 80, 60, 0.5);
     margin-top: 0.8em;
     letter-spacing: 0.15em;
+}
+
+/* 闲章：题款收尾的那方朱印。竖排下两字自然叠起来 */
+.poem-seal {
+    margin-top: 1.3em;
+    width: 1.55em;
+    height: 1.55em;
+    padding: 2px;
+    font-size: 0.6rem;
+    line-height: 1.05;
+    text-align: center;
+    color: rgba(176, 56, 44, 0.9);
+    border: 1px solid rgba(176, 56, 44, 0.6);
+    border-radius: 3px;
+    background: rgba(176, 56, 44, 0.07);
+    transform: rotate(1.5deg);
 }
 
 /* ========== 水墨猫与凳子（重构） ========== */
@@ -236,7 +256,7 @@
 }
 
 .ink-stool {
-    transform-origin: 212px 197px;
+    transform-origin: 208px 196px;
     animation: stoolSway 8s ease-in-out infinite;
 }
 
@@ -246,7 +266,7 @@
 }
 
 .ink-cat {
-    transform-origin: 236px 188px;
+    transform-origin: 226px 158px;
     animation: catIdle 6.8s ease-in-out infinite;
 }
 
@@ -257,7 +277,7 @@
 }
 
 .ink-cat-body {
-    transform-origin: 232px 152px;
+    transform-origin: 226px 155px;
     animation: catBreathe 4.8s ease-in-out infinite;
 }
 
@@ -267,7 +287,7 @@
 }
 
 .ink-cat-head {
-    transform-origin: 148px 104px;
+    transform-origin: 154px 122px;
     animation: catHeadTilt 6.2s ease-in-out infinite;
 }
 
@@ -278,12 +298,12 @@
 }
 
 .ink-cat-ear-left {
-    transform-origin: 131px 52px;
+    transform-origin: 140px 80px;
     animation: earTwitchLeft 9s ease-in-out infinite;
 }
 
 .ink-cat-ear-right {
-    transform-origin: 165px 52px;
+    transform-origin: 168px 80px;
     animation: earTwitchRight 8.6s ease-in-out infinite;
 }
 
@@ -300,7 +320,7 @@
 }
 
 .ink-cat-tail {
-    transform-origin: 291px 172px;
+    transform-origin: 280px 156px;
     animation: catTailWag 5.4s ease-in-out infinite;
 }
 
@@ -319,8 +339,8 @@
     animation: catBlink 6.4s ease-in-out infinite;
 }
 
-.ink-cat-eye-left  { transform-origin: 132px 76px; }
-.ink-cat-eye-right { transform-origin: 164px 77px; }
+.ink-cat-eye-left  { transform-origin: 138px 96px; }
+.ink-cat-eye-right { transform-origin: 168px 97px; }
 
 @keyframes catBlink {
     0%, 49%, 53%, 100% { transform: scaleY(1); }
@@ -328,7 +348,7 @@
 }
 
 .ink-cat-paw-front {
-    transform-origin: 176px 166px;
+    transform-origin: 172px 172px;
 }
 
 .cat-container.active .ink-cat-head {
@@ -496,11 +516,11 @@
     85% { transform: rotate(2deg); }
 }
 .whisker-group-left {
-    transform-origin: 136px 96px;
+    transform-origin: 140px 112px;
     animation: whiskerTwitch 3.2s ease-in-out infinite;
 }
 .whisker-group-right {
-    transform-origin: 160px 96px;
+    transform-origin: 168px 112px;
     animation: whiskerTwitch 3.2s ease-in-out infinite;
     animation-delay: -1.2s;
 }

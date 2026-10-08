@@ -317,9 +317,10 @@ let tailStaticApplied = false;
 
 function buildTailPath(phase, ampScale) {
     const STEPS = 12;
-    // 尾根落在臀部轮廓内侧，靠到 x≈304 的体缘才露出来，因此看不出接缝；
-    // 末端比原来更靠外（312 而非 302），垂落的弧线更完整
-    const p0 = [291, 169], p1 = [313, 177], p2 = [324, 200], p3 = [312, 224];
+    // 尾根落在臀部轮廓内侧（臀部右缘约在 x≈292），接缝被躯干盖住；
+    // 中心线自臀部向右下再收回，让尾巴贴着凳面外侧垂落，
+    // 而不是从半腰伸出去、钩在凳子下面（那读起来像挂在身上的绳子）
+    const p0 = [280, 154], p1 = [314, 162], p2 = [326, 194], p3 = [302, 220];
 
     // 第一遍：中心线 = 基准三次贝塞尔 + 法线方向的行波
     const centre = [];
@@ -344,9 +345,9 @@ function buildTailPath(phase, ampScale) {
         const b = centre[Math.min(STEPS, i + 1)];
         const dx = b[0] - a[0], dy = b[1] - a[1];
         const len = Math.hypot(dx, dy) || 1;
-        // 17 → 9：猫尾巴本来就粗，收到尖会读成老鼠尾巴。
-        // 尾尖留 9px 的钝头，靠平口收尾而不是收成一点。
-        const half = (17 - 8 * (i / STEPS)) / 2;
+        // 19 → 8：猫尾巴本来就粗，收到尖会读成老鼠尾巴。
+        // 尾尖留 8px 的钝头，靠平口收尾而不是收成一点。
+        const half = (19 - 11 * (i / STEPS)) / 2;
         const nx = -dy / len * half, ny = dx / len * half;
         outer.push([centre[i][0] + nx, centre[i][1] + ny]);
         inner.push([centre[i][0] - nx, centre[i][1] - ny]);

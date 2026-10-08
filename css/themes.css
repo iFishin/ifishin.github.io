@@ -30,12 +30,18 @@ body.theme-night .poem-author {
     color: rgba(180, 190, 180, 0.4);
 }
 
-body.theme-night .glass-base {
-    background: linear-gradient(135deg, 
-        rgba(40, 50, 55, 0.4) 0%, 
-        rgba(30, 40, 45, 0.2) 50%,
-        rgba(35, 45, 50, 0.25) 100%);
-    border: 1px solid rgba(80, 90, 100, 0.3);
+/* 夜色：画心从宣纸变成深色绢，轴头也跟着压暗 */
+body.theme-night .scroll-paper {
+    background: linear-gradient(158deg, #2c3338 0%, #262d32 46%, #20262b 100%);
+    box-shadow:
+        0 20px 44px -16px rgba(0, 0, 0, 0.55),
+        0 0 0 1px rgba(120, 135, 145, 0.22),
+        inset 0 0 70px rgba(10, 14, 18, 0.5);
+}
+
+body.theme-night .scroll-roller {
+    background: linear-gradient(90deg,
+        #1d1a16 0%, #3a3128 20%, #57493a 46%, #322a22 76%, #171410 100%);
 }
 
 body.theme-night .control-btn {
@@ -71,8 +77,9 @@ body.theme-night .control-btn {
         width: 220px;
         height: 160px;
     }
+    /* 画心在这里是 70vw，右缘距视口右边 15vw */
     .poem-container {
-        right: 180px;
+        right: calc(15vw + 34px);
     }
     .theme-btn {
         right: 180px;

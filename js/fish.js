@@ -181,6 +181,15 @@ const fishColors = [
                 this.normalSpeed = this.baseNormalSpeed * (0.95 + currentSwimProfile.speed * 0.25) * aging;
                 this.cruiseSpeed = this.normalSpeed * this.cruiseFactor;
             }
+
+            // 身体渐变：向尾柄方向渐淡，像毛笔写到尾端的"飞白"，
+            // 而不是一块从头到尾一样实的色块
+            setBodyGradient(grad, color) {
+                grad.innerHTML =
+                    `<stop offset="0%" style="stop-color:${color.tail};stop-opacity:0.46" />` +
+                    `<stop offset="42%" style="stop-color:${color.body};stop-opacity:0.9" />` +
+                    `<stop offset="100%" style="stop-color:${color.body};stop-opacity:0.86" />`;
+            }
             
             createSVGElement() {
                 const sp = this.species;
@@ -208,10 +217,21 @@ const fishColors = [
                 const defs = mk('defs', {}, svg);
                 const gradId = `grad-${this.color.name}-${Math.floor(Math.random() * 1000)}`;
                 const grad = mk('linearGradient', { id: gradId, x1: '0%', y1: '0%', x2: '100%', y2: '100%' }, defs);
-                mk('stop', { offset: '0%', style: `stop-color:${this.color.tail}` }, grad);
-                mk('stop', { offset: '60%', style: `stop-color:${this.color.body}` }, grad);
-                mk('stop', { offset: '100%', style: `stop-color:${this.color.body}` }, grad);
+                this.setBodyGradient(grad, this.color);
                 this.bodyGrad = grad;
+
+                // 水墨"晕"：身体外围一层同色淡影，中心浓、边缘完全化开。
+                // 用径向渐变而不是 blur 滤镜——一屏十几条鱼各挂一个 filter 太贵。
+                const washId = `${gradId}-wash`;
+                const washGrad = mk('radialGradient', { id: washId }, defs);
+                mk('stop', { offset: '0%', style: `stop-color:${this.color.body};stop-opacity:0.38` }, washGrad);
+                mk('stop', { offset: '55%', style: `stop-color:${this.color.body};stop-opacity:0.14` }, washGrad);
+                mk('stop', { offset: '100%', style: `stop-color:${this.color.body};stop-opacity:0` }, washGrad);
+                this.washGrad = washGrad;
+                // 画在最前 => 落在所有鳍和身体之后，成为晕开的底子
+                this.washElement = mk('ellipse', {
+                    cx: 58 - Rx * 0.05, cy: 30, rx: Rx * 1.22, ry: Ry * 1.5, fill: `url(#${washId})`
+                }, svg);
 
                 // 身体：尖吻、最宽处略靠前、向尾柄收细。
                 // 原来是纯椭圆（rx32/ry18），只能靠颜色区分，看不出鱼形。
@@ -1051,11 +1071,14 @@ const fishColors = [
             updateColor() {
                 const grad = this.bodyGrad;
                 if (!grad) return;
-                grad.innerHTML = `
-                    <stop offset="0%" style="stop-color:${this.color.tail}" />
-                    <stop offset="60%" style="stop-color:${this.color.body}" />
-                    <stop offset="100%" style="stop-color:${this.color.body}" />
-                `;
+                this.setBodyGradient(grad, this.color);
+                // 那团"晕"也要跟着换色，否则鱼变了色、底影还是旧色
+                if (this.washGrad) {
+                    this.washGrad.innerHTML =
+                        `<stop offset="0%" style="stop-color:${this.color.body};stop-opacity:0.38" />` +
+                        `<stop offset="55%" style="stop-color:${this.color.body};stop-opacity:0.14" />` +
+                        `<stop offset="100%" style="stop-color:${this.color.body};stop-opacity:0" />`;
+                }
                 // 尾巴是 <g>，fill 会继承给内部只设 opacity 的路径；
                 // 鲤鱼须是描边，要改的是 stroke
                 [this.tailElement, this.dorsalElement, this.ventralElement,
