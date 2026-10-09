@@ -156,20 +156,29 @@
 }
 
 /* ========== 水墨猫与凳子（重构） ========== */
+/* z-index 必须高于 .stage（10）。之前是 8，于是猫一和画心重叠就被画心盖住——
+   头被吃掉一块，怎么重画造型都"看着奇怪"，根因在这里。 */
 .cat-scene {
     position: fixed;
-    right: 4.5%;
-    bottom: 5.5%;
-    z-index: 8;
+    right: 2%;
+    bottom: 1%;
+    z-index: 12;
     pointer-events: none;
 }
 
 .cat-container {
     position: relative;
-    width: 330px;
-    height: 235px;
-    pointer-events: auto;
+    width: 210px;
+    height: 150px;
+    pointer-events: none;
     cursor: pointer;
+}
+
+/* 只有猫和凳子的"墨"接收点击：容器的透明角落不该算命中，
+   否则猫的方框会盖住底下的按钮 */
+.cat-container .ink-cat,
+.cat-container .ink-stool {
+    pointer-events: auto;
 }
 
 /* 让 SVG 跟随容器缩放：窄视口下 .cat-container 会变成 220×160，
@@ -256,7 +265,7 @@
 }
 
 .ink-stool {
-    transform-origin: 208px 196px;
+    transform-origin: 214px 196px;
     animation: stoolSway 8s ease-in-out infinite;
 }
 
@@ -266,7 +275,10 @@
 }
 
 .ink-cat {
-    transform-origin: 226px 158px;
+    transform-origin: 222px 152px;
+    /* 和鱼同一套笔触语言。参数按猫自己的用户坐标系（330×235）给，
+       鱼用的是 120×60，所以两套参数不能共用 */
+    filter: url(#brushEdgeWide);
     animation: catIdle 6.8s ease-in-out infinite;
 }
 
@@ -277,7 +289,7 @@
 }
 
 .ink-cat-body {
-    transform-origin: 226px 155px;
+    transform-origin: 220px 150px;
     animation: catBreathe 4.8s ease-in-out infinite;
 }
 
@@ -287,7 +299,7 @@
 }
 
 .ink-cat-head {
-    transform-origin: 154px 122px;
+    transform-origin: 152px 113px;
     animation: catHeadTilt 6.2s ease-in-out infinite;
 }
 
@@ -298,12 +310,12 @@
 }
 
 .ink-cat-ear-left {
-    transform-origin: 140px 80px;
+    transform-origin: 140px 74px;
     animation: earTwitchLeft 9s ease-in-out infinite;
 }
 
 .ink-cat-ear-right {
-    transform-origin: 168px 80px;
+    transform-origin: 166px 72px;
     animation: earTwitchRight 8.6s ease-in-out infinite;
 }
 
@@ -320,7 +332,7 @@
 }
 
 .ink-cat-tail {
-    transform-origin: 280px 156px;
+    transform-origin: 276px 152px;
     animation: catTailWag 5.4s ease-in-out infinite;
 }
 
@@ -339,8 +351,8 @@
     animation: catBlink 6.4s ease-in-out infinite;
 }
 
-.ink-cat-eye-left  { transform-origin: 138px 96px; }
-.ink-cat-eye-right { transform-origin: 168px 97px; }
+.ink-cat-eye-left  { transform-origin: 142px 92px; }
+.ink-cat-eye-right { transform-origin: 164px 93px; }
 
 @keyframes catBlink {
     0%, 49%, 53%, 100% { transform: scaleY(1); }
@@ -348,7 +360,7 @@
 }
 
 .ink-cat-paw-front {
-    transform-origin: 172px 172px;
+    transform-origin: 168px 170px;
 }
 
 .cat-container.active .ink-cat-head {
@@ -516,11 +528,11 @@
     85% { transform: rotate(2deg); }
 }
 .whisker-group-left {
-    transform-origin: 140px 112px;
+    transform-origin: 144px 106px;
     animation: whiskerTwitch 3.2s ease-in-out infinite;
 }
 .whisker-group-right {
-    transform-origin: 168px 112px;
+    transform-origin: 160px 106px;
     animation: whiskerTwitch 3.2s ease-in-out infinite;
     animation-delay: -1.2s;
 }
