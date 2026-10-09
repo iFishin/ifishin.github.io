@@ -350,7 +350,7 @@
     <div class="cat-scene" id="catScene">
         <div class="cat-container" id="catContainer" role="button" tabindex="0" aria-label="点击与猫互动">
             <div class="meow-bubble" aria-live="polite" aria-atomic="true">喵~</div>
-            <svg viewBox="0 0 330 235" role="img" aria-label="水墨风格的黑猫坐在凳子上">
+            <svg viewBox="0 0 220 260" role="img" aria-label="水墨风格的黑猫坐在地上">
                 <defs>
                     <linearGradient id="inkCatWash" x1="18%" y1="0%" x2="82%" y2="100%">
                         <stop offset="0%" style="stop-color:var(--fur-0)" />
@@ -386,114 +386,110 @@
                         <stop offset="68%" style="stop-color:var(--fur-0); stop-opacity:0.12" />
                         <stop offset="100%" style="stop-color:var(--fur-0); stop-opacity:0" />
                     </radialGradient>
+                    <!-- 远侧前腿用它上色：从上方渐入，让腿"长"出躯干，
+                         而不是贴上去的一根柱子（上一版是一整块浅色，读成柱子） -->
+                    <linearGradient id="legWash" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:var(--fur-0); stop-opacity:0" />
+                        <stop offset="40%" style="stop-color:var(--fur-0); stop-opacity:0.45" />
+                        <stop offset="100%" style="stop-color:var(--fur-0); stop-opacity:0.6" />
+                    </linearGradient>
                     <linearGradient id="stoolWash" x1="0%" y1="0%" x2="0%" y2="100%">
                         <stop offset="0%" stop-color="rgba(122,102,78,0.8)" />
                         <stop offset="100%" stop-color="rgba(83,67,48,0.84)" />
                     </linearGradient>
                 </defs>
 
-                <!-- 地面投影 -->
-                <ellipse cx="214" cy="230" rx="78" ry="6" fill="rgba(70,90,70,0.10)"/>
-
-                <g class="ink-stool" opacity="0.8">
-                    <rect x="166" y="194" width="11" height="33" rx="5" fill="rgba(88,70,50,0.78)"/>
-                    <rect x="208" y="196" width="11" height="31" rx="5" fill="rgba(88,70,50,0.78)"/>
-                    <rect x="250" y="194" width="11" height="33" rx="5" fill="rgba(88,70,50,0.78)"/>
-                    <!-- 座面厚度：只靠一个椭圆会像托盘 -->
-                    <rect x="146" y="193" width="136" height="9" rx="4.5" fill="rgba(96,78,56,0.85)"/>
-                    <ellipse cx="214" cy="196" rx="68" ry="12" fill="url(#stoolWash)"/>
-                    <ellipse cx="214" cy="193" rx="54" ry="7" fill="rgba(255,255,255,0.09)"/>
-                </g>
+                <!-- 地面投影。没有凳子：上一版三条凳腿读成"桌子腿"，
+                     而且躯干浮在座面上方，是"不像猫"的一部分来源 -->
+                <ellipse cx="126" cy="248" rx="86" ry="6" fill="rgba(70,90,70,0.10)"/>
 
                 <g class="ink-cat">
                     <!-- 尾巴：从臀部右侧垂落、贴地回卷。形状由 js/cat.js 的
                          buildTailPath 每帧重建，这里只是首帧的底样 -->
                     <path class="ink-cat-tail"
-                        d="M276,150 C306,158 320,190 296,214 Z"
+                        d="M188,168 C216,190 210,226 170,236 Z"
                         fill="url(#inkCatWash)" opacity="0.94"/>
 
                     <g class="ink-cat-body">
                         <!-- 晕：和鱼同款，身体外围一层化开的淡影，画在躯干之前 -->
-                        <ellipse cx="222" cy="150" rx="88" ry="66" fill="url(#catHalo)"/>
-                        <!-- 躯干：侧后视角一次画完，避免叠出色块边界。
-                             肩线（y≈110）压在头（下缘 y≈115）之上，头才不会浮空 -->
-                        <path d="M168,110 C194,98 228,102 248,120 C274,140 288,164 282,182
-                                 C276,196 240,198 210,196 C184,194 162,178 156,152
-                                 C152,134 158,118 168,110 Z"
+                        <ellipse cx="138" cy="166" rx="94" ry="78" fill="url(#catHalo)"/>
+                        <!-- 躯干：一条连续轮廓。肩线起点要正好接上头的后缘（x≈112, y≈88），
+                             否则头和背之间会出现一个凹口，整只猫就断成"瓶子+团块" -->
+                        <path d="M112,88 C148,104 176,130 190,158 C206,184 204,216 186,232
+                                 C168,244 128,246 108,244 C94,242 84,236 80,222
+                                 L80,164 C80,146 78,126 76,112 C84,96 96,88 112,88 Z"
                               fill="url(#catWash)"/>
                         <!-- 后腿体积与胸前留白 -->
-                        <ellipse cx="244" cy="160" rx="38" ry="32" fill="url(#haunchGlow)"/>
-                        <ellipse cx="178" cy="162" rx="15" ry="26" fill="url(#softLight)"/>
+                        <ellipse cx="158" cy="188" rx="46" ry="40" fill="url(#haunchGlow)"/>
+                        <ellipse cx="98" cy="182" rx="17" ry="30" fill="url(#softLight)"/>
                         <!-- 背脊光 -->
-                        <path d="M170,112 C196,100 230,104 248,122" style="stroke:var(--line)" stroke-width="2.2" fill="none"/>
+                        <path d="M114,90 C150,106 176,132 190,158" style="stroke:var(--line)" stroke-width="2.2" fill="none"/>
                         <!-- 后腿折痕 -->
-                        <path d="M234,142 C256,152 266,172 260,194" style="stroke:var(--line-soft)" stroke-width="1.7" fill="none"/>
+                        <path d="M152,164 C176,176 184,200 176,226" style="stroke:var(--line-soft)" stroke-width="1.7" fill="none"/>
                         <!-- 胸口 -->
-                        <path d="M166,146 C171,162 173,178 175,194" style="stroke:var(--line-soft)" stroke-width="1.5" fill="none"/>
-                        <!-- 前腿：比躯干略亮，两只拉开距离，否则黑压黑完全看不见 -->
+                        <path d="M86,158 C90,180 92,200 94,218" style="stroke:var(--line-soft)" stroke-width="1.5" fill="none"/>
+                        <!-- 远侧前腿：从上方渐入，不再是一块生硬的浅色柱子 -->
                         <path class="ink-cat-paw-front"
-                              d="M168,148 C162,162 160,180 160,190 C160,196 175,196 175,190 C175,178 176,162 179,146 Z"
-                              style="fill:var(--fur-leg)"/>
-                        <path d="M192,152 C188,164 186,180 186,190 C186,196 199,196 199,190 C199,178 200,164 203,150 Z"
-                              style="fill:var(--fur-dark)"/>
+                              d="M104,156 C100,176 98,202 98,220 C98,228 116,228 116,220 C116,202 118,174 122,152 Z"
+                              fill="url(#legWash)"/>
                         <!-- 爪尖留白 -->
-                        <ellipse cx="167" cy="193" rx="7.5" ry="3" fill="url(#softLight)"/>
-                        <ellipse cx="192" cy="193" rx="6.5" ry="2.6" fill="url(#softLight)"/>
+                        <ellipse cx="88" cy="240" rx="11" ry="4.5" fill="url(#softLight)"/>
+                        <ellipse cx="107" cy="240" rx="9" ry="4" fill="url(#softLight)"/>
                     </g>
 
                     <g class="ink-cat-head">
                         <!-- 耳朵：圆角三角，底宽≈高。太窄太高会读成猞猁，太长会读成兔耳。
-                             远耳先画、略小且右移，近耳盖上去，做出四分之三侧的角度 -->
-                        <path class="ink-cat-ear-right" d="M160,72 Q164,52 170,46 Q176,60 178,74 Z" style="fill:var(--fur-dark)"/>
-                        <path class="ink-cat-ear-left"  d="M136,74 Q130,54 134,44 Q145,55 153,68 Z" style="fill:var(--fur-dark)"/>
-                        <path d="M164,70 Q167,56 171,52 Q174,61 175,71 Z" style="fill:var(--inner-ear)"/>
-                        <path d="M139,70 Q135,57 137,50 Q144,58 149,67 Z" style="fill:var(--inner-ear)"/>
+                             两只并排靠在颅顶，中间不留大缝 -->
+                        <path class="ink-cat-ear-left"  d="M56,62 Q54,36 62,24 Q74,38 78,56 Z" style="fill:var(--fur-dark)"/>
+                        <path class="ink-cat-ear-right" d="M80,54 Q88,30 96,22 Q102,40 102,64 Z" style="fill:var(--fur-dark)"/>
+                        <path d="M61,58 Q60,40 65,31 Q72,42 75,55 Z" style="fill:var(--inner-ear)"/>
+                        <path d="M84,52 Q90,36 94,30 Q98,44 98,60 Z" style="fill:var(--inner-ear)"/>
 
-                        <!-- 头：宽颧、收下巴的猫脸轮廓，用椭圆会读成一颗球。
-                             头宽约为体宽的 1/3——上一版接近 1/2，才是"大头娃娃"的来源 -->
-                        <path d="M152,71 C167,71 176,80 178,93 C180,104 170,113 158,115
-                                 C154,116 148,116 145,115 C133,113 124,104 126,93
-                                 C128,80 137,71 152,71 Z" fill="url(#catWash)"/>
-                        <!-- 口鼻留白：把下半张脸提亮，整块黑才不平 -->
-                        <ellipse cx="152" cy="104" rx="15" ry="10" fill="url(#softLight)"/>
-                        <path d="M129,92 Q124,103 130,112" style="stroke:var(--line-soft)" stroke-width="1.7" fill="none"/>
+                        <!-- 头 + 脖子画成同一条轮廓，而且脖子很短：猫几乎没有脖子。
+                             上一版把脖子一路拉到 y=148，读成了禽类 -->
+                        <path d="M72,56 C92,56 106,70 108,88 C110,102 108,116 104,128
+                                 L76,130 C66,114 56,100 54,88 C52,70 58,56 72,56 Z"
+                              fill="url(#catWash)"/>
+                        <!-- 口鼻留白 -->
+                        <ellipse cx="78" cy="96" rx="17" ry="12" fill="url(#softLight)"/>
+                        <path d="M56,92 Q52,104 58,114" style="stroke:var(--line-soft)" stroke-width="1.6" fill="none"/>
 
                         <!-- 鼻子 -->
-                        <path d="M148,101 L156,101 L152,106 Z" fill="rgba(96,78,78,0.6)"/>
+                        <path d="M73,92 L83,92 L78,98 Z" fill="rgba(96,78,78,0.6)"/>
                         <!-- 人中 -->
-                        <path d="M152,106 L152,109" stroke="rgba(96,78,78,0.4)" stroke-width="0.9" fill="none"/>
+                        <path d="M78,98 L78,101" stroke="rgba(96,78,78,0.4)" stroke-width="0.9" fill="none"/>
                         <!-- 嘴 -->
-                        <path d="M152,109 Q147,114 143,112" stroke="rgba(96,78,78,0.45)" stroke-width="1" fill="none"/>
-                        <path d="M152,109 Q157,114 161,112" stroke="rgba(96,78,78,0.45)" stroke-width="1" fill="none"/>
+                        <path d="M78,101 Q72,107 67,104" stroke="rgba(96,78,78,0.45)" stroke-width="1" fill="none"/>
+                        <path d="M78,101 Q84,107 89,104" stroke="rgba(96,78,78,0.45)" stroke-width="1" fill="none"/>
 
                         <!-- 胡须 - 左 -->
                         <g class="whisker-group-left">
-                            <line class="whisker" x1="144" y1="103" x2="110" y2="96"  style="stroke:var(--whisker-hi)" stroke-width="0.7"/>
-                            <line class="whisker" x1="144" y1="106" x2="106" y2="106" style="stroke:var(--whisker)"    stroke-width="0.7"/>
-                            <line class="whisker" x1="144" y1="109" x2="111" y2="117" style="stroke:var(--whisker-lo)" stroke-width="0.7"/>
+                            <line class="whisker" x1="64" y1="94" x2="30" y2="86"  style="stroke:var(--whisker-hi)" stroke-width="0.7"/>
+                            <line class="whisker" x1="64" y1="97" x2="26" y2="97"  style="stroke:var(--whisker)"    stroke-width="0.7"/>
+                            <line class="whisker" x1="64" y1="100" x2="31" y2="108" style="stroke:var(--whisker-lo)" stroke-width="0.7"/>
                         </g>
 
                         <!-- 胡须 - 右 -->
                         <g class="whisker-group-right">
-                            <line class="whisker" x1="160" y1="103" x2="194" y2="96"  style="stroke:var(--whisker-hi)" stroke-width="0.7"/>
-                            <line class="whisker" x1="160" y1="106" x2="198" y2="106" style="stroke:var(--whisker)"    stroke-width="0.7"/>
-                            <line class="whisker" x1="160" y1="109" x2="193" y2="117" style="stroke:var(--whisker-lo)" stroke-width="0.7"/>
+                            <line class="whisker" x1="94" y1="94" x2="120" y2="86"  style="stroke:var(--whisker-hi)" stroke-width="0.7"/>
+                            <line class="whisker" x1="94" y1="97" x2="124" y2="97"  style="stroke:var(--whisker)"    stroke-width="0.7"/>
+                            <line class="whisker" x1="94" y1="100" x2="119" y2="108" style="stroke:var(--whisker-lo)" stroke-width="0.7"/>
                         </g>
 
                         <g class="ink-cat-eye ink-cat-eye-left">
-                            <ellipse cx="142" cy="92" rx="7.6" ry="8" fill="#d7cc86" opacity="0.93"/>
-                            <ellipse class="cat-pupil" cx="142.4" cy="92" rx="2.5" ry="5.8" fill="#0b0b0b"/>
-                            <ellipse cx="140.2" cy="89.4" rx="1.8" ry="1.5" fill="rgba(255,255,255,0.62)"/>
+                            <ellipse cx="66" cy="80" rx="8.5" ry="9" fill="#d7cc86" opacity="0.93"/>
+                            <ellipse class="cat-pupil" cx="66.4" cy="80" rx="2.8" ry="6.6" fill="#0b0b0b"/>
+                            <ellipse cx="63.8" cy="77.2" rx="2" ry="1.7" fill="rgba(255,255,255,0.62)"/>
                         </g>
                         <g class="ink-cat-eye ink-cat-eye-right">
-                            <ellipse cx="164" cy="93" rx="5.8" ry="6.4" fill="#d7cc86" opacity="0.84"/>
-                            <ellipse class="cat-pupil" cx="164.3" cy="93" rx="1.8" ry="4.4" fill="#0b0b0b"/>
-                            <ellipse cx="162.2" cy="91" rx="1.3" ry="1.1" fill="rgba(255,255,255,0.5)"/>
+                            <ellipse cx="92" cy="81" rx="6.5" ry="7" fill="#d7cc86" opacity="0.84"/>
+                            <ellipse class="cat-pupil" cx="92.3" cy="81" rx="2" ry="4.9" fill="#0b0b0b"/>
+                            <ellipse cx="90" cy="78.7" rx="1.5" ry="1.3" fill="rgba(255,255,255,0.5)"/>
                         </g>
 
                         <!-- 眉 -->
-                        <path d="M134,79 Q139,75 145,78" style="stroke:var(--brow)" stroke-width="1" fill="none"/>
-                        <path d="M158,80 Q164,76 170,79" style="stroke:var(--brow)" stroke-width="1" fill="none"/>
+                        <path d="M58,70 Q64,66 70,69" style="stroke:var(--brow)" stroke-width="1" fill="none"/>
+                        <path d="M84,70 Q90,66 96,69" style="stroke:var(--brow)" stroke-width="1" fill="none"/>
                     </g>
                 </g>
             </svg>
