@@ -357,139 +357,109 @@
                         <stop offset="55%" style="stop-color:var(--fur-1)" />
                         <stop offset="100%" style="stop-color:var(--fur-2)" />
                     </linearGradient>
-                    <!-- 躯干与头用径向渐变做体积：靠明暗出圆润感，
-                         不再叠一块独立的亮色形状（那会读成"贴在身上的一个蛋"）。
-                         边缘降到 0.72 不透明度，让它像墨一样透，而不是一块实心黑 -->
-                    <radialGradient id="catWash" cx="34%" cy="28%" r="82%">
-                        <stop offset="0%" style="stop-color:var(--fur-0); stop-opacity:0.95" />
-                        <stop offset="55%" style="stop-color:var(--fur-1); stop-opacity:0.88" />
-                        <stop offset="100%" style="stop-color:var(--fur-2); stop-opacity:0.72" />
+                    <radialGradient id="catWash" cx="38%" cy="26%" r="86%">
+                        <stop offset="0%" style="stop-color:var(--fur-0); stop-opacity:0.96" />
+                        <stop offset="55%" style="stop-color:var(--fur-1); stop-opacity:0.9" />
+                        <stop offset="100%" style="stop-color:var(--fur-2); stop-opacity:0.74" />
                     </radialGradient>
-                    <!-- 猫身外围的"晕"，和鱼用同一套做法：
-                         中心浓、边缘 alpha 到 0，所以不会描出边界 -->
                     <radialGradient id="catHalo" cx="50%" cy="45%" r="56%">
                         <stop offset="0%" style="stop-color:var(--fur-1); stop-opacity:0.32" />
                         <stop offset="58%" style="stop-color:var(--fur-1); stop-opacity:0.11" />
                         <stop offset="100%" style="stop-color:var(--fur-1); stop-opacity:0" />
                     </radialGradient>
-                    <!-- 两团"晕"，都是中心亮、边缘完全化开（alpha 到 0），
-                         所以不会像色块那样描出边界。
-                         水墨讲究留白：一团提亮口鼻与胸前的浅色，
-                         一团用毛色本身提亮后腿体积 -->
                     <radialGradient id="softLight" cx="50%" cy="42%" r="58%">
                         <stop offset="0%" style="stop-color:#f4f2e8; stop-opacity:0.55" />
                         <stop offset="62%" style="stop-color:#f4f2e8; stop-opacity:0.16" />
                         <stop offset="100%" style="stop-color:#f4f2e8; stop-opacity:0" />
                     </radialGradient>
-                    <radialGradient id="haunchGlow" cx="50%" cy="44%" r="56%">
-                        <stop offset="0%" style="stop-color:var(--fur-0); stop-opacity:0.5" />
-                        <stop offset="68%" style="stop-color:var(--fur-0); stop-opacity:0.12" />
-                        <stop offset="100%" style="stop-color:var(--fur-0); stop-opacity:0" />
-                    </radialGradient>
-                    <!-- 远侧前腿用它上色：从上方渐入，让腿"长"出躯干，
-                         而不是贴上去的一根柱子（上一版是一整块浅色，读成柱子） -->
                     <linearGradient id="legWash" x1="0%" y1="0%" x2="0%" y2="100%">
                         <stop offset="0%" style="stop-color:var(--fur-0); stop-opacity:0" />
-                        <stop offset="40%" style="stop-color:var(--fur-0); stop-opacity:0.45" />
-                        <stop offset="100%" style="stop-color:var(--fur-0); stop-opacity:0.6" />
-                    </linearGradient>
-                    <linearGradient id="stoolWash" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stop-color="rgba(122,102,78,0.8)" />
-                        <stop offset="100%" stop-color="rgba(83,67,48,0.84)" />
+                        <stop offset="38%" style="stop-color:var(--fur-0); stop-opacity:0.4" />
+                        <stop offset="100%" style="stop-color:var(--fur-0); stop-opacity:0.55" />
                     </linearGradient>
                 </defs>
 
-                <!-- 地面投影。没有凳子：上一版三条凳腿读成"桌子腿"，
-                     而且躯干浮在座面上方，是"不像猫"的一部分来源 -->
-                <ellipse cx="126" cy="248" rx="86" ry="6" fill="rgba(70,90,70,0.10)"/>
+                <!-- 地面投影 -->
+                <ellipse cx="104" cy="250" rx="78" ry="6" fill="rgba(70,90,70,0.10)"/>
 
                 <g class="ink-cat">
-                    <!-- 尾巴：从臀部右侧垂落、贴地回卷。形状由 js/cat.js 的
-                         buildTailPath 每帧重建，这里只是首帧的底样 -->
+                    <!-- 尾巴：从臀后向右下卷出。形状由 js/cat.js 的 buildTailPath
+                         每帧重建，这里只是首帧的底样 -->
                     <path class="ink-cat-tail"
-                        d="M188,168 C216,190 210,226 170,236 Z"
+                        d="M150,196 C186,206 190,240 164,248 Z"
                         fill="url(#inkCatWash)" opacity="0.94"/>
 
                     <g class="ink-cat-body">
-                        <!-- 晕：和鱼同款，身体外围一层化开的淡影，画在躯干之前 -->
-                        <ellipse cx="138" cy="166" rx="94" ry="78" fill="url(#catHalo)"/>
-                        <!-- 躯干：一条连续轮廓。肩线起点要正好接上头的后缘（x≈112, y≈88），
-                             否则头和背之间会出现一个凹口，整只猫就断成"瓶子+团块" -->
-                        <path d="M112,88 C148,104 176,130 190,158 C206,184 204,216 186,232
-                                 C168,244 128,246 108,244 C94,242 84,236 80,222
-                                 L80,164 C80,146 78,126 76,112 C84,96 96,88 112,88 Z"
+                        <ellipse cx="104" cy="180" rx="94" ry="82" fill="url(#catHalo)"/>
+                        <!-- 身体：正面坐姿的钟形，上窄下宽、一条轮廓到底。
+                             顶缘停在 y≈112，被头（下缘 122）压住，脖子不会露缝 -->
+                        <path d="M66,120 C54,152 44,188 44,220 C44,240 156,240 156,220
+                                 C156,188 146,152 134,120 C124,110 76,110 66,120 Z"
                               fill="url(#catWash)"/>
-                        <!-- 后腿体积与胸前留白 -->
-                        <ellipse cx="158" cy="188" rx="46" ry="40" fill="url(#haunchGlow)"/>
-                        <ellipse cx="98" cy="182" rx="17" ry="30" fill="url(#softLight)"/>
-                        <!-- 背脊光 -->
-                        <path d="M114,90 C150,106 176,132 190,158" style="stroke:var(--line)" stroke-width="2.2" fill="none"/>
-                        <!-- 后腿折痕 -->
-                        <path d="M152,164 C176,176 184,200 176,226" style="stroke:var(--line-soft)" stroke-width="1.7" fill="none"/>
-                        <!-- 胸口 -->
-                        <path d="M86,158 C90,180 92,200 94,218" style="stroke:var(--line-soft)" stroke-width="1.5" fill="none"/>
-                        <!-- 远侧前腿：从上方渐入，不再是一块生硬的浅色柱子 -->
+                        <!-- 前腿：两条对称的柱，从胸口渐入，中间留一道折痕分开。
+                             上一版只画一条远侧腿，在胸口读成一块"深色补丁" -->
                         <path class="ink-cat-paw-front"
-                              d="M104,156 C100,176 98,202 98,220 C98,228 116,228 116,220 C116,202 118,174 122,152 Z"
+                              d="M78,158 C74,180 72,206 72,224 C72,234 94,234 94,224 C94,206 96,178 100,156 Z"
                               fill="url(#legWash)"/>
+                        <path d="M122,158 C126,180 128,206 128,224 C128,234 106,234 106,224 C106,206 104,178 100,156 Z"
+                              fill="url(#legWash)"/>
+                        <path d="M100,164 L100,234" style="stroke:var(--fur-2)" stroke-width="3" fill="none"/>
+                        <!-- 胸口留白 -->
+                        <ellipse cx="100" cy="160" rx="23" ry="34" fill="url(#softLight)"/>
                         <!-- 爪尖留白 -->
-                        <ellipse cx="88" cy="240" rx="11" ry="4.5" fill="url(#softLight)"/>
-                        <ellipse cx="107" cy="240" rx="9" ry="4" fill="url(#softLight)"/>
+                        <ellipse cx="82" cy="232" rx="11" ry="4.6" fill="url(#softLight)"/>
+                        <ellipse cx="118" cy="232" rx="11" ry="4.6" fill="url(#softLight)"/>
                     </g>
 
                     <g class="ink-cat-head">
-                        <!-- 耳朵：圆角三角，底宽≈高。太窄太高会读成猞猁，太长会读成兔耳。
-                             两只并排靠在颅顶，中间不留大缝 -->
-                        <path class="ink-cat-ear-left"  d="M56,62 Q54,36 62,24 Q74,38 78,56 Z" style="fill:var(--fur-dark)"/>
-                        <path class="ink-cat-ear-right" d="M80,54 Q88,30 96,22 Q102,40 102,64 Z" style="fill:var(--fur-dark)"/>
-                        <path d="M61,58 Q60,40 65,31 Q72,42 75,55 Z" style="fill:var(--inner-ear)"/>
-                        <path d="M84,52 Q90,36 94,30 Q98,44 98,60 Z" style="fill:var(--inner-ear)"/>
+                        <!-- 耳朵：与毛同色，只有内侧一小块略浅。上一版整只耳朵偏浅，
+                             在深色头上读成一对兔耳 -->
+                        <path class="ink-cat-ear-left"  d="M62,62 Q54,30 56,20 Q74,34 88,50 Z" style="fill:var(--fur-1)"/>
+                        <path class="ink-cat-ear-right" d="M138,62 Q146,30 144,20 Q126,34 112,50 Z" style="fill:var(--fur-1)"/>
+                        <path d="M68,58 Q62,36 63,28 Q74,40 83,51 Z" style="fill:var(--inner-ear)"/>
+                        <path d="M132,58 Q138,36 137,28 Q126,40 117,51 Z" style="fill:var(--inner-ear)"/>
 
-                        <!-- 头 + 脖子画成同一条轮廓，而且脖子很短：猫几乎没有脖子。
-                             上一版把脖子一路拉到 y=148，读成了禽类 -->
-                        <path d="M72,56 C92,56 106,70 108,88 C110,102 108,116 104,128
-                                 L76,130 C66,114 56,100 54,88 C52,70 58,56 72,56 Z"
-                              fill="url(#catWash)"/>
+                        <!-- 头：正面看是正圆，耳朵长在颅顶两角 -->
+                        <ellipse cx="100" cy="86" rx="37" ry="36" fill="url(#catWash)"/>
                         <!-- 口鼻留白 -->
-                        <ellipse cx="78" cy="96" rx="17" ry="12" fill="url(#softLight)"/>
-                        <path d="M56,92 Q52,104 58,114" style="stroke:var(--line-soft)" stroke-width="1.6" fill="none"/>
+                        <ellipse cx="100" cy="104" rx="19" ry="13" fill="url(#softLight)"/>
 
                         <!-- 鼻子 -->
-                        <path d="M73,92 L83,92 L78,98 Z" fill="rgba(96,78,78,0.6)"/>
+                        <path d="M95,99 L105,99 L100,105 Z" fill="rgba(96,78,78,0.6)"/>
                         <!-- 人中 -->
-                        <path d="M78,98 L78,101" stroke="rgba(96,78,78,0.4)" stroke-width="0.9" fill="none"/>
+                        <path d="M100,105 L100,108" stroke="rgba(96,78,78,0.4)" stroke-width="0.9" fill="none"/>
                         <!-- 嘴 -->
-                        <path d="M78,101 Q72,107 67,104" stroke="rgba(96,78,78,0.45)" stroke-width="1" fill="none"/>
-                        <path d="M78,101 Q84,107 89,104" stroke="rgba(96,78,78,0.45)" stroke-width="1" fill="none"/>
+                        <path d="M100,108 Q94,114 89,111" stroke="rgba(96,78,78,0.45)" stroke-width="1" fill="none"/>
+                        <path d="M100,108 Q106,114 111,111" stroke="rgba(96,78,78,0.45)" stroke-width="1" fill="none"/>
 
                         <!-- 胡须 - 左 -->
                         <g class="whisker-group-left">
-                            <line class="whisker" x1="64" y1="94" x2="30" y2="86"  style="stroke:var(--whisker-hi)" stroke-width="0.7"/>
-                            <line class="whisker" x1="64" y1="97" x2="26" y2="97"  style="stroke:var(--whisker)"    stroke-width="0.7"/>
-                            <line class="whisker" x1="64" y1="100" x2="31" y2="108" style="stroke:var(--whisker-lo)" stroke-width="0.7"/>
+                            <line class="whisker" x1="79" y1="101" x2="43" y2="93"  style="stroke:var(--whisker-hi)" stroke-width="0.7"/>
+                            <line class="whisker" x1="79" y1="104" x2="39" y2="104" style="stroke:var(--whisker)"    stroke-width="0.7"/>
+                            <line class="whisker" x1="79" y1="107" x2="44" y2="116" style="stroke:var(--whisker-lo)" stroke-width="0.7"/>
                         </g>
 
                         <!-- 胡须 - 右 -->
                         <g class="whisker-group-right">
-                            <line class="whisker" x1="94" y1="94" x2="120" y2="86"  style="stroke:var(--whisker-hi)" stroke-width="0.7"/>
-                            <line class="whisker" x1="94" y1="97" x2="124" y2="97"  style="stroke:var(--whisker)"    stroke-width="0.7"/>
-                            <line class="whisker" x1="94" y1="100" x2="119" y2="108" style="stroke:var(--whisker-lo)" stroke-width="0.7"/>
+                            <line class="whisker" x1="121" y1="101" x2="157" y2="93"  style="stroke:var(--whisker-hi)" stroke-width="0.7"/>
+                            <line class="whisker" x1="121" y1="104" x2="161" y2="104" style="stroke:var(--whisker)"    stroke-width="0.7"/>
+                            <line class="whisker" x1="121" y1="107" x2="156" y2="116" style="stroke:var(--whisker-lo)" stroke-width="0.7"/>
                         </g>
 
                         <g class="ink-cat-eye ink-cat-eye-left">
-                            <ellipse cx="66" cy="80" rx="8.5" ry="9" fill="#d7cc86" opacity="0.93"/>
-                            <ellipse class="cat-pupil" cx="66.4" cy="80" rx="2.8" ry="6.6" fill="#0b0b0b"/>
-                            <ellipse cx="63.8" cy="77.2" rx="2" ry="1.7" fill="rgba(255,255,255,0.62)"/>
+                            <ellipse cx="84" cy="84" rx="8.5" ry="9" fill="#d7cc86" opacity="0.93"/>
+                            <ellipse class="cat-pupil" cx="84" cy="84" rx="2.8" ry="6.5" fill="#0b0b0b"/>
+                            <ellipse cx="81.8" cy="81.2" rx="2" ry="1.7" fill="rgba(255,255,255,0.62)"/>
                         </g>
                         <g class="ink-cat-eye ink-cat-eye-right">
-                            <ellipse cx="92" cy="81" rx="6.5" ry="7" fill="#d7cc86" opacity="0.84"/>
-                            <ellipse class="cat-pupil" cx="92.3" cy="81" rx="2" ry="4.9" fill="#0b0b0b"/>
-                            <ellipse cx="90" cy="78.7" rx="1.5" ry="1.3" fill="rgba(255,255,255,0.5)"/>
+                            <ellipse cx="116" cy="84" rx="8.5" ry="9" fill="#d7cc86" opacity="0.93"/>
+                            <ellipse class="cat-pupil" cx="116" cy="84" rx="2.8" ry="6.5" fill="#0b0b0b"/>
+                            <ellipse cx="113.8" cy="81.2" rx="2" ry="1.7" fill="rgba(255,255,255,0.62)"/>
                         </g>
 
                         <!-- 眉 -->
-                        <path d="M58,70 Q64,66 70,69" style="stroke:var(--brow)" stroke-width="1" fill="none"/>
-                        <path d="M84,70 Q90,66 96,69" style="stroke:var(--brow)" stroke-width="1" fill="none"/>
+                        <path d="M74,70 Q80,66 88,69" style="stroke:var(--brow)" stroke-width="1" fill="none"/>
+                        <path d="M126,70 Q120,66 112,69" style="stroke:var(--brow)" stroke-width="1" fill="none"/>
                     </g>
                 </g>
             </svg>
