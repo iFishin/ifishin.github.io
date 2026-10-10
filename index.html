@@ -412,12 +412,14 @@
                     </g>
 
                     <g class="ink-cat-head">
-                        <!-- 耳朵：与毛同色，只有内侧一小块略浅。上一版整只耳朵偏浅，
-                             在深色头上读成一对兔耳 -->
-                        <path class="ink-cat-ear-left"  d="M62,62 Q54,30 56,20 Q74,34 88,50 Z" style="fill:var(--fur-1)"/>
-                        <path class="ink-cat-ear-right" d="M138,62 Q146,30 144,20 Q126,34 112,50 Z" style="fill:var(--fur-1)"/>
-                        <path d="M68,58 Q62,36 63,28 Q74,40 83,51 Z" style="fill:var(--inner-ear)"/>
-                        <path d="M132,58 Q138,36 137,28 Q126,40 117,51 Z" style="fill:var(--inner-ear)"/>
+                        <!-- 耳朵：与毛同色，只有内侧一小块略浅。
+                             基线两个端点必须落在头椭圆内，否则耳朵会"浮"在头顶上——
+                             上一版四个端点 (62,62)/(88,50) 全在椭圆外，最宽处差 1.9px，
+                             看起来就是耳朵断开的 -->
+                        <path class="ink-cat-ear-left"  d="M66,78 Q56,46 58,22 Q78,46 94,64 Z" style="fill:var(--fur-1)"/>
+                        <path class="ink-cat-ear-right" d="M134,78 Q144,46 142,22 Q122,46 106,64 Z" style="fill:var(--fur-1)"/>
+                        <path d="M71,72 Q63,48 65,30 Q79,48 89,62 Z" style="fill:var(--inner-ear)"/>
+                        <path d="M129,72 Q137,48 135,30 Q121,48 111,62 Z" style="fill:var(--inner-ear)"/>
 
                         <!-- 头：正面看是正圆，耳朵长在颅顶两角 -->
                         <ellipse cx="100" cy="86" rx="37" ry="36" fill="url(#catWash)"/>
@@ -431,6 +433,16 @@
                         <!-- 嘴 -->
                         <path d="M100,108 Q94,114 89,111" stroke="rgba(96,78,78,0.45)" stroke-width="1" fill="none"/>
                         <path d="M100,108 Q106,114 111,111" stroke="rgba(96,78,78,0.45)" stroke-width="1" fill="none"/>
+
+                        <!-- 须点：胡须根部的小点。很小，但少了就会觉得脸"光" -->
+                        <g fill="var(--whisker-hi)">
+                            <circle cx="77" cy="99"  r="1.15"/>
+                            <circle cx="75" cy="104" r="1.15"/>
+                            <circle cx="77" cy="109" r="1.15"/>
+                            <circle cx="123" cy="99"  r="1.15"/>
+                            <circle cx="125" cy="104" r="1.15"/>
+                            <circle cx="123" cy="109" r="1.15"/>
+                        </g>
 
                         <!-- 胡须 - 左 -->
                         <g class="whisker-group-left">
@@ -456,6 +468,11 @@
                             <ellipse class="cat-pupil" cx="116" cy="84" rx="2.8" ry="6.5" fill="#0b0b0b"/>
                             <ellipse cx="113.8" cy="81.2" rx="2" ry="1.7" fill="rgba(255,255,255,0.62)"/>
                         </g>
+
+                        <!-- 上眼睑：压住眼睛上缘。没有它两只眼睛是两个完整的椭圆，
+                             读成"受惊"；加一道眼睑才有猫那种半眯的松弛感 -->
+                        <path d="M76,78.5 Q84,72.5 92,78.5" stroke="rgba(14,14,18,0.45)" stroke-width="1.9" fill="none"/>
+                        <path d="M108,78.5 Q116,72.5 124,78.5" stroke="rgba(14,14,18,0.45)" stroke-width="1.9" fill="none"/>
 
                         <!-- 眉 -->
                         <path d="M74,70 Q80,66 88,69" style="stroke:var(--brow)" stroke-width="1" fill="none"/>
