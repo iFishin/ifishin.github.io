@@ -102,6 +102,21 @@
     overflow: hidden;
 }
 
+/* ========== 墨层 ==========
+   观众在纸上落的笔。用 canvas 而不是 SVG：笔迹是逐段变宽的折线，
+   还要一遍遍重画渐淡的洇痕，canvas 比往 DOM 里塞几百个节点便宜得多。
+   墨色随主题改（见 themes.css）——夜里画心是深绢，纯黑的墨会消失。 */
+:root {
+    --ink-stroke: rgba(26, 33, 26, 0.92);
+}
+
+.ink-stroke-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+}
+
 .water-surface {
     position: absolute;
     top: 0;

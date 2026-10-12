@@ -243,7 +243,11 @@
             
             <!-- 沙底 -->
             <div class="sand"></div>
-            
+
+            <!-- 墨层：观众自己在纸上落的笔。压在鱼下面，
+                 这样鱼是"游过墨迹"而不是"浮在墨上" -->
+            <canvas class="ink-stroke-layer" id="inkStrokeLayer" aria-hidden="true"></canvas>
+
             <!-- 鱼层 -->
             <div id="fishLayer"></div>
             <!-- 食物层 -->
@@ -305,6 +309,7 @@
                 <li><b>惊扰</b>：按 <kbd>S</kbd> 或点「惊扰」，鱼群四散，而且恐惧会传染给旁边的鱼。</li>
                 <li><b>逗猫</b>：点一下猫它会叫；在它身上按住来回摩挲，它会眯起眼睛打呼噜。</li>
                 <li><b>看鱼跃</b>：双击鱼缸，会有鱼跃出水面。</li>
+                <li><b>落笔</b>：在空白水面按住拖一笔，墨迹会留在纸上，附近的鱼会被惊开；墨自己慢慢化掉。</li>
                 <li><b>拖着玩</b>：右键按住可以拖动一条鱼，手机上直接用手指拖。</li>
                 <li><b>暂停</b>：按 <kbd>空格</kbd> 定格整个画面。</li>
             </ul>
@@ -490,6 +495,7 @@
     <script src="js/fish.js"></script>
     <script src="js/cat.js"></script>
     <script src="js/tank.js"></script>
+    <script src="js/ink.js"></script>
     <script src="js/router.js"></script>
     <script src="js/scenery.js"></script>
     <script src="js/main.js"></script>

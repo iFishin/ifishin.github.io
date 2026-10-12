@@ -18,11 +18,10 @@ let isDragging = false;
 let draggedFish = null;
 let lastDragX = 0, lastDragY = 0;
 let touchDragStart = null;
-// 撸鱼 / 水面作画
+// 撸鱼 / 落墨
 let pettingFish = null;
 let petStartAt = 0;
 let suppressDossierUntil = 0;
-let lastDrawRippleAt = 0;
 
 function clearPetting() {
     if (pettingFish) { pettingFish.petting = false; pettingFish = null; }
@@ -112,18 +111,10 @@ embedCopies.forEach(btn => {
                 lastMouseTime = now;
             }
 
-            // 水面作画：按住左键在空白水面拖动，留下一串涟漪。
+            // 落墨：按住左键在空白水面拖，墨迹就留在纸上。
             // 撸鱼和拖鱼时不画，否则三个手势会互相打架。
             if ((e.buttons & 1) && !pettingFish && !isDragging) {
-                if (now - lastDrawRippleAt > 130) {
-                    lastDrawRippleAt = now;
-                    const ripple = document.createElement('div');
-                    ripple.className = 'water-ripple';
-                    ripple.style.left = mouseXPct + '%';
-                    ripple.style.top = mouseYPct + '%';
-                    waterBody.appendChild(ripple);
-                    setTimeout(() => ripple.remove(), 2000);
-                }
+                if (typeof G.inkAdd === 'function') G.inkAdd(mouseX, mouseY);
             }
 
             if (isDragging && draggedFish) {
@@ -154,6 +145,8 @@ embedCopies.forEach(btn => {
             draggedFish = null;
             // 按着撸到一半滑出鱼缸，也要把鱼放开，否则它会一直跟着光标
             clearPetting();
+            // 同理，画到一半滑出去也该收笔
+            if (typeof G.inkEnd === 'function') G.inkEnd();
         });
         
         tank.addEventListener('mouseenter', () => {
@@ -182,18 +175,42 @@ embedCopies.forEach(btn => {
             return null;
         }
 
+        // 手指在空白水面拖动＝落墨，点在鱼上＝拖鱼。
+        // 先看头 6px 往哪走，才决定这个手势归谁——否则手指一碰鱼缸页面就滚不动了。
+        const TOUCH_CLAIM_PX = 6;
+
         tank.addEventListener('touchstart', (e) => {
             const pos = getTouchPos(e);
             const fish = findFishAt(pos.x, pos.y);
-            if (fish) {
-                touchDragStart = { fish, startX: pos.x, startY: pos.y, time: Date.now() };
-            } else {
-                touchDragStart = { fish: null, startX: pos.x, startY: pos.y, time: Date.now() };
-            }
+            const rect = waterBody.getBoundingClientRect();
+            const t = e.touches[0];
+            touchDragStart = {
+                fish: fish,
+                startX: pos.x,
+                startY: pos.y,
+                px: t.clientX - rect.left,
+                py: t.clientY - rect.top,
+                inking: false
+            };
         }, { passive: true });
 
         tank.addEventListener('touchmove', (e) => {
-            if (!touchDragStart || !touchDragStart.fish) return;
+            if (!touchDragStart) return;
+            const t = e.touches[0];
+            const rect = waterBody.getBoundingClientRect();
+            const px = t.clientX - rect.left, py = t.clientY - rect.top;
+
+            if (!touchDragStart.fish) {
+                if (!touchDragStart.inking) {
+                    if (Math.hypot(px - touchDragStart.px, py - touchDragStart.py) < TOUCH_CLAIM_PX) return;
+                    touchDragStart.inking = true;
+                    if (typeof G.inkBegin === 'function') G.inkBegin(touchDragStart.px, touchDragStart.py);
+                }
+                e.preventDefault();
+                if (typeof G.inkAdd === 'function') G.inkAdd(px, py);
+                return;
+            }
+
             e.preventDefault();
             const pos = getTouchPos(e);
             const dx = pos.x - touchDragStart.startX;
@@ -216,6 +233,7 @@ embedCopies.forEach(btn => {
             if (touchDragStart && touchDragStart.fish && isDragging) {
                 touchDragStart.fish.element.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.08))';
             }
+            if (touchDragStart && touchDragStart.inking && typeof G.inkEnd === 'function') G.inkEnd();
             touchDragStart = null;
             isDragging = false;
         }, { passive: true });
@@ -225,6 +243,9 @@ embedCopies.forEach(btn => {
 
         tank.addEventListener('click', (e) => {
             if (e.button !== 0) return;
+
+            // 刚在纸上画完一笔，松手照样会冒一次 click；别顺手又撒一把饲料
+            if (Date.now() - (G.inkDrewAt || 0) < 400) { G.inkDrewAt = 0; return; }
 
             const rect = waterBody.getBoundingClientRect();
             const x = (e.clientX - rect.left) / rect.width * 100;
@@ -258,6 +279,7 @@ embedCopies.forEach(btn => {
             };
             foods.push(foodObj);
             nudgeFishToFood(foodObj, 44);
+            G.lastFeedingTime = Date.now();   // 猫的台词和题款都靠它判"刚喂过"
             
             const sink = () => {
                 if (!document.body.contains(food)) return;
@@ -305,6 +327,9 @@ embedCopies.forEach(btn => {
                     fish.petting = true;
                     // 别让它一边被摸一边还在做随机动作
                     if (fish.eventType) fish.finishEvent(0.8);
+                } else if (typeof G.inkBegin === 'function') {
+                    // 空白处起笔
+                    G.inkBegin(e.clientX - r.left, e.clientY - r.top);
                 }
                 return;
             }
@@ -342,13 +367,20 @@ embedCopies.forEach(btn => {
                 draggedFish = null;
                 isDragging = false;
             }
+            if (typeof G.inkEnd === 'function') G.inkEnd();
         });
 
         // 松手发生在鱼缸外、或窗口失去焦点（cmd-tab、切标签）时，
-        // tank 上的 mouseup/mouseleave 都不会来，鱼会一直黏着光标——
-        // 所以补两个兜底
-        window.addEventListener('mouseup', clearPetting);
-        window.addEventListener('blur', clearPetting);
+        // tank 上的 mouseup/mouseleave 都不会来，鱼会一直黏着光标、
+        // 墨也会一直连着一笔——所以补两个兜底
+        window.addEventListener('mouseup', () => {
+            clearPetting();
+            if (typeof G.inkEnd === 'function') G.inkEnd();
+        });
+        window.addEventListener('blur', () => {
+            clearPetting();
+            if (typeof G.inkEnd === 'function') G.inkEnd();
+        });
         
         tank.addEventListener('contextmenu', (e) => e.preventDefault());
         
@@ -390,6 +422,7 @@ embedCopies.forEach(btn => {
                 return;
             }
             if (typeof triggerCurious === 'function') triggerCurious();
+            G.lastFeedingTime = Date.now();
             const feedCount = 3 + Math.floor(Math.random() * 3);
             const spreadWidth = 40 + Math.random() * 25;
             
@@ -634,6 +667,25 @@ embedCopies.forEach(btn => {
             inlineComputed(tankEl, clone);
             // 控制条和光标辉光不属于"鱼缸"本身，抄完样式再删
             clone.querySelectorAll('.controls, .cursor-glow').forEach(function (e) { e.remove(); });
+
+            // 墨层是 canvas，克隆出来的只是一个空画布；换成当前帧的位图，
+            // 否则成图里观众刚画的那一笔会凭空消失
+            const srcCanvas = tankEl.querySelector('.ink-stroke-layer');
+            if (srcCanvas && srcCanvas.width > 1) {
+                const dstCanvas = clone.querySelector('.ink-stroke-layer');
+                if (dstCanvas) {
+                    let url = null;
+                    try { url = srcCanvas.toDataURL('image/png'); } catch (e) {}
+                    if (url) {
+                        const img = document.createElement('img');
+                        img.setAttribute('src', url);
+                        img.setAttribute('style',
+                            'position:absolute;left:0;top:0;width:100%;height:100%;' +
+                            'z-index:4;pointer-events:none;');
+                        dstCanvas.parentNode.replaceChild(img, dstCanvas);
+                    }
+                }
+            }
 
             let html;
             try {

@@ -50,6 +50,16 @@ body.theme-night .control-btn {
     border-color: rgba(80, 90, 100, 0.3);
 }
 
+/* 夜里的墨要反白，否则纯黑落在深色绢上看不见 */
+body.theme-night {
+    --ink-stroke: rgba(196, 210, 204, 0.55);
+}
+
+/* 青碧水色偏冷，墨里带一点花青 */
+body.theme-sky {
+    --ink-stroke: rgba(24, 38, 48, 0.85);
+}
+
 /* 尊重系统动效偏好 */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
