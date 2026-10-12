@@ -80,6 +80,15 @@ const poems = [
     { t: 'spring',  l1: '竹外桃花三两枝', l2: '春江水暖鸭先知', a: '苏轼《惠崇春江晚景》' },
     { t: 'spring',  l1: '泥融飞燕子',     l2: '沙暖睡鸳鸯',   a: '杜甫《绝句》' },
     { t: 'spring',  l1: '迟日江山丽',     l2: '春风花草香',   a: '杜甫《绝句》' },
+    { t: 'summer',  l1: '接天莲叶无穷碧', l2: '映日荷花别样红', a: '杨万里《晓出净慈寺送林子方》' },
+    { t: 'summer',  l1: '小荷才露尖尖角', l2: '早有蜻蜓立上头', a: '杨万里《小池》' },
+    { t: 'summer',  l1: '水晶帘动微风起', l2: '满架蔷薇一院香', a: '高骈《山亭夏日》' },
+    { t: 'autumn',  l1: '空山新雨后',     l2: '天气晚来秋',   a: '王维《山居秋暝》' },
+    { t: 'autumn',  l1: '落霞与孤鹜齐飞', l2: '秋水共长天一色', a: '王勃《滕王阁序》' },
+    { t: 'autumn',  l1: '碧云天，黄叶地', l2: '秋色连波',     a: '范仲淹《苏幕遮》' },
+    { t: 'winter',  l1: '孤舟蓑笠翁',     l2: '独钓寒江雪',   a: '柳宗元《江雪》' },
+    { t: 'winter',  l1: '墙角数枝梅',     l2: '凌寒独自开',   a: '王安石《梅花》' },
+    { t: 'winter',  l1: '晚来天欲雪',     l2: '能饮一杯无',   a: '白居易《问刘十九》' },
     { t: 'calm',    l1: '蝉噪林逾静',     l2: '鸟鸣山更幽',   a: '王籍《入若耶溪》' },
     { t: 'calm',    l1: '山光悦鸟性',     l2: '潭影空人心',   a: '常建《题破山寺后禅院》' },
     { t: 'ink',     l1: '十日画一水',     l2: '五日画一石',   a: '杜甫《戏题王宰画山水图歌》' },
@@ -89,7 +98,17 @@ const poems = [
 ];
 
 // 事件类（刚发生的事）一票压过底色的状态类
-const POEM_WEIGHT = { startle: 5, ink: 4, feed: 4, sleepy: 3, calm: 2, night: 2, spring: 2, fish: 2 };
+const POEM_WEIGHT = {
+    startle: 5, ink: 4, feed: 4, sleepy: 3,
+    calm: 2, night: 2, fish: 2,
+    spring: 2, summer: 2, autumn: 2, winter: 2
+};
+
+const SEASON_TAGS = ['spring', 'summer', 'autumn', 'winter'];
+
+function currentSeason() {
+    return SEASON_TAGS.indexOf(G.season) >= 0 ? G.season : 'spring';
+}
 
 function poemContext() {
     const tags = [];
@@ -98,7 +117,8 @@ function poemContext() {
     if (G.lastFeedingTime && Date.now() - G.lastFeedingTime < 20000) tags.push('feed');
     if (G.catSleepStage > 0) tags.push('sleepy');
     if (document.body.classList.contains('contemplating')) tags.push('calm');
-    tags.push(document.body.classList.contains('theme-night') ? 'night' : 'spring');
+    tags.push(currentSeason());
+    if (document.body.classList.contains('theme-night')) tags.push('night');
     if (typeof fishes !== 'undefined' && fishes.length > 0) tags.push('fish');
     return tags;
 }
@@ -108,6 +128,7 @@ function poemContext() {
 function poemSignature() {
     const body = document.body.classList;
     return [
+        currentSeason(),
         body.contains('theme-night') ? 'n' : 'd',
         body.contains('contemplating') ? 'c' : '-',
         G.catSleepStage > 0 ? 'z' : '-',
@@ -120,15 +141,14 @@ function poemSignature() {
 let currentPoemIndex = -1;
 function pickPoem() {
     const tags = poemContext();
-    const night = tags.indexOf('night') >= 0;
+    const season = currentSeason();
 
-    // 昼夜句互斥：夜里不出现"春江水暖"，白天不出现"月出惊山鸟"；
-    // 其余只认自己那一类情境
+    // 季候句只认当季：夏天不该出现"春江水暖"，冬天也不该有柳絮句
     const eligible = [];
     let top = -Infinity;
     for (let i = 0; i < poems.length; i++) {
         const t = poems[i].t;
-        if ((t === 'night' && !night) || (t === 'spring' && night)) continue;
+        if (SEASON_TAGS.indexOf(t) >= 0 && t !== season) continue;
         if (tags.indexOf(t) < 0) continue;
 
         const score = (POEM_WEIGHT[t] || 1) - (i === currentPoemIndex ? 1.5 : 0);

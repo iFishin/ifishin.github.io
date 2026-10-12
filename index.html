@@ -27,11 +27,29 @@
     <link rel="stylesheet" href="css/tank.css">
     <link rel="stylesheet" href="css/decorations.css">
     <link rel="stylesheet" href="css/controls.css">
+    <link rel="stylesheet" href="css/seasons.css">
     <link rel="stylesheet" href="css/themes.css">
     <link rel="stylesheet" href="css/views.css">
-    <script>(function(){var t=localStorage.getItem('guanyu-theme')||'';if(t)document.body.classList.add('theme-'+t)})();</script>
 </head>
 <body>
+    <!-- 主题与四时都得抢在首帧之前落到 body 上，否则会先闪一下默认的春绿。
+         这段本该在 <head> 里跑，但那儿 document.body 还是 null——只要存过
+         主题就抛 TypeError，等于从来没生效过（还会在控制台留个错）。
+         所以挪到 body 开头：这时 body 已经在，页还没画。
+         月份映射和 js/seasons.js 里那份必须一致。 -->
+    <script>(function(){
+        var b = document.body;
+        var t = localStorage.getItem('guanyu-theme') || '';
+        if (t) b.classList.add('theme-' + t);
+        var s = localStorage.getItem('guanyu-season') || 'auto';
+        if (['spring', 'summer', 'autumn', 'winter'].indexOf(s) < 0) {
+            var m = new Date().getMonth() + 1;
+            s = (m >= 3 && m <= 5) ? 'spring'
+              : (m >= 6 && m <= 8) ? 'summer'
+              : (m >= 9 && m <= 11) ? 'autumn' : 'winter';
+        }
+        b.classList.add('season-' + s);
+    })();</script>
     <!-- 共用的笔触滤镜：给纯矢量图形加一点边缘扰动，读起来像是毛笔写出来的，
          而不是用填充工具填的。
          参数按各自 SVG 的用户坐标系给（鱼是 120×60，猫是 330×235），
@@ -182,6 +200,13 @@
         <div class="theme-option" data-theme="sky" role="menuitem" tabindex="0">晴空</div>
         <div class="theme-option" data-theme="night" role="menuitem" tabindex="0">夜色</div>
         <div class="menu-sep"></div>
+        <div class="menu-label">四时</div>
+        <div class="season-option" data-season="auto" role="menuitem" tabindex="0">随时节</div>
+        <div class="season-option" data-season="spring" role="menuitem" tabindex="0">春</div>
+        <div class="season-option" data-season="summer" role="menuitem" tabindex="0">夏</div>
+        <div class="season-option" data-season="autumn" role="menuitem" tabindex="0">秋</div>
+        <div class="season-option" data-season="winter" role="menuitem" tabindex="0">冬</div>
+        <div class="menu-sep"></div>
         <div class="menu-label">猫色</div>
         <div class="coat-option" data-coat="ink" role="menuitem" tabindex="0">墨</div>
         <div class="coat-option" data-coat="tabby" role="menuitem" tabindex="0">狸花</div>
@@ -302,6 +327,8 @@
             <p>纯静态页面，没有构建步骤，也没有框架依赖——打开 <code>index.html</code> 就跑。鱼、猫、柳树全是 SVG 画的，声音是 Web Audio 实时合成的。</p>
             <h3 class="panel-sub">鱼是有性格的</h3>
             <p>每条鱼都有自己的好奇心、顽皮度、食欲、竞争性与社交性。这些数值驱使它游向食物、追逐同伴、圈占领地，或者凑过来看你的光标。它们会长大，也会变老。</p>
+            <h3 class="panel-sub">四时流转</h3>
+            <p>底色、柳色、水色、飘的东西和题款都跟着节气走：春有柳絮与燕子，夏有荷句，秋落叶，冬飘雪。默认按当天的月份自动换，也可以在右上角的菜单里把某一季锁死。</p>
             <h3 class="panel-sub">可以怎么玩</h3>
             <ul class="panel-list">
                 <li><b>投喂</b>：点鱼缸里任意位置撒食，或按 <kbd>F</kbd>。</li>
@@ -497,6 +524,7 @@
     <script src="js/tank.js"></script>
     <script src="js/ink.js"></script>
     <script src="js/router.js"></script>
+    <script src="js/seasons.js"></script>
     <script src="js/scenery.js"></script>
     <script src="js/main.js"></script>
 </body>

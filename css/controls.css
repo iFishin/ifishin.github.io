@@ -79,8 +79,9 @@
     display: block;
 }
 
-/* 主题菜单里同时放主题与猫色，两者共用同一套选项样式 */
+/* 主题菜单里同时放主题、四时与猫色，三者共用同一套选项样式 */
 .theme-option,
+.season-option,
 .coat-option {
     padding: 8px 18px;
     font-size: 13px;
@@ -90,12 +91,14 @@
 }
 
 .theme-option:hover,
+.season-option:hover,
 .coat-option:hover {
     background: #e8f0e5;
 }
 
 /* 当前选中的那一项 */
-.coat-option[aria-current="true"] {
+.coat-option[aria-current="true"],
+.season-option[aria-current="true"] {
     color: #9a4a3c;
     font-weight: 500;
 }

@@ -644,27 +644,56 @@
     overflow: hidden;
 }
 
-/* 柳絮：极轻的白色绒点，随风斜落 */
-.catkin {
+/* ========== 时令氛围：柳絮／落叶／雪 ==========
+   三种飘落物共用一条关键帧，各自只换皮（形状、颜色、旋转量、明暗）。
+   原来是三套几乎一样的 animation，改一处漏两处。 */
+.catkin,
+.falling-leaf,
+.snowflake {
     position: fixed;
     top: -24px;
     left: 0;
+    opacity: 0;
+    animation: driftFall linear forwards;
+    will-change: transform, opacity;
+}
+
+@keyframes driftFall {
+    0%   { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 0; }
+    10%  { opacity: var(--drift-in, 0.72); }
+    55%  { opacity: var(--drift-mid, 0.55); }
+    100% { transform: translate3d(var(--drift-dx, 60px), 108vh, 0) rotate(var(--drift-spin, 0deg)); opacity: 0; }
+}
+
+/* 柳絮：极轻的白色绒点，随风斜落 */
+.catkin {
     border-radius: 50%;
     background: radial-gradient(circle at 34% 34%,
         rgba(255, 255, 255, 0.95) 0%,
         rgba(255, 255, 255, 0.34) 58%,
         rgba(255, 255, 255, 0) 74%);
     box-shadow: 0 0 6px rgba(255, 255, 255, 0.5);
-    opacity: 0;
-    animation: catkinDrift linear forwards;
-    will-change: transform, opacity;
 }
 
-@keyframes catkinDrift {
-    0%   { transform: translate3d(0, 0, 0); opacity: 0; }
-    10%  { opacity: 0.72; }
-    55%  { opacity: 0.55; }
-    100% { transform: translate3d(var(--catkin-dx, 60px), 108vh, 0); opacity: 0; }
+/* 秋叶：一片打旋的赭黄。方角收得不对称，转起来才有叶子的样子 */
+.falling-leaf {
+    border-radius: 62% 14% 62% 14%;
+    background: linear-gradient(135deg, rgba(190, 148, 58, 0.78), rgba(150, 100, 40, 0.55));
+    --drift-spin: 320deg;
+    --drift-in: 0.82;
+    --drift-mid: 0.7;
+}
+
+/* 雪：比柳絮更小、更亮、落得更直 */
+.snowflake {
+    border-radius: 50%;
+    background: radial-gradient(circle at 36% 32%,
+        rgba(255, 255, 255, 0.98) 0%,
+        rgba(240, 248, 255, 0.5) 62%,
+        rgba(255, 255, 255, 0) 78%);
+    box-shadow: 0 0 7px rgba(255, 255, 255, 0.55);
+    --drift-in: 0.9;
+    --drift-mid: 0.62;
 }
 
 /* 燕子：偶尔掠过的墨色剪影。缩放交给容器尺寸，transform 归关键帧 */
@@ -765,10 +794,15 @@
     50%      { opacity: 0.9; transform: translateX(16px); }
 }
 
-/* 夜色主题下柳絮/燕子偏冷，别在深色背景上刺眼 */
+/* 夜色主题下时令飘落物偏冷，别在深色背景上刺眼 */
 body.theme-night .catkin {
     box-shadow: 0 0 6px rgba(200, 210, 220, 0.28);
-    opacity: 0.5;
+}
+body.theme-night .falling-leaf {
+    background: linear-gradient(135deg, rgba(152, 118, 54, 0.62), rgba(112, 80, 34, 0.42));
+}
+body.theme-night .snowflake {
+    box-shadow: 0 0 8px rgba(190, 212, 236, 0.42);
 }
 body.theme-night .swallow svg path { stroke: rgba(180, 190, 200, 0.4); }
 body.theme-night .raindrop {

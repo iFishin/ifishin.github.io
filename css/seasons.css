@@ -1,0 +1,79 @@
+/* ========== 四时 ==========
+   四时是叠在「主题」之下的一层：主题说白天还是夜里，四时说到了什么时节。
+   所以本文件排在 themes.css 之前——属性撞车时，该由主题压过时节。
+   （夜里画心是深绢，再叠一层秋黄只会发脏。） */
+
+/* ---------- 季候底色 ---------- */
+body.season-spring { background: linear-gradient(180deg, #e7f1e8 0%, #dceade 50%, #cfe4d1 100%); }
+body.season-summer { background: linear-gradient(180deg, #dcece1 0%, #cae2d3 50%, #b5d5c4 100%); }
+body.season-autumn { background: linear-gradient(180deg, #f1ead9 0%, #e7dbc2 50%, #d9c8a6 100%); }
+body.season-winter { background: linear-gradient(180deg, #e9eff1 0%, #dde7ea 50%, #ccd9de 100%); }
+
+/* ---------- 柳色 ----------
+   没有逐条去改柳树那十几条 path 的 fill：太碎，还容易漏掉芽和叶。
+   整棵套一个滤镜换色，干、枝、芽、叶一起走，也就一行。
+   春不加滤镜——保持原本的样子。 */
+body.season-summer .willow-left,
+body.season-summer .willow-right {
+    filter: saturate(1.5) brightness(0.92) hue-rotate(-8deg);
+}
+
+body.season-autumn .willow-left,
+body.season-autumn .willow-right {
+    filter: hue-rotate(-52deg) saturate(1.3) brightness(1.05);
+}
+
+body.season-winter .willow-left,
+body.season-winter .willow-right {
+    filter: saturate(0.2) brightness(1.14) contrast(0.9);
+}
+
+/* 冬柳只剩枝：叶子几乎落尽，芽也不再-"呼吸"（animation 会盖掉 opacity，
+   所以这里得连动画一起停掉） */
+body.season-winter .willow-leaves { opacity: 0.26; }
+body.season-winter .willow-bud {
+    animation: none;
+    opacity: 0.42;
+}
+
+/* ---------- 水色 ----------
+   走 .water-body::before 叠一层薄色，而不是去改 .water-body 自己的
+   background——那是主题在管的东西，改了就会和夜色／晴空打架。
+   ::before 排在其它定位子元素之前，所以这层色在水里、在鱼和墨之下。 */
+.water-body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+body.season-spring .water-body::before {
+    background: linear-gradient(180deg, rgba(176, 214, 178, 0.10), rgba(140, 186, 150, 0.02));
+}
+
+body.season-summer .water-body::before {
+    background: linear-gradient(180deg, rgba(112, 176, 148, 0.17), rgba(66, 128, 112, 0.08));
+}
+
+body.season-autumn .water-body::before {
+    background: linear-gradient(180deg, rgba(208, 174, 104, 0.15), rgba(166, 132, 74, 0.06));
+}
+
+body.season-winter .water-body::before {
+    background: linear-gradient(180deg, rgba(168, 196, 214, 0.17), rgba(138, 166, 188, 0.08));
+}
+
+/* ---------- 夜里的时节要收敛 ----------
+   深色画心上再压一层饱和的秋黄会脏，所以夜色下只留一点点季候气。 */
+body.theme-night.season-autumn .water-body::before,
+body.theme-night.season-summer .water-body::before,
+body.theme-night.season-winter .water-body::before {
+    opacity: 0.35;
+}
+
+body.theme-night.season-winter .willow-left,
+body.theme-night.season-winter .willow-right,
+body.theme-night.season-autumn .willow-left,
+body.theme-night.season-autumn .willow-right {
+    filter: saturate(0.14) brightness(0.9);
+}

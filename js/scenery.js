@@ -1,7 +1,8 @@
 window.__GUANYU = window.__GUANYU || {};
 
-// ========== 春日氛围：柳絮、燕子、春雨 ==========
+// ========== 时令氛围：柳絮／落叶／雪、燕子、春雨 ==========
 // 全是纯 CSS 关键帧驱动，JS 只负责按节奏投放，动画结束后由 animationend 回收。
+// 飘什么由四时决定（js/seasons.js 先把 G.season 定下来）。
 (function () {
     'use strict';
 
@@ -23,22 +24,45 @@ window.__GUANYU = window.__GUANYU || {};
 
     const MAX_PARTS = 42;   // 兜底：标签页被隐藏时 CSS 动画会暂停，防止元素无限堆积
 
-    function spawnCatkin() {
+    // ========== 时令飘落物 ==========
+    // 春柳絮、秋落叶、冬雪；夏天什么都不飘，只留燕子。
+    // p 是"这一次机会里落不落"的概率：节拍统一用 2.4s，各季的疏密靠概率调。
+    // 这样在菜单里换季时不必重建定时器，下一拍就自然换了。
+    const DRIFT = {
+        spring: { cls: 'catkin',       min: 5, max: 10, dur: [16, 28], dx: [-60, 110], p: 0.42 },
+        summer: null,
+        autumn: { cls: 'falling-leaf', min: 8, max: 15, dur: [11, 19], dx: [-40, 150], p: 0.62 },
+        winter: { cls: 'snowflake',    min: 3, max: 7,  dur: [13, 24], dx: [-45,  55], p: 1 }
+    };
+
+    function season() {
+        const s = window.__GUANYU.season;
+        return DRIFT.hasOwnProperty(s) ? s : 'spring';
+    }
+
+    function spawnDrift() {
+        const cfg = DRIFT[season()];
+        if (!cfg || Math.random() > cfg.p) return;
         if (layer.childElementCount >= MAX_PARTS) return;
+
         const el = document.createElement('div');
-        el.className = 'catkin';
-        const size = 5 + Math.random() * 5;
-        el.style.width = size + 'px';
-        el.style.height = size + 'px';
+        el.className = cfg.cls;
+        const size = cfg.min + Math.random() * (cfg.max - cfg.min);
+        el.style.width = size.toFixed(1) + 'px';
+        // 叶子是横躺的，别撑成正方形
+        el.style.height = (cfg.cls === 'falling-leaf' ? size * 0.62 : size).toFixed(1) + 'px';
         el.style.left = (Math.random() * 100).toFixed(1) + 'vw';
-        el.style.setProperty('--catkin-dx', ((Math.random() - 0.35) * 170).toFixed(0) + 'px');
-        el.style.animationDuration = (16 + Math.random() * 12).toFixed(1) + 's';
+        el.style.setProperty('--drift-dx',
+            (cfg.dx[0] + Math.random() * (cfg.dx[1] - cfg.dx[0])).toFixed(0) + 'px');
+        el.style.animationDuration = (cfg.dur[0] + Math.random() * (cfg.dur[1] - cfg.dur[0])).toFixed(1) + 's';
         el.style.animationDelay = (Math.random() * 2.5).toFixed(1) + 's';
         layer.appendChild(el);
         el.addEventListener('animationend', function () { el.remove(); });
     }
 
     function spawnSwallow() {
+        // 燕子是夏候鸟，秋冬不该有
+        if (season() === 'autumn' || season() === 'winter') return;
         if (layer.childElementCount >= MAX_PARTS) return;
         const el = document.createElement('div');
         el.className = 'swallow';
@@ -66,6 +90,12 @@ window.__GUANYU = window.__GUANYU || {};
     let rainDropTimer = null;
     let rainRippleTimer = null;
     let rainCycleTimer = null;
+
+    // 春雨、夏阵雨；秋冬没有雨（该下雪）
+    function rainAllowed() {
+        const s = season();
+        return s === 'spring' || s === 'summer';
+    }
 
     function ensureRainLayer() {
         if (!rainLayer) {
@@ -106,6 +136,8 @@ window.__GUANYU = window.__GUANYU || {};
 
     function startRain() {
         if (raining) return;
+        // 秋冬不下雨。但要留着这个循环继续等——在菜单里换回春天就该下起来
+        if (!rainAllowed()) { scheduleRain(); return; }
         raining = true;
         document.body.classList.add('raining');
         rainEndsAt = Date.now() + (RAIN_DUR_MIN + Math.random() * (RAIN_DUR_MAX - RAIN_DUR_MIN)) * 1000;
@@ -129,18 +161,18 @@ window.__GUANYU = window.__GUANYU || {};
 
     function scheduleRain() {
         if (rainCycleTimer) { window.clearTimeout(rainCycleTimer); rainCycleTimer = null; }
-        rainCycleTimer = window.setTimeout(
-            startRain,
-            (RAIN_GAP_MIN + Math.random() * (RAIN_GAP_MAX - RAIN_GAP_MIN)) * 1000
-        );
+        const wait = rainAllowed()
+            ? (RAIN_GAP_MIN + Math.random() * (RAIN_GAP_MAX - RAIN_GAP_MIN)) * 1000
+            : 45000;   // 不是下雨的季节：四十五秒后再来看一眼
+        rainCycleTimer = window.setTimeout(startRain, wait);
     }
 
     // ========== 定时器总控 ==========
-    let catkinTimer = null;
+    let driftTimer = null;
     let swallowTimer = null;
 
     function startAmbientTimers() {
-        if (!catkinTimer) catkinTimer = window.setInterval(spawnCatkin, 2400);
+        if (!driftTimer) driftTimer = window.setInterval(spawnDrift, 2400);
         if (!swallowTimer) swallowTimer = window.setInterval(spawnSwallow, 26000);
 
         if (raining) {
@@ -160,7 +192,7 @@ window.__GUANYU = window.__GUANYU || {};
     }
 
     function stopAmbientTimers() {
-        if (catkinTimer) { window.clearInterval(catkinTimer); catkinTimer = null; }
+        if (driftTimer) { window.clearInterval(driftTimer); driftTimer = null; }
         if (swallowTimer) { window.clearInterval(swallowTimer); swallowTimer = null; }
         if (rainDropTimer) { window.clearInterval(rainDropTimer); rainDropTimer = null; }
         if (rainRippleTimer) { window.clearInterval(rainRippleTimer); rainRippleTimer = null; }
@@ -170,7 +202,7 @@ window.__GUANYU = window.__GUANYU || {};
     startAmbientTimers();
 
     // 首屏先给几片，别让页面一开始空着
-    for (let i = 0; i < 3; i++) window.setTimeout(spawnCatkin, i * 900);
+    for (let i = 0; i < 3; i++) window.setTimeout(spawnDrift, i * 900);
     window.setTimeout(spawnSwallow, 4500);
 
     document.addEventListener('visibilitychange', function () {
@@ -178,7 +210,7 @@ window.__GUANYU = window.__GUANYU || {};
         else startAmbientTimers();
     });
 
-    window.__GUANYU.spawnCatkin = spawnCatkin;
+    window.__GUANYU.spawnDrift = spawnDrift;
     window.__GUANYU.spawnSwallow = spawnSwallow;
     window.__GUANYU.startRain = startRain;
     window.__GUANYU.stopRain = stopRain;
