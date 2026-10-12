@@ -718,13 +718,160 @@ embedCopies.forEach(btn => {
             img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
         }
 
+        // ========== 落款 ==========
+        // 成图不该只是一张截屏。既然是手卷，就该有题跋——所以在右边接一条纸，
+        // 把当下的题款、年月、缸中尾数写上去，再盖一方闲章。
+        // 接的那条纸和画心之间留一道裱缝，读起来像另裱上去的一段拖尾，
+        // 而不是硬贴在轴头外面。
+        const CN_DIGIT = ['〇', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+        const SEASON_CN = { spring: '春', summer: '夏', autumn: '秋', winter: '冬' };
+
+        function cnNumber(n) {
+            if (n <= 0) return CN_DIGIT[0];
+            if (n < 10) return CN_DIGIT[n];
+            if (n === 10) return '十';
+            if (n < 20) return '十' + CN_DIGIT[n - 10];
+            const ones = n % 10;
+            return CN_DIGIT[Math.floor(n / 10)] + '十' + (ones ? CN_DIGIT[ones] : '');
+        }
+
+        function cnYear(y) {
+            return String(y).split('').map(function (d) { return CN_DIGIT[+d]; }).join('');
+        }
+
+        function todayInChinese() {
+            const d = new Date();
+            return cnYear(d.getFullYear()) + '年' + cnNumber(d.getMonth() + 1) +
+                   '月' + cnNumber(d.getDate()) + '日';
+        }
+
+        function addColophon(src) {
+            const W = src.width, H = src.height;
+
+            // 纸条宽度取决于画心哪一边更紧：宽画心按宽度取，窄高画心按高度取
+            const STRIP = Math.round(Math.min(W * 0.28, H * 0.34));
+            const pad = Math.round(STRIP * 0.18);
+
+            const poemLine = function (id) {
+                const el = document.getElementById(id);
+                return el ? el.textContent.trim() : '';
+            };
+            const author = poemLine('poemAuthor').replace(/^——\s*/, '');
+            const dateStr = (SEASON_CN[G.season] || '') + '·' + todayInChinese();
+            const l1 = poemLine('poemLine1');
+            const l2 = poemLine('poemLine2');
+
+            // 字号先由画心高度定，再被两条约束往下压：三列要横着塞进纸条，
+            // 最长的那列还得竖着让开印章。窄高的画心上按宽度取纸条是不够的——
+            // 三列会直接溢到画心里去。
+            const usable = STRIP - pad * 2;
+            let F = Math.max(13, Math.min(Math.round(H * 0.03), Math.floor(usable / 4.6)));
+            while (F > 12) {
+                const smallGap = F * 0.62 * 1.72;
+                const need = H * 0.12 + (author.length + dateStr.length + 1.4) * smallGap + F * 2.1;
+                if (need <= H * 0.97) break;
+                F -= 1;
+            }
+
+            const colGap = F * 1.72;
+            const smallGap = F * 0.62 * 1.72;
+            const top = Math.round(H * 0.12);
+
+            const out = document.createElement('canvas');
+            out.width = W + STRIP;
+            out.height = H;
+            const ctx = out.getContext('2d');
+
+            ctx.fillStyle = '#f6f1e3';
+            ctx.fillRect(0, 0, out.width, out.height);
+            ctx.drawImage(src, 0, 0);
+
+            // 右接的那条纸：和画心同一套纸色，只是没有水
+            const paper = ctx.createLinearGradient(W, 0, out.width, H);
+            paper.addColorStop(0, '#fbf8f0');
+            paper.addColorStop(0.5, '#f5f0e2');
+            paper.addColorStop(1, '#ece4d1');
+            ctx.fillStyle = paper;
+            ctx.fillRect(W, 0, STRIP, H);
+
+            // 裱缝：一条淡墨线加一道高光，读起来是另裱上去的一段，不是硬贴的
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.fillRect(W + 2, 0, 1.5, H);
+            ctx.strokeStyle = 'rgba(126, 110, 78, 0.24)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(W + 0.75, 0);
+            ctx.lineTo(W + 0.75, H);
+            ctx.stroke();
+
+            const serif = '"Noto Serif SC", serif';
+            const INK = 'rgba(46, 58, 46, 0.86)';
+            const INK_SOFT = 'rgba(60, 80, 60, 0.58)';
+
+            // 三列，自右向左：上句、下句、小字（出处＋年月）。
+            // 列心从纸条右缘往里排，整块内容因此天然避开了裱缝那一侧。
+            let x = W + STRIP - pad - F * 0.5;
+
+            // 竖排：一个字一个字往下摞。行距按同一套比例算，
+            // 所以短句不会散开，长句也不会顶到底
+            function column(text, scale, color, y0) {
+                if (!text) return;
+                const gap = F * 1.72 * scale;
+                ctx.font = (F * scale).toFixed(1) + 'px ' + serif;
+                ctx.fillStyle = color;
+                for (let i = 0; i < text.length; i++) {
+                    ctx.fillText(text[i], x, y0 + i * gap);
+                }
+            }
+
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            column(l1, 1, INK, top);
+            x -= colGap;
+            column(l2, 1, INK, top);
+            x -= colGap * 0.82;
+            column(author, 0.62, INK_SOFT, top);
+            column(dateStr, 0.62, INK_SOFT, top + (author.length + 1.2) * smallGap);
+
+            // 闲章：盖在最左一列的末尾，稍微歪一点才像是手盖的
+            const seal = Math.round(F * 1.55);
+            const sealY = top + (author.length + 1.2 + dateStr.length) * smallGap + seal * 0.85;
+            if (sealY + seal * 0.6 < H) {
+                ctx.save();
+                ctx.translate(x, sealY);
+                ctx.rotate(-1.6 * Math.PI / 180);
+                ctx.fillStyle = 'rgba(176, 56, 44, 0.1)';
+                ctx.fillRect(-seal / 2, -seal / 2, seal, seal);
+                ctx.strokeStyle = 'rgba(176, 56, 44, 0.72)';
+                ctx.lineWidth = Math.max(2, F * 0.09);
+                ctx.strokeRect(-seal / 2, -seal / 2, seal, seal);
+                ctx.fillStyle = 'rgba(176, 56, 44, 0.88)';
+                ctx.font = (seal * 0.42).toFixed(1) + 'px ' + serif;
+                ctx.fillText('观', 0, -seal * 0.21);
+                ctx.fillText('鱼', 0, seal * 0.21);
+                ctx.restore();
+            }
+
+            // 缸中尾数压在纸条下缘，横排一小行当注释。
+            // 竖排里塞数字会把"7"读成一个孤零零的方框，横着写反而清楚。
+            ctx.font = (F * 0.52).toFixed(1) + 'px ' + serif;
+            ctx.fillStyle = INK_SOFT;
+            ctx.fillText('缸中' + cnNumber(typeof fishes !== 'undefined' ? fishes.length : 0) + '尾',
+                         W + STRIP / 2, H - F * 0.8);
+
+            return out;
+        }
+
         const snapBtn = document.getElementById('snapBtn');
         if (snapBtn) {
             snapBtn.addEventListener('click', function () {
                 showFeedback('正在生成…');
                 renderTankToCanvas(function (cv) {
                     if (!cv) { showFeedback('这张图没能生成'); return; }
-                    cv.toBlob(function (blob) {
+                    let out = cv;
+                    try { out = addColophon(cv); } catch (e) { out = cv; }
+                    out.toBlob(function (blob) {
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a');
                         a.href = url;
@@ -733,7 +880,7 @@ embedCopies.forEach(btn => {
                         a.click();
                         a.remove();
                         setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
-                        showFeedback('已存成图片');
+                        showFeedback('已存成图片 · 带落款');
                     }, 'image/png');
                 });
             });
